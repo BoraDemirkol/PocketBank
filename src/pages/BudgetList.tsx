@@ -51,7 +51,7 @@ const BudgetList: React.FC = () => {
       </Box>
 
       {filteredBudgets.map((budget) => (
-        <BudgetCard key={budget.id} budget={budget} />
+      <BudgetCard key={budget.id} budget={budget} selectedCategory={selectedCategory} />
       ))}
     </Container>
   );
