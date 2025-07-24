@@ -19,16 +19,6 @@ const Login: React.FC = () => {
     setLoading(false);
   };
 
-  if (user) {
-    return (
-      <div style={{ padding: '20px', textAlign: 'center' }}>
-        <h2>Welcome, {user.email}!</h2>
-        <Button onClick={signOut} type="primary">
-          Sign Out
-        </Button>
-      </div>
-    );
-  }
 
   return (
     <div style={{ maxWidth: '300px', margin: '50px auto', padding: '20px' }}>
