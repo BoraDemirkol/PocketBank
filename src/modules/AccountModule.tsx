@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../Shared/supabaseClient';
 import Layout from '../context/Layout';
 import '../context/accountModule.css';
-
-const fetchAccounts = async () => {
-    const { data, error } = await supabase
-        .from('accounts')
-        .select('*')
-        .eq('user_id', '0000-0000-0000-test-user');
-
-    console.log(data, error);
-};
+import { fetchTransactionsByAccount, generateAccountStatementPDF } from '../services/accountService';
+import { supabase } from '../Shared/supabaseClient';
 
 interface Account {
-    id: number;
+    id: string;
     name: string;
     type: 'Vadesiz' | 'Vadeli' | 'Kredi Kartı';
     balance: number;
+}
+
+interface Transaction {
+    id: string;
+    account_id: string;
+    category_id: string;
+    amount: number;
+    transaction_date: string;
+    description: string;
 }
 
 const AccountModule: React.FC = () => {
@@ -30,6 +31,8 @@ const AccountModule: React.FC = () => {
     const [error, setError] = useState('');
     const [cardWidth, setCardWidth] = useState('23%');
     const [hovering, setHovering] = useState(false);
+    const [transactions, setTransactions] = useState<Transaction[] | null>(null);
+    const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
 
     useEffect(() => {
         const updateWidth = () => {
@@ -44,29 +47,81 @@ const AccountModule: React.FC = () => {
         return () => window.removeEventListener('resize', updateWidth);
     }, []);
 
+    useEffect(() => {
+        const fetchAccounts = async () => {
+            const { data, error } = await supabase
+                .from('accounts')
+                .select('*')
+                .eq('user_id', '00000000-0000-0000-0000-000000000001');
+
+            if (error) console.error('Hesaplar çekilemedi:', error);
+            else setAccounts(
+                data.map((item: any) => ({
+                    id: item.id,
+                    name: item.account_name,
+                    type: item.account_type,
+                    balance: item.balance
+                }))
+            );
+        };
+
+        fetchAccounts();
+    }, []);
+
     const generateRandomBalance = (type: string): number => {
         return type === 'Kredi Kartı'
             ? -(Math.floor(Math.random() * 5000) + 500)
             : Math.floor(Math.random() * 20000) + 1000;
     };
 
-    const createAccount = () => {
+    const createAccount = async () => {
         if (name.trim() === '') {
             setError('Hesap adı boş bırakılamaz.');
             return;
         }
 
         setError('');
-        const newAccount: Account = {
-            id: accounts.length + 1,
-            name,
-            type,
-            balance: generateRandomBalance(type)
-        };
+        const balance = generateRandomBalance(type);
 
-        setAccounts([...accounts, newAccount]);
-        setName('');
-        localStorage.setItem('lastSelectedType', type);
+        const { data, error } = await supabase.from('accounts').insert([
+            {
+                user_id: '00000000-0000-0000-0000-000000000001',
+                account_name: name,
+                account_type: type,
+                balance,
+                currency: 'TRY'
+            }
+        ]).select();
+
+        if (error) {
+            console.error('Hesap oluşturma hatası:', error);
+        } else if (data && data.length > 0) {
+            const newAccount = {
+                id: data[0].id,
+                name: data[0].account_name,
+                type: data[0].account_type,
+                balance: data[0].balance
+            };
+            setAccounts([...accounts, newAccount]);
+            setName('');
+            localStorage.setItem('lastSelectedType', type);
+        }
+    };
+
+    const fetchTransactions = async (accountId: string) => {
+        const { data, error } = await fetchTransactionsByAccount(accountId);
+        if (error) {
+            console.error('Transaction fetch error:', error);
+            setTransactions(null);
+        } else {
+            setTransactions(data);
+            setSelectedAccountId(accountId);
+        }
+    };
+
+    const generatePDF = async (accountId: string) => {
+        const { data, error } = await fetchTransactionsByAccount(accountId);
+        if (data) generateAccountStatementPDF(data, accountId);
     };
 
     const filteredAccounts =
@@ -121,8 +176,8 @@ const AccountModule: React.FC = () => {
                                     <p><strong>Tür:</strong> {account.type}</p>
                                     <p><strong>Bakiye:</strong> {account.balance.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</p>
                                     <div className="account-card-buttons">
-                                        <button>Geçmiş</button>
-                                        <button>Ekstre</button>
+                                        <button onClick={() => fetchTransactions(account.id)}>Geçmiş</button>
+                                        <button onClick={() => generatePDF(account.id)}>Ekstre</button>
                                     </div>
                                 </div>
                             ))}
@@ -148,6 +203,19 @@ const AccountModule: React.FC = () => {
                                 >›</button>
                             </>
                         )}
+                    </div>
+                )}
+
+                {transactions && selectedAccountId && (
+                    <div style={{ marginTop: 30 }}>
+                        <h3>📜 İşlem Geçmişi</h3>
+                        <ul>
+                            {transactions.map(tx => (
+                                <li key={tx.id}>
+                                    <strong>{tx.transaction_date}</strong> - {tx.description} - {tx.amount.toLocaleString('tr-TR')} ₺
+                                </li>
+                            ))}
+                        </ul>
                     </div>
                 )}
             </div>
