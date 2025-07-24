@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../Shared/supabaseClient';
-import Layout from '../Layout';
-import './accountModule.css';
+import Layout from '../context/Layout';
+import '../context/accountModule.css';
 
 const fetchAccounts = async () => {
     const { data, error } = await supabase

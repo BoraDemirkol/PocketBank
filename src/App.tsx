@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ThemeProvider } from './ThemeContext';
+import { ThemeProvider } from './context/ThemeContext';
 import AccountModule from './modules/AccountModule';
 
 const App: React.FC = () => {
