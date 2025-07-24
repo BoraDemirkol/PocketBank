@@ -1,0 +1,227 @@
+/* AccountModuleStyle.css */
+
+.account-container {
+    padding: 20px;
+    background: #f9f9fc;
+    min-height: 100vh;
+    border-radius: 8px;
+    transition: background 0.3s ease;
+}
+
+.dark .account-container {
+    background: #232338;
+}
+
+.module-title {
+    font-size: 1.7rem;
+    font-weight: 600;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 20px;
+    color: #222;
+}
+
+.dark .module-title {
+    color: #eee;
+    border-color: #444;
+}
+
+.create-card {
+    border: 1px solid #ccc;
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 580px;
+    background-color: #ffffff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark .create-card {
+    background-color: #2c2c44;
+    border-color: #555;
+    color: #eee;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.create-card input,
+.create-card select {
+    background-color: #fff;
+    color: #222;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 14px;
+    width: 100%;
+    transition: 0.3s ease;
+}
+
+.dark .create-card input,
+.dark .create-card select {
+    background-color: #383854;
+    color: #eee;
+    border-color: #666;
+}
+
+.create-card button {
+    background-color: #764ba2;
+    color: white;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: 0.3s ease;
+}
+
+.create-card button:hover {
+    background-color: #693e99;
+}
+
+.account-filter {
+    margin-top: 50px;
+}
+
+.account-filter h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 14px;
+    color: #222;
+}
+
+.dark .account-filter h3 {
+    color: #eee;
+}
+
+.account-filter-buttons {
+    margin-bottom: 24px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.account-filter-buttons button {
+    margin-right: 12px;
+    margin-bottom: 10px;
+    padding: 6px 16px;
+    border-radius: 24px;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+    background: #eee;
+    color: #333;
+}
+
+.dark .account-filter-buttons button {
+    background: #3c3c58;
+    color: #ddd;
+}
+
+.account-filter-buttons button.selected {
+    background-color: #764ba2;
+    color: white;
+}
+
+.account-card-container {
+    position: relative;
+}
+
+.account-card-scroll {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 16px;
+    padding-bottom: 10px;
+}
+
+.account-card-scroll::-webkit-scrollbar {
+    height: 8px;
+}
+
+.account-card-scroll::-webkit-scrollbar-thumb {
+    background: #aaa;
+    border-radius: 4px;
+}
+
+.dark .account-card-scroll::-webkit-scrollbar-thumb {
+    background: #888;
+}
+
+.account-card {
+    min-width: 220px;
+    border-radius: 12px;
+    padding: 18px;
+    background: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    scroll-snap-align: start;
+    opacity: 0;
+    animation: fadeInSlideUp 0.5s ease forwards;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.dark .account-card {
+    background: #2c2c44;
+    color: #eee;
+}
+
+.account-card h4 {
+    color: #764ba2;
+    margin-bottom: 8px;
+}
+
+.account-card-buttons {
+    margin-top: 12px;
+}
+
+.account-card-buttons button {
+    margin-right: 8px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    background: #fff;
+    transition: 0.2s ease;
+}
+
+.dark .account-card-buttons button {
+    background: #3a3a52;
+    border-color: #555;
+    color: #ddd;
+}
+
+.account-scroll-button {
+    transition: opacity 0.3s, transform 0.3s;
+    position: absolute;
+    top: 40%;
+    z-index: 10;
+    background-color: #fff;
+    border: 2px solid #bbb;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    transform: translateY(20px);
+    font-size: 1.1rem;
+}
+
+.dark .account-scroll-button {
+    background-color: #2f2f45;
+    border-color: #666;
+    color: #eee;
+}
+
+.account-scroll-button.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@keyframes fadeInSlideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
