@@ -1,11 +1,11 @@
 import './App.css'
+import Login from './Login.tsx'
 
 function App() {
   return (
-    <div className="app">
-      <h1>PocketBank</h1>
-      <p>Welcome to PocketBank - Your personal banking solution</p>
-    </div>
+    <>
+      <Login />
+    </>
   )
 }
 
