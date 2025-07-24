@@ -1,11 +1,12 @@
 import React from 'react';
 import { Container, Typography, Box, Button, Stack } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import PageWrapper from '../components/PageWrapper'; // animasyonlu geçiş için
+import PageWrapper from '../components/PageWrapper'; // optional animation
 
-const Home: React.FC = () => {
-  const navigate = useNavigate();
+interface HomeProps {
+  onNavigate: (view: 'home' | 'create' | 'list') => void;
+}
 
+const Home: React.FC<HomeProps> = ({ onNavigate }) => {
   return (
     <PageWrapper>
       <Container sx={{ mt: 8, textAlign: 'center' }}>
@@ -23,7 +24,7 @@ const Home: React.FC = () => {
               variant="contained"
               color="primary"
               size="large"
-              onClick={() => navigate('/budgets')}
+              onClick={() => onNavigate('list')}
               sx={{
                 width: '250px',
                 transition: 'transform 0.2s ease-in-out',
@@ -37,7 +38,7 @@ const Home: React.FC = () => {
               variant="outlined"
               color="secondary"
               size="large"
-              onClick={() => navigate('/create-budget')}
+              onClick={() => onNavigate('create')}
               sx={{
                 width: '250px',
                 transition: 'transform 0.2s ease-in-out',

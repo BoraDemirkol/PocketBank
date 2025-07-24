@@ -1,37 +1,26 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import CreateBudget from './pages/CreateBudget';
-import BudgetList from './pages/BudgetList';
-import TopBar from './components/TopBar';
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
-
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#1565c0',
-    },
-    secondary: {
-      main: '#ef6c00',
-    },
-  },
-});
+import React, { useState } from 'react';
+import Module4Layout from './pages/Module4Layout';
 
 const App: React.FC = () => {
+  const [showModule4, setShowModule4] = useState(false);
+
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Router>
-        <TopBar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/create-budget" element={<CreateBudget />} />
-          <Route path="/budgets" element={<BudgetList />} />
-        </Routes>
-      </Router>
-    </ThemeProvider>
+    <div style={{ padding: 20 }}>
+      <h1>🏦 PocketBank - Modül Seçici</h1>
+      <button
+        onClick={() => {
+          setShowModule4(false); // Close first (forces remount)
+          setTimeout(() => setShowModule4(true), 0); // Open again, resets Module4Layout to Ana Sayfa
+        }}
+        style={{ marginBottom: 16 }}
+      >
+        Modül 4 - Bütçe Planlayıcıyı Aç
+      </button>
+      <hr />
+      {showModule4 && <Module4Layout />}
+    </div>
   );
 };
 
 export default App;
+// filepath: c:\Users\Defne\PocketBank\src\App.tsx
