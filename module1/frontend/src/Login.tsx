@@ -1,14 +1,78 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Input } from 'antd';
+import { Input, Button, message, Form } from 'antd';
+import { useAuth } from './AuthContext';
 
-const Login: React.FC = () => (
-  <>
-    <Input placeholder="username" prefix={<UserOutlined />} />
-    <br />
-    <br />
-    <Input placeholder="password" prefix={<LockOutlined />} />
-  </>
-);
+const Login: React.FC = () => {
+  const [loading, setLoading] = useState(false);
+  const { signIn, user, signOut } = useAuth();
+
+  const onFinish = async (values: { email: string; password: string }) => {
+    setLoading(true);
+    const { error } = await signIn(values.email, values.password);
+    
+    if (error) {
+      message.error(error.message);
+    } else {
+      message.success('Login successful!');
+    }
+    setLoading(false);
+  };
+
+  if (user) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <h2>Welcome, {user.email}!</h2>
+        <Button onClick={signOut} type="primary">
+          Sign Out
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ maxWidth: '300px', margin: '50px auto', padding: '20px' }}>
+      <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>Login to PocketBank</h2>
+      <Form onFinish={onFinish} layout="vertical">
+        <Form.Item
+          name="email"
+          rules={[
+            { required: true, message: 'Please input your email!' },
+            { type: 'email', message: 'Please enter a valid email!' }
+          ]}
+        >
+          <Input 
+            placeholder="Email" 
+            prefix={<UserOutlined />} 
+            size="large"
+          />
+        </Form.Item>
+        
+        <Form.Item
+          name="password"
+          rules={[{ required: true, message: 'Please input your password!' }]}
+        >
+          <Input.Password 
+            placeholder="Password" 
+            prefix={<LockOutlined />} 
+            size="large"
+          />
+        </Form.Item>
+        
+        <Form.Item>
+          <Button 
+            type="primary" 
+            htmlType="submit" 
+            loading={loading}
+            size="large"
+            style={{ width: '100%' }}
+          >
+            Sign In
+          </Button>
+        </Form.Item>
+      </Form>
+    </div>
+  );
+};
 
 export default Login;
