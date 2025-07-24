@@ -1,6 +1,4 @@
 using PocketBank.Backend.Models;
-
-
 using Microsoft.EntityFrameworkCore;
 using PocketBank.Backend.Data;
 
@@ -12,9 +10,8 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
 });
 
-// In-Memory veritabanı kullanımı
 builder.Services.AddDbContext<AppDbContext>(options =>
-options.UseInMemoryDatabase("PocketBankDb"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Swagger ve API Explorer
 builder.Services.AddEndpointsApiExplorer();
@@ -42,14 +39,17 @@ var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
 if (!context.Categories.Any())
 {
-    context.Categories.Add(new Category
-    {
-        Name = "Gıda",
-        Color = "#FF0000",
-        Icon = "🍔"
-    });
-
-    context.SaveChanges();
+    var defaultCategories = new List<Category>
+     {
+         new Category { Name = "Gıda", Color = "#FF6347", Icon = "🍔" },
+         new Category { Name = "Ulaşım", Color = "#4682B4", Icon = "🚗" },
+         new Category { Name = "Faturalar", Color = "#FFD700", Icon = "💡" },
+         new Category { Name = "Eğlence", Color = "#FF69B4", Icon = "🎮" },
+         new Category { Name = "Sağlık", Color = "#32CD32", Icon = "⚕️" }
+         // İstersen buraya daha ekle
+     };
+     context.Categories.AddRange(defaultCategories);
+     context.SaveChanges();
 }
 }
 app.Run();

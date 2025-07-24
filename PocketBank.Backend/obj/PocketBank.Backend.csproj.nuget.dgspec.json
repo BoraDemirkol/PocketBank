@@ -1,25 +1,31 @@
 {
   "format": 1,
   "restore": {
-    "/Users/borademirkol/Desktop/PocketBank/PocketBank.Backend/PocketBank.Backend.csproj": {}
+    "C:\\Users\\Alper\\source\\repos\\BoraDemirkol\\PocketBank\\PocketBank.Backend\\PocketBank.Backend.csproj": {}
   },
   "projects": {
-    "/Users/borademirkol/Desktop/PocketBank/PocketBank.Backend/PocketBank.Backend.csproj": {
+    "C:\\Users\\Alper\\source\\repos\\BoraDemirkol\\PocketBank\\PocketBank.Backend\\PocketBank.Backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/borademirkol/Desktop/PocketBank/PocketBank.Backend/PocketBank.Backend.csproj",
+        "projectUniqueName": "C:\\Users\\Alper\\source\\repos\\BoraDemirkol\\PocketBank\\PocketBank.Backend\\PocketBank.Backend.csproj",
         "projectName": "PocketBank.Backend",
-        "projectPath": "/Users/borademirkol/Desktop/PocketBank/PocketBank.Backend/PocketBank.Backend.csproj",
-        "packagesPath": "/Users/borademirkol/.nuget/packages/",
-        "outputPath": "/Users/borademirkol/Desktop/PocketBank/PocketBank.Backend/obj/",
+        "projectPath": "C:\\Users\\Alper\\source\\repos\\BoraDemirkol\\PocketBank\\PocketBank.Backend\\PocketBank.Backend.csproj",
+        "packagesPath": "C:\\Users\\Alper\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Alper\\source\\repos\\BoraDemirkol\\PocketBank\\PocketBank.Backend\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/Users/borademirkol/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\Alper\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -37,7 +43,8 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
         "net8.0": {
@@ -55,9 +62,33 @@
               "target": "Package",
               "version": "[9.0.7, )"
             },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.7, )"
+            },
             "Microsoft.EntityFrameworkCore.InMemory": {
               "target": "Package",
               "version": "[9.0.7, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[9.0.7, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.7, )"
+            },
+            "Microsoft.Extensions.Configuration.Json": {
+              "target": "Package",
+              "version": "[9.0.7, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[9.0.4, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
@@ -83,7 +114,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.412/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

@@ -1,3 +1,3 @@
 ﻿<Project>
-  <Import Project="../buildMultiTargeting/PocketBank.Backend.props" />
+  <Import Project="..\buildMultiTargeting\PocketBank.Backend.props" />
 </Project>

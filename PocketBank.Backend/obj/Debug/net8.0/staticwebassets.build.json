@@ -1,11 +1,12 @@
 {
   "Version": 1,
-  "Hash": "GEHrfgt+FzX0VhzsMGEPaCbiziK+GXJDn4H5xtoERic=",
+  "Hash": "eHZiJo+tkbI29rffWco2kuE9DWOEItpVr2s7JXfqwHM=",
   "Source": "PocketBank.Backend",
   "BasePath": "_content/PocketBank.Backend",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [],
-  "Assets": []
+  "Assets": [],
+  "Endpoints": []
 }
