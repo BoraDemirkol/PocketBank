@@ -55,7 +55,12 @@ const Login: React.FC = () => {
             htmlType="submit" 
             loading={loading}
             size="large"
-            style={{ width: '100%' }}
+            style={{ 
+              width: '100%',
+              backgroundColor: '#4a7c59',
+              borderColor: '#4a7c59',
+              fontWeight: 500
+            }}
           >
             Sign In
           </Button>

@@ -1,7 +1,7 @@
-import './App.css'
+import './Signin.css'
 import Login from './Login.tsx'
 import Dashboard from './Dashboard.tsx'
-import { AuthProvider, useAuth } from './AuthContext'
+import { AuthProvider, useAuth } from './AuthContext.tsx'
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -13,7 +13,7 @@ function AppContent() {
   return user ? <Dashboard /> : <Login />;
 }
 
-function App() {
+function Signin() {
   return (
     <AuthProvider>
       <AppContent />
@@ -21,4 +21,4 @@ function App() {
   )
 }
 
-export default App
+export default Signin
