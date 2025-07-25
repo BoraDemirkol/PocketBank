@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, message, Spin } from 'antd';
+import { Card, Button, message, Spin } from '../node_modules/antd';
 import { useAuth } from './AuthContext';
 import { apiService } from './api';
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Input, Button, message, Form } from 'antd';
+import { Input, Button, message, Form } from '../node_modules/antd';
 import { useAuth } from './AuthContext';
 
 const Login: React.FC = () => {
