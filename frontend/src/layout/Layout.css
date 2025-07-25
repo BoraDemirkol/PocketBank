@@ -1,0 +1,44 @@
+.layout {
+  min-height: 100vh;
+  font-family: "Segoe UI", sans-serif;
+  transition: background-color 0.3s ease;
+}
+
+.layout.dark {
+  background-color: #1e1e2f;
+  color: white;
+}
+
+.layout.light {
+  background-color: #f4f4f4;
+  color: #222;
+}
+
+.layout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #2e2e42;
+  color: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.layout-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.theme-toggle {
+  background-color: #764ba2;
+  color: white;
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.layout-content {
+  padding: 2rem;
+}
