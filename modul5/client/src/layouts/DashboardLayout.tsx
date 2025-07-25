@@ -2,7 +2,8 @@ import { useState } from 'react';
 import CategoryPieChart from '../components/CategoryPieChart';
 import IncomeExpenseChart from '../components/IncomeExpenseChart';
 import TopSpendingBarChart from '../components/TopSpendingBarChart';
-import ForecastCard from '../components/ForecastCard'; // YENİ IMPORT
+import ForecastCard from '../components/ForecastCard';
+import CategoryAnalysisPage from '../components/CategoryAnalysisPage'; // GÜNCELLENDİ
 
 // Sekmelerimizi tanımlıyoruz
 type Tab = 'dashboard' | 'category' | 'trends' | 'health' | 'import';
@@ -59,11 +60,9 @@ const DashboardLayout = () => {
           </div>
         )}
 
+        {/* --- BU KISIM GÜNCELLENDİ --- */}
         {activeTab === 'category' && (
-          <div>
-            <h2>Harcama Analizi İçeriği</h2>
-            {/* Buraya kategori tablosu gelecek */}
-          </div>
+          <CategoryAnalysisPage />
         )}
         
         {activeTab === 'trends' && (
