@@ -16,16 +16,12 @@ const BudgetList: React.FC = () => (
     }}
   >
     {mockBudgets.map((budget) => (
-      <BudgetCard
-        key={budget.id}
-        name={budget.name}
-        amount={budget.amount}
-        spent={budget.spent}
-        categories={budget.categories}
-        period={budget.period}
-        startDate={budget.startDate}
-      />
-    ))}
+        <BudgetCard
+            key={budget.id}
+            budget={budget}
+            selectedCategory="all" // or whatever default you want
+        />
+        ))}
   </Box>
 );
 

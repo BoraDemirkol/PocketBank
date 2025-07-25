@@ -63,12 +63,8 @@ const BudgetListPage: React.FC = () => {
           {filteredBudgets.map((budget) => (
             <BudgetCard
               key={budget.id}
-              name={budget.name}
-              amount={budget.amount}
-              spent={budget.spent}
-              categories={budget.categories}
-              period={budget.period}
-              startDate={budget.startDate}
+              budget={budget}
+              selectedCategory={selectedCategory}
             />
           ))}
         </Box>

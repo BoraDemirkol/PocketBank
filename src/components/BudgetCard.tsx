@@ -1,14 +1,5 @@
-// src/components/BudgetCard.tsx
 import React from 'react';
-import {
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  LinearProgress,
-  Stack,
-  Tooltip
-} from '@mui/material';
+import { Card, CardContent, LinearProgress, Typography, Box, Stack, Tooltip } from '@mui/material';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 interface Category {
@@ -20,82 +11,93 @@ interface Category {
 interface Budget {
   name: string;
   amount: number;
-  spent: number;
   categories: Category[];
   period: string;
-  startDate: string;
 }
 
-// Renk belirleme: %75 altı mavi, %75–100 sarı, üstü kırmızı
-const getProgressColor = (pct: number) => {
-  if (pct <= 75) return 'primary';
-  if (pct <= 100) return 'warning';
-  return 'error';
+const getProgressColor = (percent: number) => {
+  if (percent >= 100) return 'error';
+  if (percent >= 80) return 'warning';
+  return 'primary';
 };
 
-const BudgetCard: React.FC<Budget> = ({
-  name,
-  amount,
-  spent,
-  categories,
-  period,
-  startDate
-}) => {
-  const overallPct = Math.round((spent / amount) * 100);
+const colorReferences = [
+  { color: 'primary.main', label: 'Güvenli (<%80)' },
+  { color: 'warning.main', label: 'Dikkat (%80-%99)' },
+  { color: 'error.main', label: 'Aşıldı (%100+)' },
+];
+
+const BudgetCard: React.FC<{ budget: Budget; selectedCategory: string }> = ({ budget, selectedCategory }) => {
+  const filteredCategories =
+  selectedCategory === 'all'
+    ? budget.categories
+    : budget.categories.filter(cat => cat.name === selectedCategory);
+  const totalSpent = filteredCategories.reduce((sum, cat) => sum + cat.spent, 0);
+  const progress = (totalSpent / budget.amount) * 100;
 
   return (
-    <Card>
+    <Card sx={{ mb: 3, boxShadow: 4, borderRadius: 3 }}>
       <CardContent>
-        <Typography variant="h6">
-          {name} ({period === 'monthly' ? startDate : `Yıllık: ${startDate}`})
-        </Typography>
-        <Typography variant="body2" gutterBottom>
-          Gerçekleşen: <strong>{spent} TL</strong> / Bütçe: <strong>{amount} TL</strong>
-        </Typography>
-        <Box display="flex" alignItems="center" mb={1}>
-          <Box flexGrow={1}>
-            <LinearProgress
-              variant="determinate"
-              value={Math.min(overallPct, 100)}
-              color={getProgressColor(overallPct)}
-              sx={{ height: 8, borderRadius: 4 }}
-            />
-          </Box>
-          <Typography variant="caption" sx={{ ml: 1 }}>
-            {overallPct}%
+        <Typography variant="h6" sx={{ mb: 1 }}>{budget.name}</Typography>
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            Harcandı: {totalSpent} / {budget.amount} TL ({progress.toFixed(1)}%)
           </Typography>
-        </Box>
-
-        <Stack spacing={1} mt={2}>
-          {categories.map((cat) => {
-            const catPct = Math.round((cat.spent / cat.limit) * 100);
+          {progress >= 80 && (
+            <Tooltip title={progress >= 100 ? "Bütçeniz aşıldı!" : "Bütçenizin %80’ine ulaştınız!"}>
+              <WarningAmberIcon color="warning" fontSize="small" sx={{ cursor: 'pointer' }} />
+            </Tooltip>
+          )}
+        </Stack>
+        <LinearProgress
+          variant="determinate"
+          value={progress > 100 ? 100 : progress}
+          color={getProgressColor(progress)}
+          sx={{ mt: 1, mb: 2, height: 10, borderRadius: 5 }}
+        />
+        {progress >= 80 && (
+          <Typography color="error" variant="caption" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            ⚠️ Bütçenizin %80’ine ulaştınız!
+          </Typography>
+        )}
+        {/* Color Reference */}
+        <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+          {colorReferences.map(ref => (
+            <Stack direction="row" alignItems="center" spacing={0.5} key={ref.label}>
+              <Box sx={{ width: 16, height: 16, bgcolor: ref.color, borderRadius: '50%' }} />
+              <Typography variant="caption">{ref.label}</Typography>
+            </Stack>
+          ))}
+        </Stack>
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>Kategoriler:</Typography>
+          {filteredCategories.map((cat) => {
+            const catPercent = (cat.spent / cat.limit) * 100;
             return (
-              <Box key={cat.name}>
-                <Box display="flex" justifyContent="space-between">
-                  <Typography variant="body2">{cat.name}</Typography>
-                  <Typography variant="body2">
-                    {cat.spent}/{cat.limit} TL
+              <Box key={cat.name} sx={{ pl: 1, mb: 2 }}>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <Typography variant="body2" sx={{ minWidth: 90 }}>
+                    {cat.name}:
                   </Typography>
-                </Box>
-                <Box display="flex" alignItems="center">
-                  <Box flexGrow={1}>
-                    <LinearProgress
-                      variant="determinate"
-                      value={Math.min(catPct, 100)}
-                      color={getProgressColor(catPct)}
-                      sx={{ height: 6, borderRadius: 3, mt: 0.5 }}
-                    />
-                  </Box>
-                  {catPct > 100 && (
-                    <Tooltip title="Limit aşıldı!">
-                      <WarningAmberIcon color="error" sx={{ ml: 1 }} />
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {cat.spent} / {cat.limit} TL ({catPercent.toFixed(1)}%)
+                  </Typography>
+                  {catPercent >= 80 && (
+                    <Tooltip title={catPercent >= 100 ? "Kategori limiti aşıldı!" : "Kategori limitinin %80’ine ulaşıldı!"}>
+                      <WarningAmberIcon color={catPercent >= 100 ? 'error' : 'warning'} fontSize="small" sx={{ cursor: 'pointer' }} />
                     </Tooltip>
                   )}
-                </Box>
+                </Stack>
+                <LinearProgress
+                  variant="determinate"
+                  value={catPercent > 100 ? 100 : catPercent}
+                  color={getProgressColor(catPercent)}
+                  sx={{ mt: 0.5, height: 7, borderRadius: 5, width: '90%' }}
+                />
               </Box>
             );
           })}
-        </Stack>
+        </Box>
       </CardContent>
     </Card>
   );
