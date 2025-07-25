@@ -1,16 +1,15 @@
 import { useState } from 'react';
 import CategoryPieChart from '../components/CategoryPieChart';
 import IncomeExpenseChart from '../components/IncomeExpenseChart';
-import TopSpendingBarChart from '../components/TopSpendingBarChart'; // YENİ IMPORT
+import TopSpendingBarChart from '../components/TopSpendingBarChart';
+import ForecastCard from '../components/ForecastCard'; // YENİ IMPORT
 
-// Yeni sekmelerimizi tanımlıyoruz
+// Sekmelerimizi tanımlıyoruz
 type Tab = 'dashboard' | 'category' | 'trends' | 'health' | 'import';
 
 const DashboardLayout = () => {
-  // Başlangıç sekmemiz 'dashboard' olacak
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
 
-  // Butonlar için stil tanımlamaları
   const tabStyle = (tabName: Tab) => ({
     padding: '12px 20px',
     marginRight: '10px',
@@ -29,8 +28,7 @@ const DashboardLayout = () => {
       <header style={{ marginBottom: '20px' }}>
         <h1 style={{ fontSize: '2em' }}>Modül 5 - Analitik Raporlama</h1>
       </header>
-
-      {/* Yeni Sekme Navigasyonu */}
+      
       <nav style={{ marginBottom: '30px', borderBottom: '1px solid #ddd' }}>
         <button style={tabStyle('dashboard')} onClick={() => setActiveTab('dashboard')}>
           Dashboard
@@ -49,12 +47,10 @@ const DashboardLayout = () => {
         </button>
       </nav>
 
-      {/* Aktif Sekmeye Göre İçeriği Gösterme */}
       <main>
         {activeTab === 'dashboard' && (
           <div>
             <h2>Dashboard</h2>
-            {/* YENİ GRAFİK BURAYA EKLENDİ */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'center' }}>
               <CategoryPieChart />
               <TopSpendingBarChart />
@@ -73,7 +69,10 @@ const DashboardLayout = () => {
         {activeTab === 'trends' && (
              <div>
                 <h2>Aylık Gelir - Gider Trendi</h2>
-                <IncomeExpenseChart />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
+                  <IncomeExpenseChart />
+                  <ForecastCard />
+                </div>
              </div>
         )}
 
