@@ -1,25 +1,27 @@
 {
   "format": 1,
   "restore": {
-    "/Users/yeat/PocketBank/frontend/src/modules/backend/backend.csproj": {}
+    "C:\\Users\\user\\Desktop\\Dgpays staj\\PocketBank\\src\\modules\\backend\\backend.csproj": {}
   },
   "projects": {
-    "/Users/yeat/PocketBank/frontend/src/modules/backend/backend.csproj": {
+    "C:\\Users\\user\\Desktop\\Dgpays staj\\PocketBank\\src\\modules\\backend\\backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/yeat/PocketBank/frontend/src/modules/backend/backend.csproj",
+        "projectUniqueName": "C:\\Users\\user\\Desktop\\Dgpays staj\\PocketBank\\src\\modules\\backend\\backend.csproj",
         "projectName": "backend",
-        "projectPath": "/Users/yeat/PocketBank/frontend/src/modules/backend/backend.csproj",
-        "packagesPath": "/Users/yeat/.nuget/packages/",
-        "outputPath": "/Users/yeat/PocketBank/frontend/src/modules/backend/obj/",
+        "projectPath": "C:\\Users\\user\\Desktop\\Dgpays staj\\PocketBank\\src\\modules\\backend\\backend.csproj",
+        "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\user\\Desktop\\Dgpays staj\\PocketBank\\src\\modules\\backend\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/yeat/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -52,6 +54,10 @@
               "target": "Package",
               "version": "[9.0.7, )"
             },
+            "Microsoft.EntityFrameworkCore.InMemory": {
+              "target": "Package",
+              "version": "[9.0.7, )"
+            },
             "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
               "version": "[9.0.7, )"
@@ -61,6 +67,14 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[9.0.7, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[9.0.4, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[9.0.3, )"
             }
           },
           "imports": [
@@ -82,7 +96,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.302/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.303/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
