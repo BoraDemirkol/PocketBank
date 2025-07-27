@@ -27,9 +27,26 @@ const Register: React.FC = () => {
     setLoading(false);
   };
 
-  return (
-    <div className="register-container">
-      <h2 className="register-title">Create your PocketBank Account</h2>
+ return (
+  <div style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    minHeight: '100vh',
+    backgroundColor: '#f5f5f5',
+    padding: '20px'
+  }}>
+    <div style={{
+      width: '100%',
+      maxWidth: '400px',
+      backgroundColor: '#ffffff',
+      padding: '30px',
+      borderRadius: '16px',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+    }}>
+      <h2 style={{ textAlign: 'center', marginBottom: '24px', color: '#4a7c59' }}>
+        Create your PocketBank Account
+      </h2>
 
       <Form onFinish={onFinish} layout="vertical">
         <Form.Item
@@ -97,7 +114,8 @@ const Register: React.FC = () => {
         </Form.Item>
       </Form>
     </div>
-  );
+  </div>
+);
 };
 
 export default Register;
