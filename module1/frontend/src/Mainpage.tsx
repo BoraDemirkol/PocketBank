@@ -1,24 +1,35 @@
 import { Button, Layout, Typography } from '../node_modules/antd';
 import { useState } from 'react';
 import Signin from './Signin.tsx'
+import Signup from './Signup.tsx';
+
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
 
 export default function Mainpage() {
     const [showSignin, setShowSignin] = useState(false);
+    const [showSignup, setShowSignup] = useState(false);
+
 
     const handleSignIn = () => {
         setShowSignin(true);
+        setShowSignup(false);
     };
 
     const handleSignUp = () => {
-        console.log('Sign Up clicked');
+    console.log('Sign Up clicked');
+        setShowSignup(true);
+        setShowSignin(false);
     };
 
     const handleLogoClick = () => {
         setShowSignin(false);
-    };
+        setShowSignup(false); // bu satırı da ekle ki ana sayfaya dönsün
+ };
+
+   
+    
     
     return (
         <Layout style={{ minHeight: '100vh' }}>
@@ -48,147 +59,150 @@ export default function Mainpage() {
                 </Title>
             </Header>
             <Content style={{ 
-                flex: 1,
-                backgroundColor: '#f8faf9',
-                backgroundImage: `
-                    radial-gradient(circle at 25% 25%, rgba(74, 124, 89, 0.08) 0%, transparent 50%),
-                    radial-gradient(circle at 75% 75%, rgba(74, 124, 89, 0.06) 0%, transparent 50%),
-                    linear-gradient(45deg, rgba(74, 124, 89, 0.02) 25%, transparent 25%),
-                    linear-gradient(-45deg, rgba(74, 124, 89, 0.02) 25%, transparent 25%)
-                `,
-                backgroundSize: '200px 200px, 300px 300px, 20px 20px, 20px 20px',
-                padding: '40px'
+    flex: 1,
+    backgroundColor: '#f8faf9',
+    backgroundImage: `
+        radial-gradient(circle at 25% 25%, rgba(74, 124, 89, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(74, 124, 89, 0.06) 0%, transparent 50%),
+        linear-gradient(45deg, rgba(74, 124, 89, 0.02) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(74, 124, 89, 0.02) 25%, transparent 25%)
+    `,
+    backgroundSize: '200px 200px, 300px 300px, 20px 20px, 20px 20px',
+    padding: '40px'
+}}>
+    {showSignin ? (
+        <Signin />
+    ) : showSignup ? (
+        <Signup />
+    ) : (
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            {/* Top half - Text only */}
+            <div style={{ 
+                flex: 1, 
+                display: 'flex', 
+                flexDirection: 'column', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                marginBottom: '60px'
             }}>
-                {!showSignin ? (
-                    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                        {/* Top half - Text only */}
-                        <div style={{ 
-                            flex: 1, 
-                            display: 'flex', 
-                            flexDirection: 'column', 
-                            justifyContent: 'center', 
-                            alignItems: 'center',
-                            marginBottom: '60px'
-                        }}>
-                            <Typography.Title level={2} style={{ 
-                                textAlign: 'center', 
-                                color: '#4a7c59', 
-                                marginBottom: '10px',
-                                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-                            }}>
-                                Bi şeyler yazarız buraya.
-                            </Typography.Title>
-                            <Typography.Text style={{ 
-                                textAlign: 'center', 
-                                fontSize: '16px', 
-                                color: '#666',
-                                maxWidth: '500px'
-                            }}>
-                                Bla bla bla bla
-                            </Typography.Text>
-                        </div>
+                <Typography.Title level={2} style={{ 
+                    textAlign: 'center', 
+                    color: '#4a7c59', 
+                    marginBottom: '10px',
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                }}>
+                    Bi şeyler yazarız buraya.
+                </Typography.Title>
+                <Typography.Text style={{ 
+                    textAlign: 'center', 
+                    fontSize: '16px', 
+                    color: '#666',
+                    maxWidth: '500px'
+                }}>
+                    Bla bla bla bla
+                </Typography.Text>
+            </div>
 
-                        {/* Bottom half - Sign in/up boxes */}
-                        <div style={{ 
-                            flex: 1, 
-                            display: 'flex', 
-                            justifyContent: 'center', 
-                            alignItems: 'center',
-                            gap: '40px'
+            {/* Bottom half - Sign in/up boxes */}
+            <div style={{ 
+                flex: 1, 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                gap: '40px'
+            }}>
+                {/* Sign In Box */}
+                <div style={{
+                    backgroundColor: 'white',
+                    borderRadius: '16px',
+                    padding: '30px',
+                    boxShadow: '0 4px 20px rgba(74, 124, 89, 0.1)',
+                    width: '280px',
+                    minHeight: '180px',
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between'
+                }}>
+                    <div style={{ height: '120px' }}>
+                        <Typography.Title level={4} style={{ 
+                            color: '#4a7c59', 
+                            marginBottom: '15px' 
                         }}>
-                            {/* Sign In Box */}
-                            <div style={{
-                                backgroundColor: 'white',
-                                borderRadius: '16px',
-                                padding: '30px',
-                                boxShadow: '0 4px 20px rgba(74, 124, 89, 0.1)',
-                                width: '280px',
-                                minHeight: '180px',
-                                textAlign: 'center',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'space-between'
-                            }}>
-                                <div style={{ height: '120px' }}>
-                                    <Typography.Title level={4} style={{ 
-                                        color: '#4a7c59', 
-                                        marginBottom: '15px' 
-                                    }}>
-                                        Existing Customer
-                                    </Typography.Title>
-                                    <Typography.Text style={{ 
-                                        color: '#666', 
-                                        display: 'block', 
-                                        marginBottom: '20px',
-                                        fontSize: '14px'
-                                    }}>
-                                        Access your account and manage your finances securely.
-                                    </Typography.Text>
-                                </div>
-                                <Button 
-                                    type="default" 
-                                    onClick={handleSignIn} 
-                                    size="large"
-                                    style={{ 
-                                        borderColor: '#4a7c59', 
-                                        color: '#4a7c59',
-                                        fontWeight: 500,
-                                        width: '100%'
-                                    }}
-                                >
-                                    Sign In
-                                </Button>
-                            </div>
-
-                            {/* Sign Up Box */}
-                            <div style={{
-                                backgroundColor: 'white',
-                                borderRadius: '16px',
-                                padding: '30px',
-                                boxShadow: '0 4px 20px rgba(74, 124, 89, 0.1)',
-                                width: '280px',
-                                minHeight: '180px',
-                                textAlign: 'center',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'space-between'
-                            }}>
-                                <div style={{ height: '120px' }}>
-                                    <Typography.Title level={4} style={{ 
-                                        color: '#4a7c59', 
-                                        marginBottom: '15px' 
-                                    }}>
-                                        New Customer
-                                    </Typography.Title>
-                                    <Typography.Text style={{ 
-                                        color: '#666', 
-                                        display: 'block', 
-                                        marginBottom: '20px',
-                                        fontSize: '14px'
-                                    }}>
-                                        Join thousands who trust PocketBank for their banking needs.
-                                    </Typography.Text>
-                                </div>
-                                <Button 
-                                    type="primary" 
-                                    onClick={handleSignUp} 
-                                    size="large"
-                                    style={{ 
-                                        backgroundColor: '#4a7c59', 
-                                        borderColor: '#4a7c59',
-                                        fontWeight: 500,
-                                        width: '100%'
-                                    }}
-                                >
-                                    Sign Up
-                                </Button>
-                            </div>
-                        </div>
+                            Existing Customer
+                        </Typography.Title>
+                        <Typography.Text style={{ 
+                            color: '#666', 
+                            display: 'block', 
+                            marginBottom: '20px',
+                            fontSize: '14px'
+                        }}>
+                            Access your account and manage your finances securely.
+                        </Typography.Text>
                     </div>
-                ) : (
-                    <Signin />
-                )}
-            </Content>
+                    <Button 
+                        type="default" 
+                        onClick={handleSignIn} 
+                        size="large"
+                        style={{ 
+                            borderColor: '#4a7c59', 
+                            color: '#4a7c59',
+                            fontWeight: 500,
+                            width: '100%'
+                        }}
+                    >
+                        Sign In
+                    </Button>
+                </div>
+
+                {/* Sign Up Box */}
+                <div style={{
+                    backgroundColor: 'white',
+                    borderRadius: '16px',
+                    padding: '30px',
+                    boxShadow: '0 4px 20px rgba(74, 124, 89, 0.1)',
+                    width: '280px',
+                    minHeight: '180px',
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between'
+                }}>
+                    <div style={{ height: '120px' }}>
+                        <Typography.Title level={4} style={{ 
+                            color: '#4a7c59', 
+                            marginBottom: '15px' 
+                        }}>
+                            New Customer
+                        </Typography.Title>
+                        <Typography.Text style={{ 
+                            color: '#666', 
+                            display: 'block', 
+                            marginBottom: '20px',
+                            fontSize: '14px'
+                        }}>
+                            Join thousands who trust PocketBank for their banking needs.
+                        </Typography.Text>
+                    </div>
+                    <Button 
+                        type="primary" 
+                        onClick={handleSignUp} 
+                        size="large"
+                        style={{ 
+                            backgroundColor: '#4a7c59', 
+                            borderColor: '#4a7c59',
+                            fontWeight: 500,
+                            width: '100%'
+                        }}
+                    >
+                        Sign Up
+                    </Button>
+                </div>
+            </div>
+        </div>
+    )}
+</Content>
+
             <Footer style={{ 
                 textAlign: 'center', 
                 backgroundColor: '#4a7c59', 
