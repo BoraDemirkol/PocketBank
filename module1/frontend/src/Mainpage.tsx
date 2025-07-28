@@ -1,32 +1,11 @@
-import { Button, Layout, Typography } from '../node_modules/antd';
-import { useState } from 'react';
-import Signin from './Signin.tsx';
-import Signup from './Signup.tsx';
+import { Button, Layout, Typography } from 'antd';
+import { Link } from 'react-router-dom';
 
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
 
 export default function Mainpage() {
-    const [showSignin, setShowSignin] = useState(false);
-    const [showSignup, setShowSignup] = useState(false);
-
-
-    const handleSignIn = () => {
-        setShowSignin(true);
-        setShowSignup(false);
-    };
-
-    const handleSignUp = () => {
-    console.log('Sign Up clicked');
-        setShowSignup(true);
-        setShowSignin(false);
-    };
-
-    const handleLogoClick = () => {
-        setShowSignin(false);
-        setShowSignup(false);
- };
 
    
     
@@ -40,23 +19,24 @@ export default function Mainpage() {
                 background: '#4a7c59',
                 padding: '0 20px'
             }}>
-                <Title 
-                    level={3} 
-                    onClick={handleLogoClick}
-                    style={{ 
-                        color: 'white', 
-                        margin: 0, 
-                        fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
-                        fontWeight: 800,
-                        letterSpacing: '2px',
-                        fontSize: '24px',
-                        textTransform: 'uppercase',
-                        cursor: 'pointer',
-                        userSelect: 'none'
-                    }}
-                >
-                    PocketBank
-                </Title>
+                <Link to="/" style={{ textDecoration: 'none' }}>
+                    <Title 
+                        level={3} 
+                        style={{ 
+                            color: 'white', 
+                            margin: 0, 
+                            fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+                            fontWeight: 800,
+                            letterSpacing: '2px',
+                            fontSize: '24px',
+                            textTransform: 'uppercase',
+                            cursor: 'pointer',
+                            userSelect: 'none'
+                        }}
+                    >
+                        PocketBank
+                    </Title>
+                </Link>
             </Header>
             <Content style={{ 
     flex: 1,
@@ -70,12 +50,7 @@ export default function Mainpage() {
     backgroundSize: '200px 200px, 300px 300px, 20px 20px, 20px 20px',
     padding: '40px'
 }}>
-    {showSignin ? (
-        <Signin />
-    ) : showSignup ? (
-        <Signup />
-    ) : (
-        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             {/* Top half - Text only */}
             <div style={{ 
                 flex: 1, 
@@ -140,19 +115,20 @@ export default function Mainpage() {
                             Access your account and manage your finances securely.
                         </Typography.Text>
                     </div>
-                    <Button 
-                        type="default" 
-                        onClick={handleSignIn} 
-                        size="large"
-                        style={{ 
-                            borderColor: '#4a7c59', 
-                            color: '#4a7c59',
-                            fontWeight: 500,
-                            width: '100%'
-                        }}
-                    >
-                        Sign In
-                    </Button>
+                    <Link to="/signin" style={{ width: '100%' }}>
+                        <Button 
+                            type="default" 
+                            size="large"
+                            style={{ 
+                                borderColor: '#4a7c59', 
+                                color: '#4a7c59',
+                                fontWeight: 500,
+                                width: '100%'
+                            }}
+                        >
+                            Sign In
+                        </Button>
+                    </Link>
                 </div>
 
                 {/* Sign Up Box */}
@@ -184,23 +160,23 @@ export default function Mainpage() {
                             Join thousands who trust PocketBank for their banking needs.
                         </Typography.Text>
                     </div>
-                    <Button 
-                        type="primary" 
-                        onClick={handleSignUp} 
-                        size="large"
-                        style={{ 
-                            backgroundColor: '#4a7c59', 
-                            borderColor: '#4a7c59',
-                            fontWeight: 500,
-                            width: '100%'
-                        }}
-                    >
-                        Sign Up
-                    </Button>
+                    <Link to="/signup" style={{ width: '100%' }}>
+                        <Button 
+                            type="primary" 
+                            size="large"
+                            style={{ 
+                                backgroundColor: '#4a7c59', 
+                                borderColor: '#4a7c59',
+                                fontWeight: 500,
+                                width: '100%'
+                            }}
+                        >
+                            Sign Up
+                        </Button>
+                    </Link>
                 </div>
             </div>
         </div>
-    )}
 </Content>
 
             <Footer style={{ 

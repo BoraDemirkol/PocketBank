@@ -1,6 +1,7 @@
- import React, { useState } from 'react';
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Input, Button, message, Form } from '../node_modules/antd';
+import React, { useState } from 'react';
+import { LockOutlined, UserOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { Input, Button, message, Form } from 'antd';
+import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
 const Register: React.FC = () => {
@@ -27,7 +28,7 @@ const Register: React.FC = () => {
     setLoading(false);
   };
 
- return (
+return (
     <div style={{
       width: '100%',
       maxWidth: '400px',
@@ -37,6 +38,10 @@ const Register: React.FC = () => {
       borderRadius: '16px',
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
     }}>
+      <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: '#4a7c59' }}>
+        <ArrowLeftOutlined style={{ marginRight: '8px' }} />
+        Back to Home
+      </Link>
       <h2 style={{ textAlign: 'center', marginBottom: '24px', color: '#4a7c59' }}>
         Create your PocketBank Account
       </h2>
@@ -107,14 +112,14 @@ const Register: React.FC = () => {
         </Form.Item>
       </Form>
       <div style={{ textAlign: 'center', marginTop: '16px' }}>
-  <span>Already have an account? </span>
-  <a
-    href="/login"
-    style={{ color: '#4a7c59', fontWeight: 'bold', textDecoration: 'none' }}
-  >
-    Sign In
-  </a>
-</div>
+        <span>Already have an account? </span>
+        <Link
+          to="/signin"
+          style={{ color: '#4a7c59', fontWeight: 'bold', textDecoration: 'none' }}
+        >
+          Sign In
+        </Link>
+      </div>
     </div>
 );
 };

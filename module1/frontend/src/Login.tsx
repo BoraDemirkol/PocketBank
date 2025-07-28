@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Input, Button, message, Form } from '../node_modules/antd';
+import { LockOutlined, UserOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { Input, Button, message, Form } from 'antd';
+import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
 const Login: React.FC = () => {
@@ -22,6 +23,10 @@ const Login: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '300px', margin: '50px auto', padding: '20px' }}>
+      <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: '#4a7c59' }}>
+        <ArrowLeftOutlined style={{ marginRight: '8px' }} />
+        Back to Home
+      </Link>
       <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>Login to PocketBank</h2>
       <Form onFinish={onFinish} layout="vertical">
         <Form.Item
