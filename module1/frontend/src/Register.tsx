@@ -106,6 +106,15 @@ const Register: React.FC = () => {
           </Button>
         </Form.Item>
       </Form>
+      <div style={{ textAlign: 'center', marginTop: '16px' }}>
+  <span>Already have an account? </span>
+  <a
+    href="/login"
+    style={{ color: '#4a7c59', fontWeight: 'bold', textDecoration: 'none' }}
+  >
+    Sign In
+  </a>
+</div>
     </div>
 );
 };
