@@ -28,17 +28,10 @@ const Register: React.FC = () => {
   };
 
  return (
-  <div style={{
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    minHeight: '100vh',
-    backgroundColor: '#f5f5f5',
-    padding: '20px'
-  }}>
     <div style={{
       width: '100%',
       maxWidth: '400px',
+      margin: '50px auto',
       backgroundColor: '#ffffff',
       padding: '30px',
       borderRadius: '16px',
@@ -114,7 +107,6 @@ const Register: React.FC = () => {
         </Form.Item>
       </Form>
     </div>
-  </div>
 );
 };
 

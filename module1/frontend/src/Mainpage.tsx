@@ -1,6 +1,6 @@
 import { Button, Layout, Typography } from '../node_modules/antd';
 import { useState } from 'react';
-import Signin from './Signin.tsx'
+import Signin from './Signin.tsx';
 import Signup from './Signup.tsx';
 
 
@@ -25,7 +25,7 @@ export default function Mainpage() {
 
     const handleLogoClick = () => {
         setShowSignin(false);
-        setShowSignup(false); // bu satırı da ekle ki ana sayfaya dönsün
+        setShowSignup(false);
  };
 
    
