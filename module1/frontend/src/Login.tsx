@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { LockOutlined, UserOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { Input, Button, message, Form } from 'antd';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
 const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { signIn, user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const onFinish = async (values: { email: string; password: string }) => {
     setLoading(true);
@@ -16,6 +17,7 @@ const Login: React.FC = () => {
       message.error(error.message);
     } else {
       message.success('Login successful!');
+      navigate('/dashboard');
     }
     setLoading(false);
   };
@@ -71,6 +73,15 @@ const Login: React.FC = () => {
           </Button>
         </Form.Item>
       </Form>
+      <div style={{ textAlign: 'center', marginTop: '16px' }}>
+        <span>Don't have an account? </span>
+        <Link
+          to="/signup"
+          style={{ color: '#4a7c59', fontWeight: 'bold', textDecoration: 'none' }}
+        >
+          Sign Up
+        </Link>
+      </div>
     </div>
   );
 };
