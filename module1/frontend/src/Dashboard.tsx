@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, message, Spin } from '../node_modules/antd';
 import { useAuth } from './AuthContext';
 import { apiService } from './api';
+import { useNavigate } from 'react-router-dom';
 
 interface UserProfile {
   userId: string;
@@ -17,6 +18,7 @@ interface UserBalance {
 
 const Dashboard: React.FC = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [balance, setBalance] = useState<UserBalance | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,6 +47,11 @@ const Dashboard: React.FC = () => {
     fetchData();
   }, []);
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -57,7 +64,7 @@ const Dashboard: React.FC = () => {
     <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1>PocketBank Dashboard</h1>
-        <Button onClick={signOut} type="primary" danger>
+        <Button onClick={handleSignOut} type="primary" danger>
           Sign Out
         </Button>
       </div>
