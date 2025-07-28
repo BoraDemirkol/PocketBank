@@ -4,6 +4,7 @@ import Mainpage from './Mainpage.tsx'
 import Signin from './Signin.tsx'
 import Signup from './Signup.tsx'
 import Dashboard from './Dashboard.tsx'
+import EmailVerification from './EmailVerification.tsx'
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
@@ -54,6 +55,7 @@ function App() {
           <Route path="/signin" element={<Signin />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/auth/confirm" element={<EmailVerification />} />
         </Routes>
       </Content>
       <Footer style={{ 
