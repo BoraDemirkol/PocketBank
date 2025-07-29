@@ -34,8 +34,9 @@ namespace backend.Migrations
                         .HasColumnType("text")
                         .HasColumnName("account_name");
 
-                    b.Property<int>("AccountType")
-                        .HasColumnType("integer")
+                    b.Property<string>("AccountType")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("account_type");
 
                     b.Property<decimal>("Balance")
@@ -54,6 +55,30 @@ namespace backend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("accounts", (string)null);
+                });
+
+            modelBuilder.Entity("Transaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Transactions");
                 });
 #pragma warning restore 612, 618
         }

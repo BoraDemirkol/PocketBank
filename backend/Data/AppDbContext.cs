@@ -11,6 +11,7 @@ namespace PocketBank.Data
         }
 
         public DbSet<Account> Accounts => Set<Account>();
+        public DbSet<Transaction> Transactions => Set<Transaction>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -26,5 +27,6 @@ namespace PocketBank.Data
                 entity.Property(e => e.Currency).HasColumnName("currency");
             });
         }
+        
     }
 }
