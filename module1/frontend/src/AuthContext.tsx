@@ -53,15 +53,71 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/confirm`
+    try {
+      // Check if user already exists in our users table
+      const { data: existingUser, error: selectError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (selectError && selectError.code !== 'PGRST116') {
+        console.error('Error checking existing user:', selectError);
+        return { error: { message: 'Database error occurred' } };
       }
-    })
-    return { error }
-  }
+
+      if (existingUser) {
+        return { error: { message: 'You cant create another account with this mail' } };
+      }
+
+      // Try to sign up with Supabase auth
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/confirm`
+        }
+      });
+
+      if (error) {
+        // Handle Supabase auth errors
+        if (error.message.includes('already registered') || 
+            error.message.includes('already exists') ||
+            error.message.includes('already been taken')) {
+          return { error: { message: 'You cant create another account with this mail' } };
+        }
+        return { error };
+      }
+
+      const user = data.user;
+
+      // Insert user into our users table
+      if (user) {
+        const { error: insertError } = await supabase.from('users').insert([
+          {
+            id: user.id,
+            email: user.email,
+            username: user.email.split('@')[0],
+          }
+        ]);
+
+        if (insertError) {
+          // If insert fails due to duplicate, it means user already exists
+          if (insertError.code === '23505') { // Unique constraint violation
+            return { error: { message: 'You cant create another account with this mail' } };
+          }
+          console.error('Insert error:', insertError.message);
+          return { error: { message: 'Failed to create user profile' } };
+        }
+      }
+
+      return { error: null };
+    } catch (err) {
+      console.error('Signup error:', err);
+      return { error: { message: 'An unexpected error occurred' } };
+    }
+  };
+
 
   const signOut = async () => {
     await supabase.auth.signOut()
