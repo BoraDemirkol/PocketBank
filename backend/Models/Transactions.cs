@@ -1,20 +1,23 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-[Table("transactions")]
-public class Transaction
+namespace PocketBank.Models // ✅ Burası önemli
 {
-    [Column("id")]
-    public Guid Id { get; set; }
+    [Table("transactions")]
+    public class Transaction
+    {
+        [Column("id")]
+        public Guid Id { get; set; }
 
-    [Column("account_id")]
-    public Guid AccountId { get; set; }
+        [Column("account_id")]
+        public Guid AccountId { get; set; }
 
-    [Column("transaction_date")]
-    public DateTime Date { get; set; }
+        [Column("transaction_date")]
+        public DateTime Date { get; set; }
 
-    [Column("amount")]
-    public decimal Amount { get; set; }
+        [Column("amount")]
+        public decimal Amount { get; set; }
 
-    [Column("description")]
-    public string Description { get; set; } = string.Empty;
+        [Column("description")]
+        public string Description { get; set; } = string.Empty;
+    }
 }

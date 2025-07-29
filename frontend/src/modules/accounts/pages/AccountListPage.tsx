@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import Layout from "../../../layout/Layout";
 import { fetchAccounts, createAccount as apiCreate } from "../api/account.api";
 import { Account } from "../types/account";
+import TransactionModal from "../components/TransactionModal";
 import "../styles/AccountStyles.css";
+import { downloadExtractPdf } from "../api/extract.api";
 
 
 type AccountType = "Vadesiz" | "Vadeli" | "Kredi Kartı";
@@ -14,6 +16,7 @@ const AccountListPage = () => {
   const [selectedType, setSelectedType] = useState<"All" | AccountType>("All");
   const [error, setError] = useState("");
   const [hovering, setHovering] = useState(false);
+  const [showHistoryFor, setShowHistoryFor] = useState<string | null>(null);
   const cardWidth = "250px";
 
   useEffect(() => {
@@ -64,13 +67,18 @@ const AccountListPage = () => {
             placeholder="Örn: Maaş Hesabı"
           />
           <label>Hesap Türü:</label>
-          <select value={type} onChange={(e) => setType(e.target.value as AccountType)}>
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value as AccountType)}
+          >
             <option value="Vadesiz">Vadesiz</option>
             <option value="Vadeli">Vadeli</option>
             <option value="Kredi Kartı">Kredi Kartı</option>
           </select>
           {error && (
-            <p style={{ color: "red", fontSize: "0.9em", marginBottom: 10 }}>{error}</p>
+            <p style={{ color: "red", fontSize: "0.9em", marginBottom: 10 }}>
+              {error}
+            </p>
           )}
           <button onClick={createAccount}>Hesap Oluştur</button>
         </div>
@@ -126,8 +134,19 @@ const AccountListPage = () => {
                     ₺
                   </p>
                   <div className="account-card-buttons">
-                    <button>Geçmiş</button>
-                    <button>Ekstre</button>
+                    <button onClick={() => setShowHistoryFor(account.id)}>
+                      Geçmiş
+                    </button>
+                    <button
+                        onClick={() => {
+                          const today = new Date();
+                          const year = today.getFullYear();
+                          const month = today.getMonth() + 1; // getMonth() sıfırdan başlar
+                          downloadExtractPdf(account.id, year, month);
+                        }}
+                      >
+                        Ekstre
+                      </button>
                   </div>
                 </div>
               ))}
@@ -158,6 +177,14 @@ const AccountListPage = () => {
               </>
             )}
           </div>
+        )}
+
+        {/* Transaction Modal */}
+        {showHistoryFor && (
+          <TransactionModal
+            accountId={showHistoryFor}
+            onClose={() => setShowHistoryFor(null)}
+          />
         )}
       </div>
     </Layout>
