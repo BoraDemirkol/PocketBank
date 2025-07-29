@@ -1,0 +1,42 @@
+.layout-root {
+  padding: 20px;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.layout-root.light {
+  background-color: #f4f4f8;
+  color: #222;
+}
+
+.layout-root.dark {
+  background-color: #1e1e2f;
+  color: #f1f1f1;
+}
+
+.layout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.layout-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.theme-toggle-btn {
+  padding: 8px 16px;
+  background-color: #ddd;
+  color: #111;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.layout-root.dark .theme-toggle-btn {
+  background-color: #333;
+  color: #eee;
+}

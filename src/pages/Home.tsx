@@ -10,6 +10,8 @@ import PageWrapper from '../components/PageWrapper';
 import BudgetList from '../components/BudgetList';
 import { mockBudgets } from '../mock/mockBudgets';
 
+{/* Yeni değişikliklerden sonra home sayfası kullanılmıyor*/}
+
 interface HomeProps {
   onNavigate: (view: 'home' | 'create' | 'list') => void;
 }

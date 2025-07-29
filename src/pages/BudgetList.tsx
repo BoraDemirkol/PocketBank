@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Container,
   Box,
   Typography,
   FormControl,
@@ -26,7 +25,8 @@ const BudgetListPage: React.FC = () => {
 
   return (
     <PageWrapper>
-      <Container sx={{ mt: 4 }}>
+      {/* Use Box instead of Container to remove default padding and centering */}
+      <Box sx={{ mt: 4, maxWidth: '100%', pl: 0, pr: 0 }}>
         <Typography variant="h4" gutterBottom>
           📋 Bütçeler
         </Typography>
@@ -68,7 +68,7 @@ const BudgetListPage: React.FC = () => {
             />
           ))}
         </Box>
-      </Container>
+      </Box>
     </PageWrapper>
   );
 };
