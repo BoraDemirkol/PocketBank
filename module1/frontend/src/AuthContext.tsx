@@ -54,7 +54,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string) => {
     try {
+      console.log('🔵 Starting signup process for:', email);
+      
       // Check if user already exists in our users table
+      console.log('🔍 Checking if user exists in users table...');
       const { data: existingUser, error: selectError } = await supabase
         .from('users')
         .select('id')
@@ -62,13 +65,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .maybeSingle();
 
       if (selectError && selectError.code !== 'PGRST116') {
-        console.error('Error checking existing user:', selectError);
+        console.error('❌ Error checking existing user:', selectError);
         return { error: { message: 'Database error occurred' } };
       }
 
       if (existingUser) {
+        console.log('❌ User already exists in users table');
         return { error: { message: 'You cant create another account with this mail' } };
       }
+
+      console.log('✅ No existing user found, proceeding with auth signup...');
 
       // Try to sign up with Supabase auth
       const { data, error } = await supabase.auth.signUp({
@@ -80,6 +86,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (error) {
+        console.error('❌ Supabase auth signup error:', error);
         // Handle Supabase auth errors
         if (error.message.includes('already registered') || 
             error.message.includes('already exists') ||
@@ -90,30 +97,75 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       const user = data.user;
+      console.log('✅ Auth user created successfully:', user?.id);
 
       // Insert user into our users table
-      if (user) {
-        const { error: insertError } = await supabase.from('users').insert([
-          {
-            id: user.id,
-            email: user.email,
-            username: user.email.split('@')[0],
-          }
-        ]);
+      if (user && user.email) {
+        console.log('📝 Inserting user into users table...');
+        const userRecord = {
+          id: user.id,
+          email: user.email,
+        };
+        console.log('User record to insert:', userRecord);
+
+        const { error: insertError } = await supabase.from('users').insert([userRecord]);
 
         if (insertError) {
+          console.error('❌ Users table insert error:', insertError);
+          console.error('Full error details:', JSON.stringify(insertError, null, 2));
+          
           // If insert fails due to duplicate, it means user already exists
           if (insertError.code === '23505') { // Unique constraint violation
             return { error: { message: 'You cant create another account with this mail' } };
           }
-          console.error('Insert error:', insertError.message);
-          return { error: { message: 'Failed to create user profile' } };
+          return { error: { message: `Failed to create user profile: ${insertError.message}` } };
         }
+
+        console.log('✅ User inserted into users table successfully');
+
+        // Generate randomized account data
+        const accountTypes = ['Vadeli', 'Vadesiz', 'Kredi Kartı'];
+        const accountNames = ['Döviz Hesabı', 'Harçlik Hesabı', 'Biriken Hesap'];
+        
+        const randomAccountType = accountTypes[Math.floor(Math.random() * accountTypes.length)];
+        const randomAccountName = accountNames[Math.floor(Math.random() * accountNames.length)];
+        const randomBalance = Math.floor(Math.random() * 25000); // Random balance between 0-25000
+        
+        console.log('💳 Creating account with data:', {
+          user_id: user.id,
+          account_name: randomAccountName,
+          account_type: randomAccountType,
+          balance: randomBalance,
+          currency: 'TRY'
+        });
+        
+        // Insert random account data
+        const { error: accountInsertError } = await supabase.from('accounts').insert([
+          {
+            user_id: user.id,
+            account_name: randomAccountName,
+            account_type: randomAccountType,
+            balance: randomBalance,
+            currency: 'TRY'
+          }
+        ]);
+
+        if (accountInsertError) {
+          console.error('❌ Account insert error:', accountInsertError);
+          console.error('Full account error details:', JSON.stringify(accountInsertError, null, 2));
+          return { error: { message: `Failed to create account: ${accountInsertError.message}` } };
+        }
+
+        console.log('✅ Account created successfully');
+      } else {
+        console.error('❌ No user data returned from auth signup');
+        return { error: { message: 'No user data received from authentication' } };
       }
 
+      console.log('🎉 Signup process completed successfully');
       return { error: null };
     } catch (err) {
-      console.error('Signup error:', err);
+      console.error('❌ Unexpected signup error:', err);
       return { error: { message: 'An unexpected error occurred' } };
     }
   };
