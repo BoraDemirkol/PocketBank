@@ -98,69 +98,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const user = data.user;
       console.log('✅ Auth user created successfully:', user?.id);
-
-      // Insert user into our users table
-      if (user && user.email) {
-        console.log('📝 Inserting user into users table...');
-        const userRecord = {
-          id: user.id,
-          email: user.email,
-        };
-        console.log('User record to insert:', userRecord);
-
-        const { error: insertError } = await supabase.from('users').insert([userRecord]);
-
-        if (insertError) {
-          console.error('❌ Users table insert error:', insertError);
-          console.error('Full error details:', JSON.stringify(insertError, null, 2));
-          
-          // If insert fails due to duplicate, it means user already exists
-          if (insertError.code === '23505') { // Unique constraint violation
-            return { error: { message: 'You cant create another account with this mail' } };
-          }
-          return { error: { message: `Failed to create user profile: ${insertError.message}` } };
-        }
-
-        console.log('✅ User inserted into users table successfully');
-
-        // Generate randomized account data
-        const accountTypes = ['Vadeli', 'Vadesiz', 'Kredi Kartı'];
-        const accountNames = ['Döviz Hesabı', 'Harçlik Hesabı', 'Biriken Hesap'];
-        
-        const randomAccountType = accountTypes[Math.floor(Math.random() * accountTypes.length)];
-        const randomAccountName = accountNames[Math.floor(Math.random() * accountNames.length)];
-        const randomBalance = Math.floor(Math.random() * 25000); // Random balance between 0-25000
-        
-        console.log('💳 Creating account with data:', {
-          user_id: user.id,
-          account_name: randomAccountName,
-          account_type: randomAccountType,
-          balance: randomBalance,
-          currency: 'TRY'
-        });
-        
-        // Insert random account data
-        const { error: accountInsertError } = await supabase.from('accounts').insert([
-          {
-            user_id: user.id,
-            account_name: randomAccountName,
-            account_type: randomAccountType,
-            balance: randomBalance,
-            currency: 'TRY'
-          }
-        ]);
-
-        if (accountInsertError) {
-          console.error('❌ Account insert error:', accountInsertError);
-          console.error('Full account error details:', JSON.stringify(accountInsertError, null, 2));
-          return { error: { message: `Failed to create account: ${accountInsertError.message}` } };
-        }
-
-        console.log('✅ Account created successfully');
-      } else {
-        console.error('❌ No user data returned from auth signup');
-        return { error: { message: 'No user data received from authentication' } };
-      }
+      console.log('📧 Email verification required - database records will be created after email confirmation');
 
       console.log('🎉 Signup process completed successfully');
       return { error: null };
