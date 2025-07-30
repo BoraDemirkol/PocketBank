@@ -579,6 +579,6 @@ public class BankStatementParser
         if (lowerDesc.Contains("restoran") || lowerDesc.Contains("cafe") || lowerDesc.Contains("yemek"))
             return "Eğlence";
         
-        return "Diğer";
+        return string.Empty;
     }
 } 

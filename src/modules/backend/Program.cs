@@ -69,176 +69,168 @@ using (var scope = app.Services.CreateScope())
     var testUser = await db.Users.OrderBy(u => u.CreatedAt).FirstOrDefaultAsync();
     if (testUser == null)
     {
-        // If no user exists, create a simple one
-        testUser = new User
+        // If no user exists, create multiple test users
+        var testUsers = new List<User>
         {
-            Email = "test@example.com"
+            new User { Email = "alper@example.com" },
+            new User { Email = "ayse@example.com" },
+            new User { Email = "mehmet@example.com" }
         };
-        db.Users.Add(testUser);
+        db.Users.AddRange(testUsers);
         await db.SaveChangesAsync();
+        testUser = testUsers[0]; // Use first user as default
     }
     
     // Add default categories if not exists
     if (!db.Categories.Any())
     {
-        var categories = new List<Category>
+        var allUsers = await db.Users.ToListAsync();
+        var categories = new List<Category>();
+        
+        foreach (var user in allUsers)
         {
-            new Category { Name = "Kira", Icon = "🏠", Color = "#9c27b0", UserId = testUser.Id },
-            new Category { Name = "Fatura", Icon = "💡", Color = "#ff9800", UserId = testUser.Id },
-            new Category { Name = "Eğlence", Icon = "🎬", Color = "#e91e63", UserId = testUser.Id },
-            new Category { Name = "Ulaşım", Icon = "🚕", Color = "#2196f3", UserId = testUser.Id },
-            new Category { Name = "Market", Icon = "🛒", Color = "#4caf50", UserId = testUser.Id },
-            new Category { Name = "Diğer", Icon = "📦", Color = "#607d8b", UserId = testUser.Id }
-        };
+            var userCategories = new List<Category>
+            {
+                new Category { Name = "Kira", Icon = "🏠", Color = "#9c27b0", UserId = user.Id },
+                new Category { Name = "Fatura", Icon = "💡", Color = "#ff9800", UserId = user.Id },
+                new Category { Name = "Eğlence", Icon = "🎬", Color = "#e91e63", UserId = user.Id },
+                new Category { Name = "Ulaşım", Icon = "🚕", Color = "#2196f3", UserId = user.Id },
+                new Category { Name = "Market", Icon = "🛒", Color = "#4caf50", UserId = user.Id },
+                new Category { Name = "Sağlık", Icon = "🏥", Color = "#f44336", UserId = user.Id },
+                new Category { Name = "Eğitim", Icon = "📚", Color = "#673ab7", UserId = user.Id }
+            };
+            categories.AddRange(userCategories);
+        }
+        
         db.Categories.AddRange(categories);
         await db.SaveChangesAsync();
     }
-    
-    // Add test accounts if not exists
-    if (!db.Accounts.Any())
+    else
     {
-        var accounts = new List<Account>
+        // Check if current user has all default categories, if not add missing ones
+        var currentUser = await db.Users.OrderBy(u => u.CreatedAt).FirstOrDefaultAsync();
+        if (currentUser != null)
         {
-            new Account
+            var existingCategories = await db.Categories.Where(c => c.UserId == currentUser.Id).ToListAsync();
+            var defaultCategoryNames = new[] { "Kira", "Fatura", "Eğlence", "Ulaşım", "Market", "Sağlık", "Eğitim" };
+            
+            var missingCategories = defaultCategoryNames
+                .Where(name => !existingCategories.Any(c => c.Name == name))
+                .ToList();
+            
+            if (missingCategories.Any())
             {
-                AccountName = "Ana Hesap",
-                AccountType = "Vadesiz",
-                Balance = 10000,
-                Currency = "TRY",
-                UserId = testUser.Id
-            },
-            new Account
-            {
-                AccountName = "Tasarruf Hesabı",
-                AccountType = "Vadeli",
-                Balance = 5000,
-                Currency = "TRY",
-                UserId = testUser.Id
-            },
-            new Account
-            {
-                AccountName = "Kredi Kartı",
-                AccountType = "Kredi Kartı",
-                Balance = -1500,
-                Currency = "TRY",
-                UserId = testUser.Id
-            }
-        };
-        db.Accounts.AddRange(accounts);
-        await db.SaveChangesAsync();
-    }
-    
-    // Add test transactions if not exists
-    if (!db.Transactions.Any())
-    {
-        var categories = await db.Categories.ToListAsync();
-        var accounts = await db.Accounts.ToListAsync();
-        
-        if (categories.Any() && accounts.Any())
-        {
-            var transactions = new List<Transaction>
-            {
-                new Transaction
+                var newCategories = new List<Category>();
+                var categoryConfigs = new Dictionary<string, (string icon, string color)>
                 {
-                    Description = "Market alışverişi",
-                    Amount = -150.50m,
-                    TransactionDate = DateTime.UtcNow.AddDays(-1),
-                    CategoryId = categories[0].Id,
-                    AccountId = accounts[0].Id
-                },
-                new Transaction
+                    { "Kira", ("🏠", "#9c27b0") },
+                    { "Fatura", ("💡", "#ff9800") },
+                    { "Eğlence", ("🎬", "#e91e63") },
+                    { "Ulaşım", ("🚕", "#2196f3") },
+                    { "Market", ("🛒", "#4caf50") },
+                    { "Sağlık", ("🏥", "#f44336") },
+                    { "Eğitim", ("📚", "#673ab7") }
+                };
+                
+                foreach (var categoryName in missingCategories)
                 {
-                    Description = "Benzin",
-                    Amount = -200.00m,
-                    TransactionDate = DateTime.UtcNow.AddDays(-2),
-                    CategoryId = categories[1].Id,
-                    AccountId = accounts[0].Id
-                },
-                new Transaction
-                {
-                    Description = "Maaş",
-                    Amount = 5000.00m,
-                    TransactionDate = DateTime.UtcNow.AddDays(-7),
-                    CategoryId = categories[3].Id,
-                    AccountId = accounts[0].Id
+                    if (categoryConfigs.ContainsKey(categoryName))
+                    {
+                        var (icon, color) = categoryConfigs[categoryName];
+                        newCategories.Add(new Category 
+                        { 
+                            Name = categoryName, 
+                            Icon = icon, 
+                            Color = color, 
+                            UserId = currentUser.Id 
+                        });
+                    }
                 }
-            };
-            db.Transactions.AddRange(transactions);
-            await db.SaveChangesAsync();
+                
+                if (newCategories.Any())
+                {
+                    db.Categories.AddRange(newCategories);
+                    await db.SaveChangesAsync();
+                }
+            }
         }
     }
     
     // Add test recurring transactions if not exists
     if (!db.RecurringTransactions.Any())
     {
-        var firstAccount = await db.Accounts.FirstOrDefaultAsync();
-        var firstCategory = await db.Categories.FirstOrDefaultAsync();
+        var categories = await db.Categories.ToListAsync();
+        var accounts = await db.Accounts.ToListAsync();
         
-        if (firstAccount != null && firstCategory != null)
+        if (categories.Any() && accounts.Any())
         {
             var recurringTransactions = new List<RecurringTransaction>
             {
                 new RecurringTransaction
                 {
                     Description = "Kira Ödemesi",
-                    Amount = 5000,
-                    CategoryId = firstCategory.Id,
-                    AccountId = firstAccount.Id,
-                    UserId = testUser.Id,
+                    Amount = -5000.00m,
                     StartDate = DateTime.UtcNow.AddDays(-30),
                     Frequency = "aylık",
                     IsIncome = false,
                     IsActive = true,
-                    LastProcessed = DateTime.UtcNow.AddDays(-30)
+                    CategoryId = categories.FirstOrDefault(c => c.Name == "Kira")?.Id ?? categories[0].Id,
+                    AccountId = accounts[0].Id,
+                    UserId = accounts[0].UserId
                 }
             };
+            
             db.RecurringTransactions.AddRange(recurringTransactions);
             await db.SaveChangesAsync();
         }
     }
 }
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-            var forecast =  Enumerable.Range(1, 5).Select(index =>
-            new WeatherForecast
-            (
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(index)),
-                Random.Shared.Next(-20, 55),
-                summaries[Random.Shared.Next(summaries.Length)]
-            ))
-            .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
-
-
 // API endpoints for PocketBank
 app.MapGet("/api/transaction", async (ApplicationDbContext db) =>
 {
+    // Get current user (first user for now)
+    var currentUser = await db.Users.OrderBy(u => u.CreatedAt).FirstOrDefaultAsync();
+    if (currentUser == null)
+        return Results.Ok(new List<object>());
+
+    // Get user's account IDs
+    var userAccountIds = await db.Accounts
+        .Where(a => a.UserId == currentUser.Id)
+        .Select(a => a.Id)
+        .ToListAsync();
+
     var transactions = await db.Transactions
         .Include(t => t.Category)
         .Include(t => t.Account)
+        .Where(t => userAccountIds.Contains(t.AccountId))
         .OrderByDescending(t => t.TransactionDate)
         .ToListAsync();
+    
     return Results.Ok(transactions);
 })
 .WithName("GetTransactions");
 
 app.MapGet("/api/recurring-transaction", async (ApplicationDbContext db) =>
 {
-    var recurringTransactions = await db.RecurringTransactions
-        .Include(r => r.Category)
-        .Include(r => r.Account)
-        .Where(r => r.IsActive)
-        .OrderBy(r => r.StartDate)
+    // Get current user (first user for now)
+    var currentUser = await db.Users.OrderBy(u => u.CreatedAt).FirstOrDefaultAsync();
+    if (currentUser == null)
+        return Results.Ok(new List<object>());
+
+    // Get user's account IDs
+    var userAccountIds = await db.Accounts
+        .Where(a => a.UserId == currentUser.Id)
+        .Select(a => a.Id)
         .ToListAsync();
+
+    var recurringTransactions = await db.RecurringTransactions
+        .Include(rt => rt.Category)
+        .Include(rt => rt.Account)
+        .Where(rt => userAccountIds.Contains(rt.AccountId))
+        .OrderBy(rt => rt.StartDate)
+        .ToListAsync();
+    
     return Results.Ok(recurringTransactions);
 })
 .WithName("GetRecurringTransactions");
@@ -393,18 +385,30 @@ app.MapDelete("/api/transaction/{id}", async (Guid id, ApplicationDbContext db) 
 })
 .WithName("DeleteTransaction");
 
-app.MapGet("/api/category", async (ApplicationDbContext db) =>
+app.MapGet("/api/categories", async (ApplicationDbContext db) =>
 {
+    // Get current user (first user for now)
+    var currentUser = await db.Users.OrderBy(u => u.CreatedAt).FirstOrDefaultAsync();
+    if (currentUser == null)
+        return Results.Ok(new List<object>());
+
     var categories = await db.Categories
+        .Where(c => c.UserId == currentUser.Id)
         .OrderBy(c => c.Name)
         .ToListAsync();
     return Results.Ok(categories);
 })
 .WithName("GetCategories");
 
-app.MapGet("/api/account", async (ApplicationDbContext db) =>
+app.MapGet("/api/accounts", async (ApplicationDbContext db) =>
 {
+    // Get current user (first user for now)
+    var currentUser = await db.Users.OrderBy(u => u.CreatedAt).FirstOrDefaultAsync();
+    if (currentUser == null)
+        return Results.Ok(new List<object>());
+
     var accounts = await db.Accounts
+        .Where(a => a.UserId == currentUser.Id)
         .OrderBy(a => a.AccountName)
         .ToListAsync();
     
@@ -415,9 +419,21 @@ app.MapGet("/api/account", async (ApplicationDbContext db) =>
 // Export transactions to CSV
 app.MapGet("/api/export/csv", async (ApplicationDbContext db) =>
 {
+    // Get current user (first user for now)
+    var currentUser = await db.Users.OrderBy(u => u.CreatedAt).FirstOrDefaultAsync();
+    if (currentUser == null)
+        return Results.Ok(new List<object>());
+
+    // Get user's account IDs
+    var userAccountIds = await db.Accounts
+        .Where(a => a.UserId == currentUser.Id)
+        .Select(a => a.Id)
+        .ToListAsync();
+
     var transactions = await db.Transactions
         .Include(t => t.Category)
         .Include(t => t.Account)
+        .Where(t => userAccountIds.Contains(t.AccountId))
         .OrderByDescending(t => t.TransactionDate)
         .ToListAsync();
     
@@ -444,9 +460,21 @@ app.MapGet("/api/export/csv", async (ApplicationDbContext db) =>
 // Export transactions to Excel
 app.MapGet("/api/export/excel", async (ApplicationDbContext db) =>
 {
+    // Get current user (first user for now)
+    var currentUser = await db.Users.OrderBy(u => u.CreatedAt).FirstOrDefaultAsync();
+    if (currentUser == null)
+        return Results.Ok(new List<object>());
+
+    // Get user's account IDs
+    var userAccountIds = await db.Accounts
+        .Where(a => a.UserId == currentUser.Id)
+        .Select(a => a.Id)
+        .ToListAsync();
+
     var transactions = await db.Transactions
         .Include(t => t.Category)
         .Include(t => t.Account)
+        .Where(t => userAccountIds.Contains(t.AccountId))
         .OrderByDescending(t => t.TransactionDate)
         .ToListAsync();
     
@@ -481,9 +509,6 @@ app.MapGet("/api/export/excel", async (ApplicationDbContext db) =>
         worksheet.Cells[row, 4].Value = t.Category?.Name ?? "";
         worksheet.Cells[row, 5].Value = t.Account?.AccountName ?? "";
         worksheet.Cells[row, 6].Value = t.Amount >= 0 ? "Gelir" : "Gider";
-        
-        // Format amount column
-        worksheet.Cells[row, 3].Style.Numberformat.Format = "#,##0.00";
     }
     
     // Auto-fit columns
@@ -603,46 +628,19 @@ app.MapPost("/api/parse-bank-statement", async (HttpContext context) =>
 .DisableAntiforgery()
 .WithName("ParseBankStatement");
 
-app.MapPost("/api/account", async (AccountRequest request, ApplicationDbContext db) =>
+app.MapPost("/api/categories", async (CategoryRequest request, ApplicationDbContext db) =>
 {
-    // Get the first user for now (in a real app, this would come from authentication)
-    var user = await db.Users.FirstOrDefaultAsync();
-    if (user == null)
-    {
+    // Get current user (for now, use the first user)
+    var currentUser = await db.Users.OrderBy(u => u.CreatedAt).FirstOrDefaultAsync();
+    if (currentUser == null)
         return Results.BadRequest("No user found");
-    }
-    
-    var account = new Account
-    {
-        AccountName = request.AccountName ?? "Yeni Hesap",
-        AccountType = request.AccountType ?? "Vadesiz",
-        Balance = request.Balance,
-        Currency = request.Currency ?? "TRY",
-        UserId = user.Id
-    };
-    
-    db.Accounts.Add(account);
-    await db.SaveChangesAsync();
-    
-    return Results.Ok(account);
-})
-.WithName("CreateAccount");
-
-app.MapPost("/api/category", async (CategoryRequest request, ApplicationDbContext db) =>
-{
-    // Get the first user for now (in a real app, this would come from authentication)
-    var user = await db.Users.FirstOrDefaultAsync();
-    if (user == null)
-    {
-        return Results.BadRequest("No user found");
-    }
     
     var category = new Category
     {
-        Name = request.Name ?? "Yeni Kategori",
+        Name = request.Name ?? "",
         Color = request.Color ?? "#764ba2",
-        Icon = request.Icon ?? "🗂️",
-        UserId = user.Id
+        Icon = request.Icon ?? "📦",
+        UserId = currentUser.Id
     };
     
     db.Categories.Add(category);
@@ -652,7 +650,7 @@ app.MapPost("/api/category", async (CategoryRequest request, ApplicationDbContex
 })
 .WithName("CreateCategory");
 
-app.MapDelete("/api/category/{id}", async (Guid id, ApplicationDbContext db) =>
+app.MapDelete("/api/categories/{id}", async (Guid id, ApplicationDbContext db) =>
 {
     var category = await db.Categories.FindAsync(id);
     
@@ -809,12 +807,18 @@ app.MapPost("/api/setup-database", async (ApplicationDbContext db) =>
 })
 .WithName("SetupDatabase");
 
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+// Get current user (for now, returns the first user as default)
+app.MapGet("/api/current-user", async (ApplicationDbContext db) =>
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+    var currentUser = await db.Users.OrderBy(u => u.CreatedAt).FirstOrDefaultAsync();
+    if (currentUser == null)
+        return Results.NotFound("No user found");
+    
+    return Results.Ok(new { id = currentUser.Id, email = currentUser.Email });
+})
+.WithName("GetCurrentUser");
+
+app.Run();
 
 // Request models
 public class TransactionRequest
@@ -826,14 +830,6 @@ public class TransactionRequest
     public bool IsIncome { get; set; }
     public string? AccountId { get; set; }
     public string? ReceiptUrl { get; set; }
-}
-
-public class AccountRequest
-{
-    public string? AccountName { get; set; }
-    public string? AccountType { get; set; }
-    public decimal Balance { get; set; }
-    public string? Currency { get; set; }
 }
 
 public class CategoryRequest

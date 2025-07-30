@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Layout from '../context/Layout';
 import '../context/accountModule.css';
@@ -9,14 +9,11 @@ import { Account, Transaction, Category, RecurringTransaction } from '../types';
 axios.defaults.baseURL = 'http://localhost:5044';
 
 const AccountModule: React.FC = () => {
+    // Mevcut kullanıcı ID'si
+    const [currentUserId, setCurrentUserId] = useState<string>('');
+    
     const [accounts, setAccounts] = useState<Account[]>([]);
-    const [name, setName] = useState('');
-    const [type, setType] = useState<'Vadesiz' | 'Vadeli' | 'Kredi Kartı'>(() => {
-        const saved = localStorage.getItem('lastSelectedType');
-        return (saved as 'Vadesiz' | 'Vadeli' | 'Kredi Kartı') || 'Vadesiz';
-    });
     const [selectedType, setSelectedType] = useState<'Vadesiz' | 'Vadeli' | 'Kredi Kartı' | 'All'>('All');
-    const [error, setError] = useState('');
     const [cardWidth, setCardWidth] = useState('23%');
     const [hovering, setHovering] = useState(false);
     const [transactions, setTransactions] = useState<Transaction[] | null>(null);
@@ -55,6 +52,61 @@ const AccountModule: React.FC = () => {
     // Toplu içe aktarma için state
     const [importedRows, setImportedRows] = useState<Record<string, string>[]>([]);
     const [importMsg, setImportMsg] = useState<string | null>(null);
+    
+    // Tekrarlayan işlemler için state
+    const [recurrings, setRecurrings] = useState<RecurringTransaction[]>([]);
+    const [recForm, setRecForm] = useState({
+        amount: '',
+        description: '',
+        categoryId: '',
+        startDate: '',
+        frequency: 'aylık',
+    });
+    const [recMsg, setRecMsg] = useState<string | null>(null);
+    const freqOptions = ['günlük','haftalık','aylık','yıllık'];
+    
+    // Mevcut kullanıcıyı getir
+    const fetchCurrentUser = async () => {
+        try {
+            const response = await axios.get('/api/current-user');
+            setCurrentUserId(response.data.id);
+        } catch (error) {
+            console.error('Error fetching current user:', error);
+        }
+    };
+
+    // Hesapları API'den çeken fonksiyon
+    const fetchAccounts = useCallback(async () => {
+        try {
+            const response = await axios.get('/api/accounts');
+            setAccounts(response.data);
+        } catch (error) {
+            console.error('Error fetching accounts:', error);
+            setAccounts([]);
+        }
+    }, []);
+
+    // Kategorileri API'den çeken fonksiyon
+    const fetchCategories = useCallback(async () => {
+        try {
+            const response = await axios.get('/api/categories');
+            setCategories(response.data);
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+            setCategories([]);
+        }
+    }, []);
+
+    // Tekrarlayan işlemleri API'den çeken fonksiyon
+    const fetchRecurringTransactions = useCallback(async () => {
+        try {
+            const response = await axios.get('/api/recurring-transaction');
+            setRecurrings(response.data);
+        } catch (error) {
+            console.error('Error fetching recurring transactions:', error);
+        }
+    }, []);
+
     const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -75,21 +127,11 @@ const AccountModule: React.FC = () => {
         };
         reader.readAsText(file);
     };
+
     const handleImportCategoryChange = (idx: number, catId: string) => {
         setImportedRows(rows => rows.map((row, i) => i === idx ? { ...row, categoryId: catId } : row));
     };
 
-    // Tekrarlayan işlemler için state
-    const [recurrings, setRecurrings] = useState<RecurringTransaction[]>([]);
-    const [recForm, setRecForm] = useState({
-        amount: '',
-        description: '',
-        categoryId: '',
-        startDate: '',
-        frequency: 'aylık',
-    });
-    const [recMsg, setRecMsg] = useState<string | null>(null);
-    const freqOptions = ['günlük','haftalık','aylık','yıllık'];
     const handleRecFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setRecForm(f => ({ ...f, [name]: value }));
@@ -133,30 +175,17 @@ const AccountModule: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        const fetchAccounts = async () => {
-            try {
-                const res = await axios.get('/api/account');
-                setAccounts(res.data);
-            } catch (err) {
-                setAccounts([]);
-            }
-        };
+        fetchCurrentUser(); // Önce mevcut kullanıcıyı getir
+    }, []); // Sadece bir kez çalıştır
 
-        fetchAccounts();
-    }, []);
-
+    // currentUserId değiştiğinde verileri yükle
     useEffect(() => {
-        // Kategorileri çek
-        const fetchCategories = async () => {
-            try {
-                const res = await axios.get('/api/category');
-                setCategories(res.data);
-            } catch (err) {
-                setCategories([]);
-            }
-        };
-        fetchCategories();
-    }, []);
+        if (currentUserId) {
+            fetchAccounts();
+            fetchCategories();
+            fetchRecurringTransactions();
+        }
+    }, [currentUserId, fetchAccounts, fetchCategories, fetchRecurringTransactions]);
 
     // Filtreleme işlemi
     useEffect(() => {
@@ -179,37 +208,6 @@ const AccountModule: React.FC = () => {
         if (filter.search) txs = txs.filter(t => t.description.toLowerCase().includes(filter.search.toLowerCase()));
         setFilteredTransactions(txs);
     }, [transactions, filter]);
-
-    const generateRandomBalance = (type: string): number => {
-        return type === 'Kredi Kartı'
-            ? -(Math.floor(Math.random() * 5000) + 500)
-            : Math.floor(Math.random() * 20000) + 1000;
-    };
-
-    const createAccount = async () => {
-        if (name.trim() === '') {
-            setError('Hesap adı boş bırakılamaz.');
-            return;
-        }
-
-        setError('');
-        const balance = generateRandomBalance(type);
-
-        try {
-            const res = await axios.post('/api/account', {
-                accountName: name,
-                accountType: type,
-                balance: balance,
-                currency: 'TRY'
-            });
-            
-            setAccounts([...accounts, res.data]);
-            setName('');
-            localStorage.setItem('lastSelectedType', type);
-        } catch (err) {
-            setError('Hesap oluşturulurken hata oluştu.');
-        }
-    };
 
     const fetchTransactions = async (accountId: string) => {
         const { data, error } = await fetchTransactionsByAccount(accountId);
@@ -285,7 +283,7 @@ const AccountModule: React.FC = () => {
             return;
         }
         try {
-            await axios.post('/api/category', {
+            await axios.post('/api/categories', {
                 name: newCategory.name,
                 color: newCategory.color,
                 icon: newCategory.icon
@@ -293,7 +291,7 @@ const AccountModule: React.FC = () => {
             setCatMsg('Kategori eklendi!');
             setNewCategory({ name: '', color: '#764ba2', icon: '🗂️' });
             // Yeniden çek
-            const res = await axios.get('/api/category');
+            const res = await axios.get('/api/categories');
             setCategories(res.data);
         } catch {
             setCatMsg('Kategori eklenemedi.');
@@ -301,7 +299,7 @@ const AccountModule: React.FC = () => {
     };
     const handleDeleteCategory = async (id: string) => {
         try {
-            await axios.delete(`/api/category/${id}`);
+            await axios.delete(`/api/categories/${id}`);
             setCategories(cats => cats.filter(c => c.id !== id));
         } catch (error) {
             console.error('Failed to delete category:', error);
@@ -313,27 +311,13 @@ const AccountModule: React.FC = () => {
             <div className="account-container">
                 <h2 className="module-title">📁 Modül 2: Account Management</h2>
 
-                <div className="create-card">
-                    <h3>🆕 Yeni Hesap Oluştur</h3>
-                    <label>Hesap Adı:</label><br />
-                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Örn: Maaş Hesabı" /><br />
-                    <label>Hesap Türü:</label><br />
-                    <select value={type} onChange={(e) => setType(e.target.value as any)}>
-                        <option value="Vadesiz">Vadesiz</option>
-                        <option value="Vadeli">Vadeli</option>
-                        <option value="Kredi Kartı">Kredi Kartı</option>
-                    </select>
-                    {error && <p style={{ color: 'red', fontSize: '0.9em', marginBottom: 10 }}>{error}</p>}
-                    <button onClick={createAccount}>Hesap Oluştur</button>
-                </div>
-
                 <div className="account-filter">
                     <h3>📋 Hesaplarım</h3>
                     <div className="account-filter-buttons">
                         {['All', 'Vadesiz', 'Vadeli', 'Kredi Kartı'].map(t => (
                             <button
                                 key={t}
-                                onClick={() => setSelectedType(t as any)}
+                                onClick={() => setSelectedType(t as 'Vadesiz' | 'Vadeli' | 'Kredi Kartı' | 'All')}
                                 style={{ backgroundColor: selectedType === t ? '#764ba2' : '#f1f1f1', color: selectedType === t ? 'white' : '#333' }}
                             >
                                 {t}

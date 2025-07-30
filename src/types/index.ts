@@ -1,5 +1,6 @@
 export interface Category {
     id: string; // Changed from number to string to match Guid
+    userId: string;
     name: string;
     color: string;
     icon: string;
@@ -25,9 +26,12 @@ export interface Transaction {
 
 export interface Account {
     id: string;
+    userId: string;
     accountName: string;
     accountType: 'Vadesiz' | 'Vadeli' | 'Kredi Kartı';
     balance: number;
+    currency?: string;
+    createdAt?: string;
 }
 
 export interface RecurringTransaction {

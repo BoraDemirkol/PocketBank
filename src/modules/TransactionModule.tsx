@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Layout from '../context/Layout';
 import '../context/accountModule.css';
@@ -23,6 +23,7 @@ const TransactionModule: React.FC = () => {
     });
     const [formMsg, setFormMsg] = useState<string | null>(null);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [recurrings, setRecurrings] = useState<RecurringTransaction[]>([]);
     const [filter, setFilter] = useState({
         startDate: '',
         endDate: '',
@@ -88,13 +89,26 @@ const TransactionModule: React.FC = () => {
             }
         }
         
-        // Eşleşme bulunamazsa "Diğer" kategorisini döndür
-        return "Diğer";
+        // Eşleşme bulunamazsa null döndür
+        return null;
     };
 
     // Dosya seçimi için state'ler
     const [selectedImportFile, setSelectedImportFile] = useState<File | null>(null);
     const [selectedBankFile, setSelectedBankFile] = useState<File | null>(null);
+
+    // Mevcut kullanıcı ID'si
+    const [currentUserId, setCurrentUserId] = useState<string>('');
+
+    // Mevcut kullanıcıyı getir
+    const fetchCurrentUser = async () => {
+        try {
+            const response = await axios.get('/api/current-user');
+            setCurrentUserId(response.data.id);
+        } catch (error) {
+            console.error('Error fetching current user:', error);
+        }
+    };
 
     const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -115,7 +129,6 @@ const TransactionModule: React.FC = () => {
 
 
     // Tekrarlayan işlemler için state
-    const [recurrings, setRecurrings] = useState<RecurringTransaction[]>([]);
     const [recForm, setRecForm] = useState({
         amount: '',
         description: '',
@@ -179,24 +192,24 @@ const TransactionModule: React.FC = () => {
     };
 
     // İşlemleri API'den çeken fonksiyon
-    const fetchTransactions = async () => {
+    const fetchTransactions = useCallback(async () => {
         try {
-            const res = await axios.get('/api/transaction');
-            setTransactions(res.data);
+            const response = await axios.get('/api/transaction');
+            setTransactions(response.data);
         } catch (error) {
-            // Handle error silently
+            console.error('Error fetching transactions:', error);
         }
-    };
+    }, []);
 
     // Tekrarlayan işlemleri API'den çeken fonksiyon
-    const fetchRecurringTransactions = async () => {
+    const fetchRecurringTransactions = useCallback(async () => {
         try {
-            const res = await axios.get('/api/recurring-transaction');
-            setRecurrings(res.data);
+            const response = await axios.get('/api/recurring-transaction');
+            setRecurrings(response.data);
         } catch (error) {
             console.error('Error fetching recurring transactions:', error);
         }
-    };
+    }, []);
 
     // Tekrarlayan işlemleri localStorage'a kaydetme fonksiyonu (artık kullanılmıyor)
     // const saveRecurringTransactions = (transactions: RecurringTransaction[]) => {
@@ -204,38 +217,41 @@ const TransactionModule: React.FC = () => {
     // };
 
     useEffect(() => {
-        // Kategorileri çek
-        const fetchCategories = async () => {
-            try {
-                const res = await axios.get('/api/category');
-                setCategories(res.data);
-            } catch (err) {
-                setCategories([]);
-            }
-        };
-        
-        const fetchAccounts = async () => {
-            try {
-                const res = await axios.get('/api/account');
-                setAccounts(res.data);
-                // Set the first account as default if available
-                if (res.data.length > 0) {
-                    setForm(f => ({ ...f, accountId: f.accountId || res.data[0].id }));
-                }
-            } catch (err) {
-                setAccounts([]);
-            }
-        };
-        
-        fetchCategories();
-        fetchAccounts();
-    }, []);
+        fetchCurrentUser(); // Önce mevcut kullanıcıyı getir
+    }, []); // Sadece bir kez çalıştır
 
-    // useEffect ile ilk yüklemede işlemleri çek
+    // currentUserId değiştiğinde verileri yükle
     useEffect(() => {
-        fetchTransactions();
-        fetchRecurringTransactions();
-    }, []);
+        if (currentUserId) {
+            fetchTransactions();
+            fetchRecurringTransactions();
+            
+            const fetchCategories = async () => {
+                try {
+                    const response = await axios.get('/api/categories');
+                    setCategories(response.data);
+                } catch (error) {
+                    console.error('Error fetching categories:', error);
+                }
+            };
+            
+            const fetchAccounts = async () => {
+                try {
+                    const response = await axios.get('/api/accounts');
+                    setAccounts(response.data);
+                    // Set the first account as default if available
+                    if (response.data.length > 0) {
+                        setForm(f => ({ ...f, accountId: f.accountId || response.data[0].id }));
+                    }
+                } catch (error) {
+                    console.error('Error fetching accounts:', error);
+                }
+            };
+            
+            fetchCategories();
+            fetchAccounts();
+        }
+    }, [currentUserId, fetchTransactions, fetchRecurringTransactions]); // currentUserId değiştiğinde yeniden yükle
 
     // Filtreleme işlemi
     useEffect(() => {
@@ -343,30 +359,34 @@ const TransactionModule: React.FC = () => {
     const handleColorSelect = (color: string) => setNewCategory(c => ({ ...c, color }));
     const handleAddCategory = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newCategory.name) {
+        if (!newCategory.name.trim()) {
             setCatMsg('Kategori adı zorunlu.');
             return;
         }
+
         try {
-            await axios.post('/api/category', {
+            await axios.post('/api/categories', {
                 name: newCategory.name,
                 color: newCategory.color,
                 icon: newCategory.icon
             });
-            setCatMsg('Kategori eklendi!');
-            setNewCategory({ name: '', color: '#764ba2', icon: '🗂️' });
-            const res = await axios.get('/api/category');
+            
+            const res = await axios.get('/api/categories');
             setCategories(res.data);
-        } catch {
-            setCatMsg('Kategori eklenemedi.');
+            setNewCategory({ name: '', color: '#764ba2', icon: '🗂️' });
+            setCatMsg('Kategori başarıyla eklendi!');
+        } catch (error) {
+            setCatMsg('Kategori eklenirken hata oluştu.');
         }
     };
+
     const handleDeleteCategory = async (id: string) => {
         try {
-            await axios.delete(`/api/category/${id}`);
-            setCategories(cats => cats.filter(c => c.id !== id));
+            await axios.delete(`/api/categories/${id}`);
+            const res = await axios.get('/api/categories');
+            setCategories(res.data);
         } catch (error) {
-            console.error('Failed to delete category:', error);
+            console.error('Error deleting category:', error);
         }
     };
 
@@ -390,23 +410,20 @@ const TransactionModule: React.FC = () => {
 
     const handleDownloadReceipt = async (receiptUrl: string) => {
         try {
-            // receiptUrl zaten /uploads/filename.jpg formatında geliyor
-            console.log('Downloading receipt from:', `${axios.defaults.baseURL}${receiptUrl}`);
-            const response = await axios.get(receiptUrl, {
+            const response = await axios.get(`${receiptUrl}`, {
                 responseType: 'blob'
             });
             
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', `receipt-${Date.now()}.${receiptUrl.split('.').pop()}`);
+            link.setAttribute('download', `receipt_${Date.now()}.png`);
             document.body.appendChild(link);
             link.click();
             link.remove();
             window.URL.revokeObjectURL(url);
         } catch (error) {
-            console.error('Receipt download failed:', error);
-            alert('Fiş indirilirken hata oluştu.');
+            console.error('Error downloading receipt:', error);
         }
     };
 
@@ -579,7 +596,7 @@ const TransactionModule: React.FC = () => {
                     const description = row[descriptionField];
                     const amountStr = row[amountField];
                     const categoryName = categoryField ? row[categoryField] : null;
-                    const finalCategoryName = categoryName || row['Otomatik_Kategori'] || 'Diğer';
+                    const finalCategoryName = categoryName || row['Otomatik_Kategori'] || categories[0]?.name;
                     
                     if (!date || !description || !amountStr) {
                         errorCount++;
@@ -749,6 +766,7 @@ const TransactionModule: React.FC = () => {
         <Layout>
             <div className="account-container">
                 <h2 className="module-title">💸 Modül 3: İşlem Yönetimi</h2>
+                
                 <div style={{ marginTop: 40 }}>
                     <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
                         <button onClick={() => setActiveTab('transactions')} style={{ background: activeTab === 'transactions' ? '#764ba2' : '#f1f1f1', color: activeTab === 'transactions' ? 'white' : '#333', padding: '8px 16px', borderRadius: 6, border: 'none' }}>İşlemler</button>

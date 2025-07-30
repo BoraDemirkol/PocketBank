@@ -283,3 +283,88 @@
 .category-add-btn:hover {
     background-color: #693e99;
 }
+
+/* Responsive Design - Mobile First Approach */
+@media (max-width: 768px) {
+    .account-container {
+        padding: 10px;
+    }
+    
+    .module-title {
+        font-size: 1.4rem;
+        margin-bottom: 15px;
+    }
+    
+    .create-card {
+        padding: 20px;
+        margin: 10px 0;
+    }
+    
+    .account-filter-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .account-filter-buttons button {
+        width: 100%;
+        margin: 2px 0;
+    }
+    
+    .account-card {
+        flex: 0 0 100% !important;
+        margin: 8px 0;
+    }
+    
+    .account-card-container {
+        flex-direction: column;
+    }
+    
+    .account-card-scroll {
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+}
+
+@media (max-width: 480px) {
+    .account-container {
+        padding: 5px;
+    }
+    
+    .module-title {
+        font-size: 1.2rem;
+    }
+    
+    .create-card {
+        padding: 15px;
+    }
+    
+    .account-card {
+        padding: 15px;
+    }
+    
+    .account-card-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .account-card-buttons button {
+        width: 100%;
+    }
+}
+
+/* Tablet Responsive */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .account-card {
+        flex: 0 0 48% !important;
+    }
+    
+    .account-filter-buttons {
+        gap: 10px;
+    }
+    
+    .account-filter-buttons button {
+        flex: 1;
+        min-width: 120px;
+    }
+}
