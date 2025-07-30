@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import Layout from '../context/Layout';
 import '../context/accountModule.css';
 import { fetchTransactionsByAccount, generateAccountStatementPDF } from '../services/accountService';
-import axios from 'axios';
 import { Account, Transaction, Category, RecurringTransaction } from '../types';
+
+// Backend URL'ini ayarla
+axios.defaults.baseURL = 'http://localhost:5044';
 
 const AccountModule: React.FC = () => {
     const [accounts, setAccounts] = useState<Account[]>([]);

@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import Layout from '../context/Layout';
 import '../context/accountModule.css';
-import axios from 'axios';
 import { Transaction, Category, Account, RecurringTransaction } from '../types';
+
+// Backend URL'ini ayarla
+axios.defaults.baseURL = 'http://localhost:5044';
 
 const TransactionModule: React.FC = () => {
     // Modül 3 state ve fonksiyonları
@@ -89,99 +92,22 @@ const TransactionModule: React.FC = () => {
         return "Diğer";
     };
 
+    // Dosya seçimi için state'ler
+    const [selectedImportFile, setSelectedImportFile] = useState<File | null>(null);
+    const [selectedBankFile, setSelectedBankFile] = useState<File | null>(null);
+
     const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
         
         const fileExtension = file.name.toLowerCase().split('.').pop();
         
-        if (fileExtension === 'csv') {
-            // CSV dosyası okuma
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-            const text = evt.target?.result as string;
-            const lines = text.split('\n').filter(Boolean);
-            const headers = lines[0].split(',').map(h => h.trim());
-            // Otomatik mapping
-            const autoMapping: { [key: string]: string } = {};
-            headers.forEach(h => {
-              if (/tarih|date/i.test(h)) autoMapping[h] = 'transaction_date';
-              else if (/açıklama|description/i.test(h)) autoMapping[h] = 'description';
-              else if (/tutar|amount/i.test(h)) autoMapping[h] = 'amount';
-              else if (/kategori|category/i.test(h)) autoMapping[h] = 'category';
-              else autoMapping[h] = '';
-            });
-                
-                // Otomatik kategori eşleştirme için açıklama sütununu bul
-                const descriptionColumn = headers.find(h => /açıklama|description/i.test(h));
-            setImportMapping(autoMapping);
-                // Satırları oku ve otomatik kategori eşleştir
-            const rows = lines.slice(1).map(line => {
-                const values = line.split(',');
-                    const row: Record<string, string> = {};
-                headers.forEach((h, i) => row[h] = values[i]?.trim());
-                    
-                    // Eğer açıklama sütunu varsa ve kategori sütunu boşsa, otomatik eşleştir
-                    if (descriptionColumn && row[descriptionColumn] && !row['Kategori'] && !row['category']) {
-                        const matchedCategory = matchCategoryByDescription(row[descriptionColumn]);
-                        if (matchedCategory) {
-                            row['Otomatik_Kategori'] = matchedCategory;
-                        }
-                    }
-                    
-                return row;
-            });
-            setImportedRows(rows);
-            setImportMsg(`${rows.length} satır yüklendi.`);
-        };
-        reader.readAsText(file);
-        } else if (fileExtension === 'xlsx' || fileExtension === 'xls') {
-            // Excel dosyası okuma
-            try {
-                setImportMsg('Excel dosyası işleniyor...');
-                const formData = new FormData();
-                formData.append('file', file);
-                
-                const response = await axios.post('/api/parse-excel', formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                });
-                
-                const { headers, rows } = response.data;
-                
-                // Otomatik mapping
-                const autoMapping: { [key: string]: string } = {};
-                headers.forEach((h: string) => {
-                  if (/tarih|date/i.test(h)) autoMapping[h] = 'transaction_date';
-                  else if (/açıklama|description/i.test(h)) autoMapping[h] = 'description';
-                  else if (/tutar|amount/i.test(h)) autoMapping[h] = 'amount';
-                  else if (/kategori|category/i.test(h)) autoMapping[h] = 'category';
-                  else autoMapping[h] = '';
-                });
-                
-                // Otomatik kategori eşleştirme için açıklama sütununu bul
-                const descriptionColumn = headers.find((h: string) => /açıklama|description/i.test(h));
-                setImportMapping(autoMapping);
-                
-                // Satırları işle ve otomatik kategori eşleştir
-                const processedRows = rows.map((row: Record<string, string>) => {
-                    // Eğer açıklama sütunu varsa ve kategori sütunu boşsa, otomatik eşleştir
-                    if (descriptionColumn && row[descriptionColumn] && !row['Kategori'] && !row['category']) {
-                        const matchedCategory = matchCategoryByDescription(row[descriptionColumn]);
-                        if (matchedCategory) {
-                            row['Otomatik_Kategori'] = matchedCategory;
-                        }
-                    }
-                    return row;
-                });
-                
-                setImportedRows(processedRows);
-                setImportMsg(`${processedRows.length} satır yüklendi.`);
-            } catch (error) {
-                console.error('Excel parsing error:', error);
-                setImportMsg('Excel dosyası işlenirken hata oluştu.');
-            }
+        if (fileExtension === 'csv' || fileExtension === 'xlsx' || fileExtension === 'xls') {
+            setSelectedImportFile(file);
+            setImportMsg('Dosya seçildi. "Ekle" butonuna basarak işlemi başlatın.');
+            // Önceki verileri temizle
+            setImportedRows([]);
+            setImportMapping({});
         } else {
             setImportMsg('Desteklenmeyen dosya formatı. Sadece CSV ve Excel dosyaları desteklenir.');
         }
@@ -465,8 +391,8 @@ const TransactionModule: React.FC = () => {
     const handleDownloadReceipt = async (receiptUrl: string) => {
         try {
             // receiptUrl zaten /uploads/filename.jpg formatında geliyor
-            console.log('Downloading receipt from:', `http://localhost:5044${receiptUrl}`);
-            const response = await axios.get(`http://localhost:5044${receiptUrl}`, {
+            console.log('Downloading receipt from:', `${axios.defaults.baseURL}${receiptUrl}`);
+            const response = await axios.get(receiptUrl, {
                 responseType: 'blob'
             });
             
@@ -527,75 +453,159 @@ const TransactionModule: React.FC = () => {
 
     // Toplu işlem ekleme fonksiyonu
     const handleImportTransactions = async () => {
-        if (importedRows.length === 0) return;
+        if (!selectedImportFile) {
+            setImportMsg('Lütfen önce bir dosya seçin.');
+            return;
+        }
+
+        try {
+            setImportMsg('Dosya işleniyor...');
+            const fileExtension = selectedImportFile.name.toLowerCase().split('.').pop();
+            
+            if (fileExtension === 'csv') {
+                // CSV dosyası okuma
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    const text = evt.target?.result as string;
+                    const lines = text.split('\n').filter(Boolean);
+                    const headers = lines[0].split(',').map(h => h.trim());
+                    
+                    // Otomatik mapping
+                    const autoMapping: { [key: string]: string } = {};
+                    headers.forEach(h => {
+                      if (/tarih|date/i.test(h)) autoMapping[h] = 'transaction_date';
+                      else if (/açıklama|description/i.test(h)) autoMapping[h] = 'description';
+                      else if (/tutar|amount/i.test(h)) autoMapping[h] = 'amount';
+                      else if (/kategori|category/i.test(h)) autoMapping[h] = 'category';
+                      else autoMapping[h] = '';
+                    });
+                        
+                    // Otomatik kategori eşleştirme için açıklama sütununu bul
+                    const descriptionColumn = headers.find(h => /açıklama|description/i.test(h));
+                    setImportMapping(autoMapping);
+                    
+                    // Satırları oku ve otomatik kategori eşleştir
+                    const rows = lines.slice(1).map(line => {
+                        const values = line.split(',');
+                        const row: Record<string, string> = {};
+                        headers.forEach((h, i) => row[h] = values[i]?.trim());
+                        
+                        // Eğer açıklama sütunu varsa ve kategori sütunu boşsa, otomatik eşleştir
+                        if (descriptionColumn && row[descriptionColumn] && !row['Kategori'] && !row['category']) {
+                            const matchedCategory = matchCategoryByDescription(row[descriptionColumn]);
+                            if (matchedCategory) {
+                                row['Otomatik_Kategori'] = matchedCategory;
+                            }
+                        }
+                        
+                        return row;
+                    });
+                    setImportedRows(rows);
+                    setImportMsg(`${rows.length} satır yüklendi. Veritabanına eklemek için tekrar "Ekle" butonuna basın.`);
+                };
+                reader.readAsText(selectedImportFile);
+            } else if (fileExtension === 'xlsx' || fileExtension === 'xls') {
+                // Excel dosyası okuma
+                const formData = new FormData();
+                formData.append('file', selectedImportFile);
+                
+                const response = await axios.post('/api/parse-excel', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+                
+                const { headers, rows } = response.data;
+                
+                // Otomatik mapping
+                const autoMapping: { [key: string]: string } = {};
+                headers.forEach((h: string) => {
+                  if (/tarih|date/i.test(h)) autoMapping[h] = 'transaction_date';
+                  else if (/açıklama|description/i.test(h)) autoMapping[h] = 'description';
+                  else if (/tutar|amount/i.test(h)) autoMapping[h] = 'amount';
+                  else if (/kategori|category/i.test(h)) autoMapping[h] = 'category';
+                  else autoMapping[h] = '';
+                });
+                
+                // Otomatik kategori eşleştirme için açıklama sütununu bul
+                const descriptionColumn = headers.find((h: string) => /açıklama|description/i.test(h));
+                setImportMapping(autoMapping);
+                
+                // Satırları işle ve otomatik kategori eşleştir
+                const processedRows = rows.map((row: Record<string, string>) => {
+                    // Eğer açıklama sütunu varsa ve kategori sütunu boşsa, otomatik eşleştir
+                    if (descriptionColumn && row[descriptionColumn] && !row['Kategori'] && !row['category']) {
+                        const matchedCategory = matchCategoryByDescription(row[descriptionColumn]);
+                        if (matchedCategory) {
+                            row['Otomatik_Kategori'] = matchedCategory;
+                        }
+                    }
+                    return row;
+                });
+                
+                setImportedRows(processedRows);
+                setImportMsg(`${processedRows.length} satır yüklendi. Veritabanına eklemek için tekrar "Ekle" butonuna basın.`);
+            }
+        } catch (error) {
+            console.error('File processing error:', error);
+            setImportMsg('Dosya işlenirken hata oluştu.');
+        }
+    };
+
+    const handleImportTransactionsToDatabase = async () => {
+        if (importedRows.length === 0) {
+            setImportMsg('İşlenecek veri bulunamadı.');
+            return;
+        }
         
         try {
-            setImportMsg('İşlemler ekleniyor...');
-            console.log('Importing transactions:', importedRows);
-            
+            setImportMsg('İşlemler veritabanına ekleniyor...');
             let successCount = 0;
             let errorCount = 0;
             
             for (const row of importedRows) {
                 try {
-                    console.log('Processing row:', row);
+                    const dateField = Object.keys(importMapping).find(key => importMapping[key] === 'transaction_date');
+                    const descriptionField = Object.keys(importMapping).find(key => importMapping[key] === 'description');
+                    const amountField = Object.keys(importMapping).find(key => importMapping[key] === 'amount');
+                    const categoryField = Object.keys(importMapping).find(key => importMapping[key] === 'category');
                     
-                    // Gerekli alanları kontrol et
-                    const descriptionHeader = Object.keys(importMapping).find(h => importMapping[h] === 'description');
-                    const amountHeader = Object.keys(importMapping).find(h => importMapping[h] === 'amount');
-                    const dateHeader = Object.keys(importMapping).find(h => importMapping[h] === 'transaction_date');
-                    
-                    console.log('Headers found:', { descriptionHeader, amountHeader, dateHeader });
-                    
-                    if (!descriptionHeader || !amountHeader || !dateHeader) {
-                        console.error('Missing required headers');
+                    if (!dateField || !descriptionField || !amountField) {
                         errorCount++;
                         continue;
                     }
                     
-                    const description = row[descriptionHeader];
-                    const amount = row[amountHeader];
-                    const date = row[dateHeader];
+                    const date = row[dateField];
+                    const description = row[descriptionField];
+                    const amountStr = row[amountField];
+                    const categoryName = categoryField ? row[categoryField] : null;
+                    const finalCategoryName = categoryName || row['Otomatik_Kategori'] || 'Diğer';
                     
-                    console.log('Values extracted:', { description, amount, date });
+                    if (!date || !description || !amountStr) {
+                        errorCount++;
+                        continue;
+                    }
                     
-                    if (!description || !amount || !date) {
-                        console.error('Missing required values');
+                    const amount = parseFloat(amountStr.replace(/[^\d.-]/g, ''));
+                    if (isNaN(amount)) {
                         errorCount++;
                         continue;
                     }
                     
                     // Kategori ID'sini bul
-                    let categoryId = '';
-                    const categoryHeader = Object.keys(importMapping).find(h => importMapping[h] === 'category');
-                    if (categoryHeader && row[categoryHeader]) {
-                        // Kullanıcının girdiği kategori
-                        const categoryName = row[categoryHeader];
-                        const category = categories.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
-                        if (category) categoryId = category.id;
-                    } else if (row['Otomatik_Kategori']) {
-                        // Otomatik eşleştirilen kategori
-                        const category = categories.find(c => c.name === row['Otomatik_Kategori']);
-                        if (category) categoryId = category.id;
-                    }
+                    const category = categories.find(c => c.name === finalCategoryName);
+                    const categoryId = category?.id || categories[0]?.id;
                     
-                    console.log('Category found:', categoryId);
-                    
-                    // İşlemi ekle
                     const transactionData = {
-                        amount: Math.abs(parseFloat(amount)),
-                        date: date,
-                        categoryId: categoryId || categories[0]?.id, // Varsayılan kategori
-                        description: description || 'İçe aktarılan işlem',
-                        isIncome: parseFloat(amount) >= 0,
+                        amount: Math.abs(amount),
+                        date: new Date(date).toISOString().split('T')[0],
+                        categoryId: categoryId,
+                        description: description,
+                        isIncome: amount >= 0,
                         accountId: form.accountId || accounts[0]?.id
                     };
                     
-                    console.log('Sending transaction data:', transactionData);
-                    
-                    const response = await axios.post('/api/transaction', transactionData);
-                    console.log('Transaction added successfully:', response.data);
-                    
+                    await axios.post('/api/transaction', transactionData);
                     successCount++;
                 } catch (error) {
                     console.error('Error importing transaction:', error);
@@ -606,12 +616,13 @@ const TransactionModule: React.FC = () => {
             setImportMsg(`${successCount} işlem başarıyla eklendi. ${errorCount} hata.`);
             setImportedRows([]);
             setImportMapping({});
+            setSelectedImportFile(null);
             
             // İşlemler listesini yenile
             await fetchTransactions();
             
         } catch (error) {
-            setImportMsg('Toplu ekleme sırasında hata oluştu.');
+            setImportMsg('İşlemler eklenirken hata oluştu.');
             console.error('Import error:', error);
         }
     };
@@ -621,10 +632,30 @@ const TransactionModule: React.FC = () => {
         const file = e.target.files?.[0];
         if (!file) return;
         
+        const fileExtension = file.name.toLowerCase().split('.').pop();
+        
+        // Desteklenen dosya formatlarını kontrol et
+        if (!['csv', 'txt', 'xlsx', 'xls', 'pdf'].includes(fileExtension || '')) {
+            setBankStatementMsg('Desteklenmeyen dosya formatı. Sadece CSV, TXT, Excel ve PDF dosyaları desteklenir.');
+            return;
+        }
+        
+        setSelectedBankFile(file);
+        setBankStatementMsg('Dosya seçildi. "Ekle" butonuna basarak işlemi başlatın.');
+        // Önceki verileri temizle
+        setBankStatementTransactions([]);
+    };
+
+    const handleImportBankTransactions = async () => {
+        if (!selectedBankFile) {
+            setBankStatementMsg('Lütfen önce bir dosya seçin.');
+            return;
+        }
+
         try {
             setBankStatementMsg('Banka hesap özeti işleniyor...');
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('file', selectedBankFile);
             formData.append('bankType', bankType);
             
             const response = await axios.post('/api/parse-bank-statement', formData, {
@@ -642,7 +673,7 @@ const TransactionModule: React.FC = () => {
                 }));
                 
                 setBankStatementTransactions(transactions);
-                setBankStatementMsg(`${transactions.length} işlem başarıyla okundu.`);
+                setBankStatementMsg(`${transactions.length} işlem başarıyla okundu. Veritabanına eklemek için tekrar "Ekle" butonuna basın.`);
             } else {
                 setBankStatementMsg('Banka hesap özeti işlenirken hata oluştu.');
             }
@@ -652,11 +683,14 @@ const TransactionModule: React.FC = () => {
         }
     };
 
-    const handleImportBankTransactions = async () => {
-        if (bankStatementTransactions.length === 0) return;
+    const handleImportBankTransactionsToDatabase = async () => {
+        if (bankStatementTransactions.length === 0) {
+            setBankStatementMsg('İşlenecek veri bulunamadı.');
+            return;
+        }
         
         try {
-            setBankStatementMsg('İşlemler ekleniyor...');
+            setBankStatementMsg('İşlemler veritabanına ekleniyor...');
             let successCount = 0;
             let errorCount = 0;
             
@@ -685,6 +719,7 @@ const TransactionModule: React.FC = () => {
             
             setBankStatementMsg(`${successCount} işlem başarıyla eklendi. ${errorCount} hata.`);
             setBankStatementTransactions([]);
+            setSelectedBankFile(null);
             
             // İşlemler listesini yenile
             await fetchTransactions();
@@ -695,6 +730,19 @@ const TransactionModule: React.FC = () => {
         }
     };
 
+    // Temizleme fonksiyonları
+    const handleClearImport = () => {
+        setImportedRows([]);
+        setImportMapping({});
+        setImportMsg('');
+        setSelectedImportFile(null);
+    };
+
+    const handleClearBankStatement = () => {
+        setBankStatementTransactions([]);
+        setBankStatementMsg('');
+        setSelectedBankFile(null);
+    };
 
 
     return (
@@ -1003,17 +1051,40 @@ const TransactionModule: React.FC = () => {
                             <div>
                                 <h3>Toplu İşlem İçe Aktarma</h3>
                                 <div className="import-container" style={{ margin: '20px 0', padding: 16, borderRadius: 6, border: '1px solid #eee' }}>
-                                    <input type="file" accept=".csv,.xlsx,.xls" onChange={handleImportFile} />
+                                    <div style={{ marginBottom: 16 }}>
+                                        <label>Dosya Seçin:</label><br />
+                                        <input type="file" accept=".csv,.xlsx,.xls" onChange={handleImportFile} />
+                                        <div style={{ fontSize: '12px', color: '#666', marginTop: 4 }}>
+                                            Desteklenen formatlar: CSV, Excel (.xlsx, .xls)
+                                        </div>
+                                    </div>
                                     {importMsg && <div style={{ color: 'green', marginTop: 8 }}>{importMsg}</div>}
-                                    {importedRows.length > 0 && (
+                                    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                                         <button 
                                             className="category-add-btn" 
                                             onClick={handleImportTransactions}
-                                            style={{ marginTop: 8 }}
+                                            disabled={!selectedImportFile}
+                                            style={{ width: '120px' }}
                                         >
-                                            İşlemleri Ekle ({importedRows.length} adet)
+                                            Dosyayı Yükle
                                         </button>
-                                    )}
+                                        <button 
+                                            className="category-add-btn" 
+                                            onClick={handleImportTransactionsToDatabase}
+                                            disabled={importedRows.length === 0}
+                                            style={{ width: '120px' }}
+                                        >
+                                            Ekle
+                                        </button>
+                                        <button 
+                                            className="category-add-btn" 
+                                            onClick={handleClearImport}
+                                            disabled={importedRows.length === 0}
+                                            style={{ width: '120px', background: '#e53935' }}
+                                        >
+                                            Temizle
+                                        </button>
+                                    </div>
 
                                     {importedRows.length > 0 && (
                                         <div style={{ marginTop: 20, overflowX: 'auto' }}>
@@ -1065,17 +1136,40 @@ const TransactionModule: React.FC = () => {
                                             <option value="ziraat">Ziraat Bankası</option>
                                         </select>
                                     </div>
-                                    <input type="file" accept=".csv,.txt" onChange={handleBankStatementFile} />
+                                    <div style={{ marginBottom: 16 }}>
+                                        <label>Banka Hesap Özeti Dosyası:</label><br />
+                                        <input type="file" accept=".csv,.txt,.xlsx,.xls,.pdf" onChange={handleBankStatementFile} />
+                                        <div style={{ fontSize: '12px', color: '#666', marginTop: 4 }}>
+                                            Desteklenen formatlar: CSV, TXT, Excel (.xlsx, .xls), PDF
+                                        </div>
+                                    </div>
                                     {bankStatementMsg && <div style={{ color: 'green', marginTop: 8 }}>{bankStatementMsg}</div>}
-                                    {bankStatementTransactions.length > 0 && (
+                                    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                                         <button 
                                             className="category-add-btn" 
                                             onClick={handleImportBankTransactions}
-                                            style={{ marginTop: 8 }}
+                                            disabled={!selectedBankFile}
+                                            style={{ width: '120px' }}
                                         >
-                                            İşlemleri Ekle ({bankStatementTransactions.length} adet)
+                                            Dosyayı Yükle
                                         </button>
-                                    )}
+                                        <button 
+                                            className="category-add-btn" 
+                                            onClick={handleImportBankTransactionsToDatabase}
+                                            disabled={bankStatementTransactions.length === 0}
+                                            style={{ width: '120px' }}
+                                        >
+                                            Ekle
+                                        </button>
+                                        <button 
+                                            className="category-add-btn" 
+                                            onClick={handleClearBankStatement}
+                                            disabled={bankStatementTransactions.length === 0}
+                                            style={{ width: '120px', background: '#e53935' }}
+                                        >
+                                            Temizle
+                                        </button>
+                                    </div>
 
                                     {bankStatementTransactions.length > 0 && (
                                         <div style={{ marginTop: 20, overflowX: 'auto' }}>

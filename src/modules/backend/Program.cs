@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using Microsoft.Extensions.FileProviders;
 using OfficeOpenXml;
 using System.Text;
+using backend.Services;
 
 // Set EPPlus license for noncommercial use
 ExcelPackage.License.SetNonCommercialPersonal("PocketBank Development");
@@ -576,20 +577,16 @@ app.MapPost("/api/parse-bank-statement", async (HttpContext context) =>
     if (file.Length > 10 * 1024 * 1024) // 10MB limit
         return Results.BadRequest("File too large");
     
-    var allowedExtensions = new[] { ".csv", ".txt" };
+    var allowedExtensions = new[] { ".csv", ".txt", ".xlsx", ".xls", ".pdf" };
     var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
     
     if (!allowedExtensions.Contains(fileExtension))
-        return Results.BadRequest("Invalid file type. Only CSV and TXT files are supported.");
+        return Results.BadRequest("Invalid file type. Only CSV, TXT, Excel and PDF files are supported.");
     
     try
     {
-        using var stream = file.OpenReadStream();
-        using var reader = new StreamReader(stream);
-        var content = await reader.ReadToEndAsync();
-        
         var parser = new backend.Services.BankStatementParser();
-        var transactions = parser.ParseBankStatement(content, bankType);
+        var transactions = parser.ParseBankStatementFromFile(file, bankType);
         
         return Results.Ok(new { 
             success = true, 
