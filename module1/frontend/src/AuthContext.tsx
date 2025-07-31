@@ -7,7 +7,7 @@ interface AuthContextType {
   session: Session | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string) => Promise<{ error: any }>
+  signUp: (email: string, password: string, name: string, surname: string) => Promise<{ error: any }>
   signOut: () => Promise<void>
 }
 
@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return { error }
   }
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, name: string, surname: string) => {
     try {
       console.log('🔵 Starting signup process for:', email);
       
@@ -81,7 +81,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm`
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+          data: {
+            name: name,
+            surname: surname,
+            full_name: `${name} ${surname}`
+          }
         }
       });
 

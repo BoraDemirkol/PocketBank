@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LockOutlined, UserOutlined, ArrowLeftOutlined, MailOutlined, CheckCircleOutlined } from '@ant-design/icons';
-import { Input, Button, message, Form, Typography } from 'antd';
+import { Input, Button, message, Form, Typography } from '../node_modules/antd';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
@@ -12,8 +12,8 @@ const Register: React.FC = () => {
   const [userEmail, setUserEmail] = useState('');
   const { signUp } = useAuth(); // AuthContext'te tanımlı olmalı
 
-  const onFinish = async (values: { email: string; password: string; confirmPassword: string }) => {
-    const { email, password, confirmPassword } = values;
+  const onFinish = async (values: { name: string; surname: string; email: string; password: string; confirmPassword: string }) => {
+    const { name, surname, email, password, confirmPassword } = values;
 
     if (password !== confirmPassword) {
       message.error('Passwords do not match!');
@@ -21,7 +21,7 @@ const Register: React.FC = () => {
     }
 
     setLoading(true);
-    const { error } = await signUp(email, password);
+    const { error } = await signUp(email, password, name, surname);
 
     if (error) {
       message.error(error.message);
@@ -136,6 +136,28 @@ const Register: React.FC = () => {
 
       <Form onFinish={onFinish} layout="vertical">
         <Form.Item
+          name="name"
+          rules={[{ required: true, message: 'Please input your name!' }]}
+        >
+          <Input
+            placeholder="Name"
+            prefix={<UserOutlined />}
+            size="large"
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="surname"
+          rules={[{ required: true, message: 'Please input your surname!' }]}
+        >
+          <Input
+            placeholder="Surname"
+            prefix={<UserOutlined />}
+            size="large"
+          />
+        </Form.Item>
+
+        <Form.Item
           name="email"
           rules={[
             { required: true, message: 'Please input your email!' },
@@ -144,7 +166,7 @@ const Register: React.FC = () => {
         >
           <Input
             placeholder="Email"
-            prefix={<UserOutlined />}
+            prefix={<MailOutlined />}
             size="large"
           />
         </Form.Item>

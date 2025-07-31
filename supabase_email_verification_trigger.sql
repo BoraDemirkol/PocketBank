@@ -29,11 +29,25 @@ BEGIN
     SELECT EXISTS(SELECT 1 FROM public.users WHERE id = NEW.id) INTO user_exists;
     
     IF NOT user_exists THEN
-      -- Insert user into users table
-      INSERT INTO public.users (id, email)
-      VALUES (NEW.id, NEW.email);
+      -- Update auth user with full name for display
+      UPDATE auth.users 
+      SET raw_app_meta_data = COALESCE(raw_app_meta_data, '{}'::jsonb) || 
+          jsonb_build_object('full_name', 
+            COALESCE((NEW.raw_user_meta_data->>'name')::TEXT, '') || ' ' || 
+            COALESCE((NEW.raw_user_meta_data->>'surname')::TEXT, '')
+          )
+      WHERE id = NEW.id;
       
-      RAISE LOG 'User % inserted into users table', NEW.id;
+      -- Insert user into users table
+      INSERT INTO public.users (id, email, name, surname)
+      VALUES (
+        NEW.id, 
+        NEW.email,
+        COALESCE((NEW.raw_user_meta_data->>'name')::TEXT, ''),
+        COALESCE((NEW.raw_user_meta_data->>'surname')::TEXT, '')
+      );
+      
+      RAISE LOG 'User % inserted into users table with full name', NEW.id;
       
       -- Generate random account data
       random_account_type := account_types[floor(random() * array_length(account_types, 1)) + 1];

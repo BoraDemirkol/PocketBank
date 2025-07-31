@@ -41,21 +41,6 @@ const EmailVerification: React.FC = () => {
       <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
         <Link to="/signin">
           <Button 
-            type="default"
-            size="large"
-            style={{
-              borderColor: '#4a7c59',
-              color: '#4a7c59',
-              fontWeight: 500,
-              minWidth: '120px'
-            }}
-          >
-            Sign In
-          </Button>
-        </Link>
-        
-        <Link to="/dashboard">
-          <Button 
             type="primary"
             size="large"
             style={{
@@ -65,7 +50,7 @@ const EmailVerification: React.FC = () => {
               minWidth: '120px'
             }}
           >
-            Go to Dashboard
+            Sign In
           </Button>
         </Link>
       </div>
