@@ -11,7 +11,7 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.7" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
     <PackageReference Include="Npgsql" Version="8.0.3" />
-    <PackageReference Include="Supabase-csharp" Version="0.15.2" />
+    <PackageReference Include="Supabase-csharp" Version="0.16.0" />
   </ItemGroup>
 
 </Project>
