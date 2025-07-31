@@ -18,7 +18,6 @@ namespace PocketBank.Controllers
             _context = context;
         }
 
-        // ✅ 1. Hesaba ait tüm işlemleri getir
         // GET: /api/transactions?accountId=xxx
         [HttpGet]
         public async Task<IActionResult> GetAll(Guid accountId)
@@ -31,7 +30,6 @@ namespace PocketBank.Controllers
             return Ok(transactions);
         }
 
-        // ✅ 2. DTO olarak filtreli işlem listesi (ekstre verisi)
         // GET: /api/transactions/extract?accountId=xxx&startDate=...&endDate=...
         [HttpGet("extract")]
         public async Task<IActionResult> GetExtract(Guid accountId, DateTime? startDate, DateTime? endDate)
@@ -58,7 +56,6 @@ namespace PocketBank.Controllers
             return Ok(result);
         }
 
-        // ✅ 3. PDF ekstre
         // GET: /api/transactions/extractPdf?accountId=xxx&year=2025&month=7
         [HttpGet("extractPdf")]
         public async Task<IActionResult> GetMonthlyExtractPdf(Guid accountId, int year, int month)

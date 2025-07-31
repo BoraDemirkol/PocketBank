@@ -15,13 +15,19 @@ public class AccountController : ControllerBase
         _context = context;
     }
 
-    // GET: /api/account
     [HttpGet]
     public IActionResult GetAccounts()
     {
-        var accounts = _context.Accounts.ToList();
+        // Test amaçlı sabit kullanıcı ID'si
+        var testUserId = Guid.Parse("52a9688d-98ef-4541-a748-a60da44a6ba4");
+
+        var accounts = _context.Accounts
+            .Where(a => a.UserId == testUserId)
+            .ToList();
+
         return Ok(accounts);
     }
+
 
     // POST: /api/account
     [HttpPost]

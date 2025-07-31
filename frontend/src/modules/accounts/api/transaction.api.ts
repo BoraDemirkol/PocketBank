@@ -1,7 +1,6 @@
 import api from "../../../Shared/api/axios";
 import { Transaction } from "../types/transaction";
 
-// Yeni backend endpoint ile uyumlu hale getiriyoruz
 export const fetchTransactions = async (accountId: string): Promise<Transaction[]> => {
   const res = await api.get(`/transactions`, {
     params: { accountId }
@@ -10,7 +9,6 @@ export const fetchTransactions = async (accountId: string): Promise<Transaction[
 };
 
 
-// 🔹 2. Yeni Ekstre API (PDF özet ve filtreli listeleme için)
 export interface TransactionDto {
   date: string;
   amount: number;
@@ -27,7 +25,7 @@ export const fetchExtractTransactions = async (
   });
 
   return res.data.map((dto) => ({
-    id: "", // DTO'da gelmiyor
+    id: "", 
     accountId,
     ...dto,
   }));

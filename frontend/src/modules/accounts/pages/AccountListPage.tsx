@@ -7,6 +7,7 @@ import "../styles/AccountStyles.css";
 import { downloadExtractPdf } from "../api/extract.api";
 import { fetchExchangeRates } from "../api/currencyRates";
 
+// Tip tanımı
 type AccountType = "Vadesiz" | "Vadeli" | "Kredi Kartı";
 
 const AccountListPage = () => {
@@ -20,6 +21,9 @@ const AccountListPage = () => {
   const [targetCurrency, setTargetCurrency] = useState("USD");
   const [rates, setRates] = useState<Record<string, number>>({});
   const cardWidth = "250px";
+  const [currencies, setCurrencies] = useState<number[]>([]);
+  const currencyIcons = ["₺", "$", "€"];
+  const currencyMap = ["TRY", "USD", "EUR"];
 
   useEffect(() => {
     fetchAccounts()
@@ -44,6 +48,20 @@ const AccountListPage = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    setCurrencies(new Array(accounts.length).fill(0));
+  }, [accounts.length]);
+
+  const handleCurrencySwitch = (e: React.MouseEvent, idx: number) => {
+    e.stopPropagation();
+    setCurrencies((prev) => {
+      const updated = [...prev];
+      updated[idx] = (updated[idx] + 1) % currencyIcons.length;
+      return updated;
+    });
+    (e.currentTarget as HTMLButtonElement).blur();
+  };
+
   const createAccount = async () => {
     if (!name.trim()) return setError("Hesap adı boş olamaz");
 
@@ -52,7 +70,7 @@ const AccountListPage = () => {
       accountType: type,
       currency: "TRY",
       balance: 0,
-      userId: "00000000-0000-0000-0000-000000000001",
+      userId: "52a9688d-98ef-4541-a748-a60da44a6ba4",
     };
 
     try {
@@ -75,10 +93,16 @@ const AccountListPage = () => {
   return (
     <Layout>
       <div className="account-container">
-        <h2 className="module-title">📁 Modül 2: Account Management</h2>
+        <h2 className="module-title">
+          <span style={{ fontSize: "1.8rem" }}>🏦</span>
+          Hesap Yönetimi
+        </h2>
 
         <div className="create-card">
-          <h3>🆕 Yeni Hesap Oluştur</h3>
+          <h3>
+            <span style={{ fontSize: "1.2rem" }}>✨</span>
+            Yeni Hesap Oluştur
+          </h3>
           <label>Hesap Adı:</label>
           <input
             value={name}
@@ -95,46 +119,56 @@ const AccountListPage = () => {
             <option value="Kredi Kartı">Kredi Kartı</option>
           </select>
           {error && (
-            <p style={{ color: "red", fontSize: "0.9em", marginBottom: 10 }}>
+            <p
+              style={{
+                color: "#ef4444",
+                fontSize: "0.9em",
+                marginBottom: 10,
+                fontWeight: 500,
+              }}
+            >
               {error}
             </p>
           )}
-          <button onClick={createAccount}>Hesap Oluştur</button>
+          <button onClick={createAccount}>
+            <span style={{ marginRight: "8px" }}>➕</span>
+            Hesap Oluştur
+          </button>
         </div>
 
         <div className="account-filter">
-          <h3>📋 Hesaplarım</h3>
+          <h3>
+            <span style={{ fontSize: "1.3rem" }}>📊</span>
+            Hesaplarım
+          </h3>
           <div className="account-filter-buttons">
             {["All", "Vadesiz", "Vadeli", "Kredi Kartı"].map((t) => (
               <button
                 key={t}
                 onClick={() => setSelectedType(t as "All" | AccountType)}
-                className={selectedType === t ? "active" : ""}
+                className={selectedType === t ? "selected" : ""}
               >
                 {t}
               </button>
             ))}
           </div>
 
-          <div style={{ marginTop: 10 }}>
-            <label htmlFor="currency-select">
-              <strong>💱 Para Birimi:</strong>
-            </label>
-            <select
-              id="currency-select"
-              value={targetCurrency}
-              onChange={(e) => setTargetCurrency(e.target.value)}
-              style={{ marginLeft: 10 }}
-            >
-              <option value="TRY">TRY</option>
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
-            </select>
-          </div>
+          
         </div>
 
         {filteredAccounts.length === 0 ? (
-          <p>Seçilen türde hesap bulunamadı.</p>
+          <div
+            style={{
+              textAlign: "center",
+              padding: "40px",
+              color: "#64748b",
+              fontSize: "1.1rem",
+              fontWeight: 500,
+            }}
+          >
+            <div style={{ fontSize: "3rem", marginBottom: "16px" }}>🔍</div>
+            Seçilen türde hesap bulunamadı.
+          </div>
         ) : (
           <div
             className="account-card-container"
@@ -142,59 +176,70 @@ const AccountListPage = () => {
             onMouseLeave={() => setHovering(false)}
           >
             <div className="account-card-scroll" id="scroll-container">
-              {filteredAccounts.map((account) => (
-                <div
-                  key={account.id}
-                  className="account-card"
-                  style={{
-                    flex: `0 0 ${cardWidth}`,
-                    borderLeft: `5px solid ${
-                      account.accountType === "Vadesiz"
-                        ? "#667eea"
-                        : account.accountType === "Vadeli"
-                        ? "#4caf50"
-                        : "#e53935"
-                    }`,
-                  }}
-                >
-                  <h4>{account.accountName}</h4>
-                  <p>
-                    <strong>Tür:</strong> {account.accountType}
-                  </p>
-                  <p>
-                    <strong>Bakiye:</strong>{" "}
-                    {account.balance.toLocaleString("tr-TR", {
-                      minimumFractionDigits: 2,
-                    })}{" "}
-                    ₺
-                  </p>
-                  {rates[targetCurrency] !== undefined ? (
-                    <p>
-                      <strong>{targetCurrency} Karşılığı:</strong>{" "}
-                      {(account.balance * rates[targetCurrency]).toFixed(2)} {targetCurrency}
-                    </p>
-                  ) : (
-                    <p>
-                      <strong>{targetCurrency} Karşılığı:</strong> Yükleniyor...
-                    </p>
-                  )}
-                  <div className="account-card-buttons">
-                    <button onClick={() => setShowHistoryFor(account.id)}>
-                      Geçmiş
-                    </button>
+              {filteredAccounts.map((account, idx) => {
+                const selectedCurrency = currencyMap[currencies[idx] || 0];
+                return (
+                  <div
+                    key={account.id}
+                    className="account-card"
+                    style={{
+                      flex: `0 0 ${cardWidth}`,
+                      borderLeft: `5px solid ${
+                        account.accountType === "Vadesiz"
+                          ? "#667eea"
+                          : account.accountType === "Vadeli"
+                          ? "#10b981"
+                          : "#f59e0b"
+                      }`,
+                      position: "relative",
+                    }}
+                  >
                     <button
-                      onClick={() => {
-                        const today = new Date();
-                        const year = today.getFullYear();
-                        const month = today.getMonth() + 1;
-                        downloadExtractPdf(account.id, year, month);
-                      }}
+                      className="currency-switch-btn"
+                      onClick={(e) => handleCurrencySwitch(e, idx)}
+                      style={{ position: "absolute", top: 12, right: 12, zIndex: 20 }}
+                      aria-label="Para birimini değiştir"
+                      type="button"
+                      tabIndex={0}
                     >
-                      Ekstre
+                      {currencyIcons[currencies[idx] || 0]}
                     </button>
+                    <h4>{account.accountName}</h4>
+                    <p>
+                      <strong>Tür:</strong> {account.accountType}
+                    </p>
+                    <p>
+                      <strong>Bakiye:</strong>{" "}
+                      {account.balance.toLocaleString("tr-TR", {
+                        minimumFractionDigits: 2,
+                      })}{" "}
+                      ₺
+                    </p>
+                    {currencyMap[currencies[idx]] !== "TRY" && rates[currencyMap[currencies[idx]]] ? (
+                      <p>
+                        <strong>{currencyMap[currencies[idx]]} Karşılığı:</strong>{" "}
+                        {(account.balance * rates[currencyMap[currencies[idx]]]).toFixed(2)}{" "}
+                        {currencyMap[currencies[idx]]}
+                      </p>
+                    ) : null}
+                    <div className="account-card-buttons">
+                      <button onClick={() => setShowHistoryFor(account.id)}>
+                        📈 Geçmiş
+                      </button>
+                      <button
+                        onClick={() => {
+                          const today = new Date();
+                          const year = today.getFullYear();
+                          const month = today.getMonth() + 1;
+                          downloadExtractPdf(account.id, year, month);
+                        }}
+                      >
+                        📄 Ekstre
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {filteredAccounts.length > 4 && (
