@@ -5,6 +5,7 @@ import Signin from './Signin.tsx'
 import Signup from './Signup.tsx'
 import Dashboard from './Dashboard.tsx'
 import EmailVerification from './EmailVerification.tsx'
+import ThemeToggle from './ThemeToggle.tsx'
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
@@ -14,9 +15,9 @@ function App() {
     <Layout style={{ minHeight: '100vh' }}>
       <Header style={{ 
         display: 'flex', 
-        justifyContent: 'flex-start', 
+        justifyContent: 'space-between', 
         alignItems: 'center',
-        background: '#4a7c59',
+        background: 'var(--header-bg)',
         padding: '0 20px'
       }}>
         <Link to="/" style={{ textDecoration: 'none' }}>
@@ -37,10 +38,11 @@ function App() {
             PocketBank
           </Title>
         </Link>
+        <ThemeToggle />
       </Header>
       <Content style={{ 
         flex: 1,
-        backgroundColor: '#f8faf9',
+        backgroundColor: 'var(--content-bg)',
         backgroundImage: `
           radial-gradient(circle at 25% 25%, rgba(74, 124, 89, 0.08) 0%, transparent 50%),
           radial-gradient(circle at 75% 75%, rgba(74, 124, 89, 0.06) 0%, transparent 50%),
@@ -60,7 +62,7 @@ function App() {
       </Content>
       <Footer style={{ 
         textAlign: 'center', 
-        backgroundColor: '#4a7c59', 
+        backgroundColor: 'var(--footer-bg)', 
         color: 'white',
         padding: '20px 0'
       }}>
