@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, message, Spin } from '../node_modules/antd';
+import { Card, Button, message, Spin, Avatar } from '../node_modules/antd';
+import { EditOutlined } from '@ant-design/icons';
 import { useAuth } from './AuthContext';
 import { apiService } from './api';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +8,9 @@ import { useNavigate } from 'react-router-dom';
 interface UserProfile {
   userId: string;
   email: string;
+  name: string;
+  surname: string;
+  profilePictureUrl?: string;
   message: string;
 }
 
@@ -37,7 +41,6 @@ const Dashboard: React.FC = () => {
         setProfile(profileData);
         setBalance(balanceData);
       } catch (error) {
-        console.error('Failed to fetch data:', error);
         message.error('Failed to load dashboard data');
       } finally {
         setLoading(false);
@@ -70,13 +73,40 @@ const Dashboard: React.FC = () => {
       </div>
       
       <div style={{ display: 'grid', gap: '20px', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
-        <Card title="Profile" bordered={false}>
-          <p><strong>Email:</strong> {user?.email}</p>
+        <Card 
+          title="Profile" 
+          variant="outlined"
+          extra={
+            <Button 
+              type="text" 
+              icon={<EditOutlined />} 
+              onClick={() => navigate('/profile/edit')}
+              style={{ color: '#4a7c59' }}
+            >
+              Edit
+            </Button>
+          }
+        >
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
+            <Avatar
+              size={64}
+              src={profile?.profilePictureUrl}
+              style={{ backgroundColor: '#4a7c59', marginRight: '16px' }}
+            >
+              {profile?.name?.[0]?.toUpperCase()}{profile?.surname?.[0]?.toUpperCase()}
+            </Avatar>
+            <div>
+              <h3 style={{ margin: 0, color: '#4a7c59' }}>
+                {profile?.name} {profile?.surname}
+              </h3>
+              <p style={{ margin: 0, color: '#666' }}>{user?.email}</p>
+            </div>
+          </div>
           <p><strong>User ID:</strong> {profile?.userId}</p>
           <p><strong>Status:</strong> {profile?.message}</p>
         </Card>
         
-        <Card title="Account Balance" bordered={false}>
+        <Card title="Account Balance" variant="outlined">
           <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#52c41a' }}>
             ${balance?.balance?.toFixed(2)} {balance?.currency}
           </div>

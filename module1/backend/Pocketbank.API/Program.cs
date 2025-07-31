@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Pocketbank.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddScoped<UserService>();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -36,12 +38,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(supabaseJwtSecret)),
             ValidateIssuer = true,
-            ValidIssuer = supabaseUrl,
+            ValidIssuer = supabaseUrl + "/auth/v1",
             ValidateAudience = true,
             ValidAudience = "authenticated",
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero
         };
+        
     });
 
 builder.Services.AddAuthorization();

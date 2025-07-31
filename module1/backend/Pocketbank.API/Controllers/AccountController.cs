@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Pocketbank.API.Services;
+using Pocketbank.API.Models;
 
 namespace Pocketbank.API.Controllers;
 
@@ -9,18 +11,59 @@ namespace Pocketbank.API.Controllers;
 [Authorize]
 public class AccountController : ControllerBase
 {
+    private readonly UserService _userService;
+
+    public AccountController(UserService userService)
+    {
+        _userService = userService;
+    }
+
     [HttpGet("profile")]
-    public IActionResult GetProfile()
+    public async Task<IActionResult> GetProfile()
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var email = User.FindFirst(ClaimTypes.Email)?.Value;
         
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized("User ID not found in token");
+        }
+
+        var user = await _userService.GetUserByIdAsync(userId);
+        
+        if (user == null)
+        {
+            return NotFound("User profile not found");
+        }
+
         return Ok(new
         {
-            UserId = userId,
-            Email = email,
-            Message = "This is a protected endpoint!"
+            UserId = user.Id,
+            Email = user.Email,
+            Name = user.Name,
+            Surname = user.Surname,
+            ProfilePictureUrl = user.ProfilePictureUrl,
+            Message = "Profile data retrieved successfully"
         });
+    }
+
+    [HttpPut("profile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized("User ID not found in token");
+        }
+
+        var success = await _userService.UpdateUserProfileAsync(userId, request);
+        
+        if (!success)
+        {
+            return BadRequest("Failed to update profile");
+        }
+
+        return Ok(new { Message = "Profile updated successfully" });
     }
     
     [HttpGet("balance")]

@@ -54,10 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, name: string, surname: string) => {
     try {
-      console.log('🔵 Starting signup process for:', email);
-      
       // Check if user already exists in our users table
-      console.log('🔍 Checking if user exists in users table...');
       const { data: existingUser, error: selectError } = await supabase
         .from('users')
         .select('id')
@@ -65,16 +62,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .maybeSingle();
 
       if (selectError && selectError.code !== 'PGRST116') {
-        console.error('❌ Error checking existing user:', selectError);
         return { error: { message: 'Database error occurred' } };
       }
 
       if (existingUser) {
-        console.log('❌ User already exists in users table');
         return { error: { message: 'You cant create another account with this mail' } };
       }
-
-      console.log('✅ No existing user found, proceeding with auth signup...');
 
       // Try to sign up with Supabase auth
       const { data, error } = await supabase.auth.signUp({
@@ -91,7 +84,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (error) {
-        console.error('❌ Supabase auth signup error:', error);
         // Handle Supabase auth errors
         if (error.message.includes('already registered') || 
             error.message.includes('already exists') ||
@@ -101,14 +93,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error };
       }
 
-      const user = data.user;
-      console.log('✅ Auth user created successfully:', user?.id);
-      console.log('📧 Email verification required - database records will be created after email confirmation');
-
-      console.log('🎉 Signup process completed successfully');
       return { error: null };
     } catch (err) {
-      console.error('❌ Unexpected signup error:', err);
       return { error: { message: 'An unexpected error occurred' } };
     }
   };

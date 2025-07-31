@@ -46,6 +46,22 @@ class ApiService {
     
     return response.json()
   }
+  
+  async put(endpoint: string, data: any) {
+    const headers = await this.getAuthHeaders()
+    
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(data),
+    })
+    
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.statusText}`)
+    }
+    
+    return response.json()
+  }
 }
 
 export const apiService = new ApiService()
