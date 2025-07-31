@@ -5,7 +5,7 @@ import { Account } from "../types/account";
 import TransactionModal from "../components/TransactionModal";
 import "../styles/AccountStyles.css";
 import { downloadExtractPdf } from "../api/extract.api";
-
+import { fetchExchangeRates } from "../api/currencyRates";
 
 type AccountType = "Vadesiz" | "Vadeli" | "Kredi Kartı";
 
@@ -17,12 +17,31 @@ const AccountListPage = () => {
   const [error, setError] = useState("");
   const [hovering, setHovering] = useState(false);
   const [showHistoryFor, setShowHistoryFor] = useState<string | null>(null);
+  const [targetCurrency, setTargetCurrency] = useState("USD");
+  const [rates, setRates] = useState<Record<string, number>>({});
   const cardWidth = "250px";
 
   useEffect(() => {
     fetchAccounts()
       .then(setAccounts)
       .catch(() => setError("Hesaplar yüklenemedi"));
+  }, []);
+
+  useEffect(() => {
+    const getRates = async () => {
+      try {
+        const data = await fetchExchangeRates();
+        setRates(data.rates);
+      } catch (err) {
+        console.error("Kur bilgileri alınamadı:", err);
+      }
+    };
+
+    getRates();
+    const interval = setInterval(() => {
+      getRates();
+    }, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const createAccount = async () => {
@@ -96,6 +115,22 @@ const AccountListPage = () => {
               </button>
             ))}
           </div>
+
+          <div style={{ marginTop: 10 }}>
+            <label htmlFor="currency-select">
+              <strong>💱 Para Birimi:</strong>
+            </label>
+            <select
+              id="currency-select"
+              value={targetCurrency}
+              onChange={(e) => setTargetCurrency(e.target.value)}
+              style={{ marginLeft: 10 }}
+            >
+              <option value="TRY">TRY</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+            </select>
+          </div>
         </div>
 
         {filteredAccounts.length === 0 ? (
@@ -133,20 +168,30 @@ const AccountListPage = () => {
                     })}{" "}
                     ₺
                   </p>
+                  {rates[targetCurrency] !== undefined ? (
+                    <p>
+                      <strong>{targetCurrency} Karşılığı:</strong>{" "}
+                      {(account.balance * rates[targetCurrency]).toFixed(2)} {targetCurrency}
+                    </p>
+                  ) : (
+                    <p>
+                      <strong>{targetCurrency} Karşılığı:</strong> Yükleniyor...
+                    </p>
+                  )}
                   <div className="account-card-buttons">
                     <button onClick={() => setShowHistoryFor(account.id)}>
                       Geçmiş
                     </button>
                     <button
-                        onClick={() => {
-                          const today = new Date();
-                          const year = today.getFullYear();
-                          const month = today.getMonth() + 1; // getMonth() sıfırdan başlar
-                          downloadExtractPdf(account.id, year, month);
-                        }}
-                      >
-                        Ekstre
-                      </button>
+                      onClick={() => {
+                        const today = new Date();
+                        const year = today.getFullYear();
+                        const month = today.getMonth() + 1;
+                        downloadExtractPdf(account.id, year, month);
+                      }}
+                    >
+                      Ekstre
+                    </button>
                   </div>
                 </div>
               ))}
@@ -179,7 +224,6 @@ const AccountListPage = () => {
           </div>
         )}
 
-        {/* Transaction Modal */}
         {showHistoryFor && (
           <TransactionModal
             accountId={showHistoryFor}

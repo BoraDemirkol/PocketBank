@@ -75,5 +75,30 @@ namespace PocketBank.Controllers
 
             return File(pdfBytes, "application/pdf", $"ekstre-{year}-{month}.pdf");
         }
+        [HttpGet("balance")]
+        public async Task<IActionResult> GetAccountBalance(Guid accountId, string? currency = "TRY")
+        {
+            var account = await _context.Accounts.FindAsync(accountId);
+            if (account == null)
+                return NotFound("Hesap bulunamadı.");
+        
+            var balance = account.Balance;
+            var originalCurrency = account.Currency;
+        
+            if (!CurrencyConverter.IsSupported(currency))
+                return BadRequest("Desteklenmeyen para birimi.");
+        
+            var converted = CurrencyConverter.Convert(balance, originalCurrency, currency);
+        
+            return Ok(new
+            {
+                accountId = account.Id,
+                originalAmount = balance,
+                originalCurrency,
+                convertedAmount = Math.Round(converted, 2),
+                targetCurrency = currency
+            });
+        }
+
     }
 }
