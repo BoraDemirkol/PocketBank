@@ -1,3 +1,20 @@
+:root {
+  --primary-color: #4a7c59;
+  --background-color: #f8faf9;
+  --text-color: #333;
+  --header-bg: #4a7c59;
+  --content-bg: #f8faf9;
+  --footer-bg: #4a7c59;
+}
+
+[data-theme="dark"] {
+  --background-color: #141414;
+  --text-color: #ffffff;
+  --content-bg: #1f1f1f;
+  --header-bg: #2d4a35;
+  --footer-bg: #2d4a35;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -7,6 +24,7 @@
 body {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
-  color: #333;
-  background-color: #fff;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
