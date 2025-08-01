@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { LockOutlined, CheckCircleOutlined } from '@ant-design/icons';
-import { Input, Button, Form, App } from '../node_modules/antd';
+import { Input, Button, Form, App } from 'antd';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { supabase } from './supabase';
@@ -25,7 +25,7 @@ const ResetPassword: React.FC = () => {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const error = hashParams.get('error');
       const errorCode = hashParams.get('error_code');
-      const errorDescription = hashParams.get('error_description');
+      // const errorDescription = hashParams.get('error_description');
       
       if (error) {
         errorShownRef.current = true;
@@ -52,7 +52,7 @@ const ResetPassword: React.FC = () => {
       
       if (accessToken && refreshToken && type === 'recovery') {
         try {
-          const { data, error } = await supabase.auth.setSession({
+          const { error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
           });
@@ -63,7 +63,7 @@ const ResetPassword: React.FC = () => {
           } else {
             setIsValidSession(true);
           }
-        } catch (err) {
+        } catch {
           message.error('Invalid or expired reset link. Please request a new one.');
           navigate('/forgot-password');
         }

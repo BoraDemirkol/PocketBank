@@ -96,7 +96,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       return { error: null };
-    } catch (err) {
+    } catch {
       return { error: { message: 'An unexpected error occurred' } };
     }
   };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, message, Spin, Avatar } from '../node_modules/antd';
+import { Card, Button, message, Spin, Avatar } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 import { useAuth } from './AuthContext';
 import { apiService } from './api';
@@ -40,7 +40,7 @@ const Dashboard: React.FC = () => {
         
         setProfile(profileData);
         setBalance(balanceData);
-      } catch (error) {
+      } catch {
         message.error('Failed to load dashboard data');
       } finally {
         setLoading(false);

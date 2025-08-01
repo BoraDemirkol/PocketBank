@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, message, Form, Input, Upload, Avatar, Spin } from '../node_modules/antd';
+import { Card, Button, message, Form, Input, Upload, Avatar, Spin } from 'antd';
 import { UserOutlined, ArrowLeftOutlined, UploadOutlined, SaveOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
@@ -55,7 +55,7 @@ const EditProfile: React.FC = () => {
       const filePath = `${fileName}`; // Remove folder structure for now
 
       // Upload to Supabase storage
-      const { data, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('profile-pictures')
         .upload(filePath, file, {
           cacheControl: '3600',
@@ -76,7 +76,7 @@ const EditProfile: React.FC = () => {
       return urlData.publicUrl;
     } catch (error) {
       console.error('Upload error:', error);
-      message.error(`Failed to upload profile picture: ${error.message}`);
+      message.error(`Failed to upload profile picture: ${(error as Error).message}`);
       return null;
     } finally {
       setUploading(false);

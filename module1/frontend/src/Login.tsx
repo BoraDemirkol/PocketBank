@@ -6,7 +6,7 @@ import { useAuth } from './AuthContext';
 
 const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const { signIn, user, signOut } = useAuth();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
 
   const onFinish = async (values: { email: string; password: string }) => {
