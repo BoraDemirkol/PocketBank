@@ -214,8 +214,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const getMFAFactors = async () => {
-    const { data, error } = await supabase.auth.mfa.listFactors()
-    return { data, error }
+    try {
+      const { data, error } = await supabase.auth.mfa.listFactors()
+      return { data, error }
+    } catch (err) {
+      return { data: null, error: err }
+    }
   }
 
   const value: AuthContextType = {

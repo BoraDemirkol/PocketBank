@@ -33,11 +33,14 @@ const EditProfile: React.FC = () => {
   const loadMFAFactors = useCallback(async () => {
     try {
       const { data, error } = await getMFAFactors();
-      if (!error) {
+      if (!error && data) {
         setMfaFactors(data?.totp || []);
+      } else {
+        // If there's an error or no data, just set empty array
+        setMfaFactors([]);
       }
     } catch (error) {
-      console.error('Failed to load MFA factors:', error);
+      setMfaFactors([]);
     }
   }, [getMFAFactors]);
 
@@ -48,7 +51,13 @@ const EditProfile: React.FC = () => {
         setLoading(true);
         const profileData = await apiService.get('/account/profile');
         setProfile(profileData);
-        await loadMFAFactors();
+        
+        // Load MFA factors but don't let it fail the whole profile load
+        try {
+          await loadMFAFactors();
+        } catch (mfaError) {
+          setMfaFactors([]);
+        }
       } catch (error) {
         console.error('Failed to fetch profile:', error);
         message.error('Failed to load profile data');
