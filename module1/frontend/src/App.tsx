@@ -7,6 +7,8 @@ import Dashboard from './Dashboard.tsx'
 import EmailVerification from './EmailVerification.tsx'
 import EditProfile from './EditProfile.tsx'
 import ThemeToggle from './ThemeToggle.tsx'
+import ForgotPassword from './ForgotPassword.tsx'
+import ResetPassword from './ResetPassword.tsx'
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
@@ -60,6 +62,8 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile/edit" element={<EditProfile />} />
           <Route path="/auth/confirm" element={<EmailVerification />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
       </Content>
       <Footer style={{ 

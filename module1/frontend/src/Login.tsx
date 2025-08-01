@@ -73,6 +73,16 @@ const Login: React.FC = () => {
           </Button>
         </Form.Item>
       </Form>
+      
+      <div style={{ textAlign: 'center', marginTop: '16px' }}>
+        <Link
+          to="/forgot-password"
+          style={{ color: '#4a7c59', textDecoration: 'none', fontSize: '14px' }}
+        >
+          Forgot your password?
+        </Link>
+      </div>
+      
       <div style={{ textAlign: 'center', marginTop: '16px' }}>
         <span>Don't have an account? </span>
         <Link
