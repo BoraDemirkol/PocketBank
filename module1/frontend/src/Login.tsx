@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { LockOutlined, UserOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-import { Input, Button, message, Form } from 'antd';
+import { Input, Button, message, Form } from '../node_modules/antd';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
 
 const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { signIn, user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const onFinish = async (values: { email: string; password: string }) => {
     setLoading(true);
@@ -16,7 +18,7 @@ const Login: React.FC = () => {
     if (error) {
       message.error(error.message);
     } else {
-      message.success('Login successful!');
+      message.success(t('loginSuccess'));
       navigate('/dashboard');
     }
     setLoading(false);
@@ -27,19 +29,19 @@ const Login: React.FC = () => {
     <div style={{ maxWidth: '300px', margin: '50px auto', padding: '20px' }}>
       <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: '#4a7c59' }}>
         <ArrowLeftOutlined style={{ marginRight: '8px' }} />
-        Back to Home
+        {t('backToHome')}
       </Link>
-      <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>Login to PocketBank</h2>
+      <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>{t('loginTitle')}</h2>
       <Form onFinish={onFinish} layout="vertical">
         <Form.Item
           name="email"
           rules={[
-            { required: true, message: 'Please input your email!' },
-            { type: 'email', message: 'Please enter a valid email!' }
+            { required: true, message: t('emailRequired') },
+            { type: 'email', message: t('emailInvalid') }
           ]}
         >
           <Input 
-            placeholder="Email" 
+            placeholder={t('email')} 
             prefix={<UserOutlined />} 
             size="large"
           />
@@ -47,10 +49,10 @@ const Login: React.FC = () => {
         
         <Form.Item
           name="password"
-          rules={[{ required: true, message: 'Please input your password!' }]}
+          rules={[{ required: true, message: t('passwordRequired') }]}
         >
           <Input.Password 
-            placeholder="Password" 
+            placeholder={t('password')} 
             prefix={<LockOutlined />} 
             size="large"
           />
@@ -69,17 +71,17 @@ const Login: React.FC = () => {
               fontWeight: 500
             }}
           >
-            Sign In
+            {t('signIn')}
           </Button>
         </Form.Item>
       </Form>
       <div style={{ textAlign: 'center', marginTop: '16px' }}>
-        <span>Don't have an account? </span>
+        <span>{t('dontHaveAccount')} </span>
         <Link
           to="/signup"
           style={{ color: '#4a7c59', fontWeight: 'bold', textDecoration: 'none' }}
         >
-          Sign Up
+          {t('signUp')}
         </Link>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, message, Spin, Avatar } from '../node_modules/antd';
 import { EditOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
 import { apiService } from './api';
 import { useNavigate } from 'react-router-dom';
@@ -23,6 +24,7 @@ interface UserBalance {
 const Dashboard: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [balance, setBalance] = useState<UserBalance | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,7 +43,7 @@ const Dashboard: React.FC = () => {
         setProfile(profileData);
         setBalance(balanceData);
       } catch (error) {
-        message.error('Failed to load dashboard data');
+        message.error(t('error'));
       } finally {
         setLoading(false);
       }
@@ -58,7 +60,7 @@ const Dashboard: React.FC = () => {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <Spin size="large" />
+        <Spin size="large" tip={t('loading')} />
       </div>
     );
   }
@@ -66,15 +68,15 @@ const Dashboard: React.FC = () => {
   return (
     <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1>PocketBank Dashboard</h1>
+        <h1>{t('dashboard')}</h1>
         <Button onClick={handleSignOut} type="primary" danger>
-          Sign Out
+          {t('logout')}
         </Button>
       </div>
       
       <div style={{ display: 'grid', gap: '20px', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
         <Card 
-          title="Profile" 
+          title={t('editProfile')} 
           variant="outlined"
           extra={
             <Button 
@@ -83,7 +85,7 @@ const Dashboard: React.FC = () => {
               onClick={() => navigate('/profile/edit')}
               style={{ color: '#4a7c59' }}
             >
-              Edit
+              {t('edit')}
             </Button>
           }
         >
@@ -106,12 +108,12 @@ const Dashboard: React.FC = () => {
           <p><strong>Status:</strong> {profile?.message}</p>
         </Card>
         
-        <Card title="Account Balance" variant="outlined">
+        <Card title={t('accountBalance')} variant="outlined">
           <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#52c41a' }}>
             ${balance?.balance?.toFixed(2)} {balance?.currency}
           </div>
           <p style={{ marginTop: '10px', color: '#666' }}>
-            Available Balance
+            {t('accountBalance')}
           </p>
         </Card>
       </div>

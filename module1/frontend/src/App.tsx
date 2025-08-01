@@ -1,5 +1,6 @@
 import { Routes, Route, Link } from 'react-router-dom'
 import { Layout, Typography } from '../node_modules/antd'
+import { useTranslation } from 'react-i18next'
 import Mainpage from './Mainpage.tsx'
 import Signin from './Signin.tsx'
 import Signup from './Signup.tsx'
@@ -7,11 +8,14 @@ import Dashboard from './Dashboard.tsx'
 import EmailVerification from './EmailVerification.tsx'
 import EditProfile from './EditProfile.tsx'
 import ThemeToggle from './ThemeToggle.tsx'
+import LanguageToggle from './LanguageToggle.tsx'
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
 
 function App() {
+  const { t } = useTranslation();
+  
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Header style={{ 
@@ -36,10 +40,13 @@ function App() {
               userSelect: 'none'
             }}
           >
-            PocketBank
+            {t('pocketbank')}
           </Title>
         </Link>
-        <ThemeToggle />
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <LanguageToggle />
+          <ThemeToggle />
+        </div>
       </Header>
       <Content style={{ 
         flex: 1,
@@ -69,7 +76,7 @@ function App() {
         padding: '20px 0'
       }}>
         <Typography.Text style={{ color: 'white', fontSize: '14px' }}>
-          © 2025 PocketBank. All rights reserved.
+          {t('copyright')}
         </Typography.Text>
       </Footer>
     </Layout>

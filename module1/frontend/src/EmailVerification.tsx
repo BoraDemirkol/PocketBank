@@ -2,10 +2,13 @@ import React from 'react';
 import { Button, Typography } from '../node_modules/antd';
 import { Link } from 'react-router-dom';
 import { CheckCircleOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 const { Title, Text } = Typography;
 
 const EmailVerification: React.FC = () => {
+  const { t } = useTranslation();
+  
   return (
     <div style={{
       display: 'flex',
@@ -25,7 +28,7 @@ const EmailVerification: React.FC = () => {
       />
       
       <Title level={2} style={{ color: '#4a7c59', marginBottom: '16px' }}>
-        Email Verified Successfully!
+        {t('verificationSuccess')}
       </Title>
       
       <Text style={{ 
@@ -35,7 +38,7 @@ const EmailVerification: React.FC = () => {
         maxWidth: '400px',
         lineHeight: '1.6'
       }}>
-        Your email has been successfully verified. You can now access all features of your PocketBank account.
+        {t('verificationSuccess')}
       </Text>
       
       <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -50,14 +53,14 @@ const EmailVerification: React.FC = () => {
               minWidth: '120px'
             }}
           >
-            Sign In
+            {t('signIn')}
           </Button>
         </Link>
       </div>
       
       <div style={{ marginTop: '32px' }}>
         <Link to="/" style={{ color: '#4a7c59', textDecoration: 'none' }}>
-          ← Back to Home
+          ← {t('backToHome')}
         </Link>
       </div>
     </div>

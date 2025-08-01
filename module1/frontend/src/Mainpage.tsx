@@ -1,7 +1,10 @@
 import { Button, Typography } from '../node_modules/antd';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function Mainpage() {
+    const { t } = useTranslation();
+    
     return (
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             {/* Top half - Text only */}
@@ -19,7 +22,7 @@ export default function Mainpage() {
                     marginBottom: '10px',
                     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
                 }}>
-                    Bi şeyler yazarız buraya.
+                    {t('welcomeTitle')}
                 </Typography.Title>
                 <Typography.Text style={{ 
                     textAlign: 'center', 
@@ -27,7 +30,7 @@ export default function Mainpage() {
                     color: '#666',
                     maxWidth: '500px'
                 }}>
-                    Bla bla bla bla
+                    {t('welcomeSubtitle')}
                 </Typography.Text>
             </div>
 
@@ -57,7 +60,7 @@ export default function Mainpage() {
                             color: '#4a7c59', 
                             marginBottom: '15px' 
                         }}>
-                            Existing Customer
+                            {t('alreadyHaveAccount')}
                         </Typography.Title>
                         <Typography.Text style={{ 
                             color: '#666', 
@@ -65,7 +68,7 @@ export default function Mainpage() {
                             marginBottom: '20px',
                             fontSize: '14px'
                         }}>
-                            Access your account and manage your finances securely.
+                            {t('welcomeSubtitle')}
                         </Typography.Text>
                     </div>
                     <Link to="/signin" style={{ width: '100%' }}>
@@ -79,7 +82,7 @@ export default function Mainpage() {
                                 width: '100%'
                             }}
                         >
-                            Sign In
+                            {t('signIn')}
                         </Button>
                     </Link>
                 </div>
@@ -102,7 +105,7 @@ export default function Mainpage() {
                             color: '#4a7c59', 
                             marginBottom: '15px' 
                         }}>
-                            New Customer
+                            {t('getStarted')}
                         </Typography.Title>
                         <Typography.Text style={{ 
                             color: '#666', 
@@ -110,7 +113,7 @@ export default function Mainpage() {
                             marginBottom: '20px',
                             fontSize: '14px'
                         }}>
-                            Join thousands who trust PocketBank for their banking needs.
+                            {t('welcomeSubtitle')}
                         </Typography.Text>
                     </div>
                     <Link to="/signup" style={{ width: '100%' }}>
@@ -124,7 +127,7 @@ export default function Mainpage() {
                                 width: '100%'
                             }}
                         >
-                            Sign Up
+                            {t('signUp')}
                         </Button>
                     </Link>
                 </div>

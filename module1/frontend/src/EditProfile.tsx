@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, message, Form, Input, Upload, Avatar, Spin } from '../node_modules/antd';
 import { UserOutlined, ArrowLeftOutlined, UploadOutlined, SaveOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
 import { apiService } from './api';
 import { supabase } from './supabase';
@@ -17,6 +18,7 @@ interface UserProfile {
 const EditProfile: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -36,7 +38,7 @@ const EditProfile: React.FC = () => {
         });
       } catch (error) {
         console.error('Failed to fetch profile:', error);
-        message.error('Failed to load profile data');
+        message.error(t('error'));
       } finally {
         setLoading(false);
       }
@@ -76,7 +78,7 @@ const EditProfile: React.FC = () => {
       return urlData.publicUrl;
     } catch (error) {
       console.error('Upload error:', error);
-      message.error(`Failed to upload profile picture: ${error.message}`);
+      message.error(t('error'));
       return null;
     } finally {
       setUploading(false);
@@ -94,14 +96,14 @@ const EditProfile: React.FC = () => {
     // Validate file type
     const isImage = file.type?.startsWith('image/');
     if (!isImage) {
-      message.error('Please upload an image file');
+      message.error(t('error'));
       return;
     }
 
     // Validate file size (max 5MB)
     const isLt5M = file.size / 1024 / 1024 < 5;
     if (!isLt5M) {
-      message.error('Image must be smaller than 5MB');
+      message.error(t('error'));
       return;
     }
 
@@ -109,7 +111,7 @@ const EditProfile: React.FC = () => {
     
     if (url) {
       setNewProfilePicture(url);
-      message.success('Profile picture uploaded successfully');
+      message.success(t('success'));
     }
   };
 
@@ -123,11 +125,11 @@ const EditProfile: React.FC = () => {
         profilePictureUrl: newProfilePicture || profile?.profilePictureUrl
       });
 
-      message.success('Profile updated successfully');
+      message.success(t('success'));
       navigate('/dashboard');
     } catch (error) {
       console.error('Failed to update profile:', error);
-      message.error('Failed to update profile');
+      message.error(t('error'));
     } finally {
       setSaving(false);
     }
@@ -136,7 +138,7 @@ const EditProfile: React.FC = () => {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <Spin size="large" />
+        <Spin size="large" tip={t('loading')} />
       </div>
     );
   }
@@ -147,10 +149,10 @@ const EditProfile: React.FC = () => {
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
       <Link to="/dashboard" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: '#4a7c59' }}>
         <ArrowLeftOutlined style={{ marginRight: '8px' }} />
-        Back to Dashboard
+        {t('backToDashboard')}
       </Link>
 
-      <Card title="Edit Profile" variant="outlined">
+      <Card title={t('editProfileTitle')} variant="outlined">
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
           <Avatar
             size={120}
@@ -171,7 +173,7 @@ const EditProfile: React.FC = () => {
                 loading={uploading}
                 style={{ borderColor: '#4a7c59', color: '#4a7c59' }}
               >
-                {uploading ? 'Uploading...' : 'Change Picture'}
+                {uploading ? t('loading') : t('edit')}
               </Button>
             </Upload>
           </div>
@@ -185,11 +187,11 @@ const EditProfile: React.FC = () => {
         >
           <Form.Item
             name="name"
-            label="Name"
-            rules={[{ required: true, message: 'Please enter your name' }]}
+            label={t('firstName')}
+            rules={[{ required: true, message: t('firstNameRequired') }]}
           >
             <Input
-              placeholder="Enter your name"
+              placeholder={t('firstName')}
               prefix={<UserOutlined />}
               size="large"
             />
@@ -197,11 +199,11 @@ const EditProfile: React.FC = () => {
 
           <Form.Item
             name="surname"
-            label="Surname"
-            rules={[{ required: true, message: 'Please enter your surname' }]}
+            label={t('lastName')}
+            rules={[{ required: true, message: t('lastNameRequired') }]}
           >
             <Input
-              placeholder="Enter your surname"
+              placeholder={t('lastName')}
               prefix={<UserOutlined />}
               size="large"
             />
@@ -221,7 +223,7 @@ const EditProfile: React.FC = () => {
                 fontWeight: 500
               }}
             >
-              Save Changes
+              {t('saveChanges')}
             </Button>
           </Form.Item>
         </Form>

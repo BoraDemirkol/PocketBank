@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { LockOutlined, UserOutlined, ArrowLeftOutlined, MailOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { Input, Button, message, Form, Typography } from '../node_modules/antd';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
 
 const { Title, Text } = Typography;
@@ -10,13 +11,14 @@ const Register: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [userEmail, setUserEmail] = useState('');
-  const { signUp } = useAuth(); // AuthContext'te tanımlı olmalı
+  const { signUp } = useAuth();
+  const { t } = useTranslation();
 
   const onFinish = async (values: { name: string; surname: string; email: string; password: string; confirmPassword: string }) => {
     const { name, surname, email, password, confirmPassword } = values;
 
     if (password !== confirmPassword) {
-      message.error('Passwords do not match!');
+      message.error(t('passwordsNoMatch'));
       return;
     }
 
@@ -55,7 +57,7 @@ const Register: React.FC = () => {
         />
         
         <Title level={3} style={{ color: '#4a7c59', marginBottom: '16px' }}>
-          Check Your Email!
+          {t('emailVerificationTitle')}
         </Title>
         
         <Text style={{ 
@@ -65,7 +67,7 @@ const Register: React.FC = () => {
           marginBottom: '20px',
           lineHeight: '1.5'
         }}>
-          We've sent a verification link to:
+          {t('registerSuccess')}
         </Text>
         
         <div style={{
@@ -88,7 +90,7 @@ const Register: React.FC = () => {
           marginBottom: '24px',
           lineHeight: '1.4'
         }}>
-          Click the link in your email to verify your account and complete the registration process.
+          {t('verificationSuccess')}
         </Text>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -103,12 +105,12 @@ const Register: React.FC = () => {
                 width: '100%'
               }}
             >
-              Go to Sign In
+              {t('goToLogin')}
             </Button>
           </Link>
           
           <Link to="/" style={{ color: '#4a7c59', textDecoration: 'none' }}>
-            ← Back to Home
+            ← {t('backToHome')}
           </Link>
         </div>
       </div>
@@ -128,19 +130,19 @@ const Register: React.FC = () => {
     }}>
       <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: '#4a7c59' }}>
         <ArrowLeftOutlined style={{ marginRight: '8px' }} />
-        Back to Home
+        {t('backToHome')}
       </Link>
       <h2 style={{ textAlign: 'center', marginBottom: '24px', color: '#4a7c59' }}>
-        Create your PocketBank Account
+        {t('registerTitle')}
       </h2>
 
       <Form onFinish={onFinish} layout="vertical">
         <Form.Item
           name="name"
-          rules={[{ required: true, message: 'Please input your name!' }]}
+          rules={[{ required: true, message: t('firstNameRequired') }]}
         >
           <Input
-            placeholder="Name"
+            placeholder={t('firstName')}
             prefix={<UserOutlined />}
             size="large"
           />
@@ -148,10 +150,10 @@ const Register: React.FC = () => {
 
         <Form.Item
           name="surname"
-          rules={[{ required: true, message: 'Please input your surname!' }]}
+          rules={[{ required: true, message: t('lastNameRequired') }]}
         >
           <Input
-            placeholder="Surname"
+            placeholder={t('lastName')}
             prefix={<UserOutlined />}
             size="large"
           />
@@ -160,12 +162,12 @@ const Register: React.FC = () => {
         <Form.Item
           name="email"
           rules={[
-            { required: true, message: 'Please input your email!' },
-            { type: 'email', message: 'Please enter a valid email!' }
+            { required: true, message: t('emailRequired') },
+            { type: 'email', message: t('emailInvalid') }
           ]}
         >
           <Input
-            placeholder="Email"
+            placeholder={t('email')}
             prefix={<MailOutlined />}
             size="large"
           />
@@ -173,10 +175,10 @@ const Register: React.FC = () => {
 
         <Form.Item
           name="password"
-          rules={[{ required: true, message: 'Please input your password!' }]}
+          rules={[{ required: true, message: t('passwordRequired') }]}
         >
           <Input.Password
-            placeholder="Password"
+            placeholder={t('password')}
             prefix={<LockOutlined />}
             size="large"
           />
@@ -186,19 +188,19 @@ const Register: React.FC = () => {
           name="confirmPassword"
           dependencies={['password']}
           rules={[
-            { required: true, message: 'Please confirm your password!' },
+            { required: true, message: t('passwordRequired') },
             ({ getFieldValue }) => ({
               validator(_, value) {
                 if (!value || getFieldValue('password') === value) {
                   return Promise.resolve();
                 }
-                return Promise.reject(new Error('Passwords do not match!'));
+                return Promise.reject(new Error(t('passwordsNoMatch')));
               }
             })
           ]}
         >
           <Input.Password
-            placeholder="Confirm Password"
+            placeholder={t('confirmPassword')}
             prefix={<LockOutlined />}
             size="large"
           />
@@ -217,17 +219,17 @@ const Register: React.FC = () => {
               fontWeight: 500
             }}
           >
-            Sign Up
+            {t('createAccount')}
           </Button>
         </Form.Item>
       </Form>
       <div style={{ textAlign: 'center', marginTop: '16px' }}>
-        <span>Already have an account? </span>
+        <span>{t('alreadyHaveAccount')} </span>
         <Link
           to="/signin"
           style={{ color: '#4a7c59', fontWeight: 'bold', textDecoration: 'none' }}
         >
-          Sign In
+          {t('signIn')}
         </Link>
       </div>
     </div>
