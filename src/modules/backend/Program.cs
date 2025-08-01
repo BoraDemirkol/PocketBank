@@ -60,6 +60,14 @@ app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAntiforgery();
 
+// Health check endpoint
+app.MapGet("/api/health", () => Results.Ok(new { 
+    status = "healthy", 
+    timestamp = DateTime.UtcNow,
+    version = "1.0.0"
+}))
+.WithName("HealthCheck");
+
 // Seed data for testing
 using (var scope = app.Services.CreateScope())
 {
@@ -91,13 +99,19 @@ using (var scope = app.Services.CreateScope())
         {
             var userCategories = new List<Category>
             {
-                new Category { Name = "Kira", Icon = "🏠", Color = "#9c27b0", UserId = user.Id },
-                new Category { Name = "Fatura", Icon = "💡", Color = "#ff9800", UserId = user.Id },
-                new Category { Name = "Eğlence", Icon = "🎬", Color = "#e91e63", UserId = user.Id },
-                new Category { Name = "Ulaşım", Icon = "🚕", Color = "#2196f3", UserId = user.Id },
                 new Category { Name = "Market", Icon = "🛒", Color = "#4caf50", UserId = user.Id },
+                new Category { Name = "Yemek", Icon = "🍔", Color = "#ff5722", UserId = user.Id },
+                new Category { Name = "Online Alışveriş", Icon = "🛍️", Color = "#9c27b0", UserId = user.Id },
+                new Category { Name = "Ulaşım", Icon = "🚕", Color = "#2196f3", UserId = user.Id },
+                new Category { Name = "Fatura", Icon = "💡", Color = "#ff9800", UserId = user.Id },
+                new Category { Name = "Kira", Icon = "🏠", Color = "#795548", UserId = user.Id },
+                new Category { Name = "Eğlence", Icon = "🎬", Color = "#e91e63", UserId = user.Id },
                 new Category { Name = "Sağlık", Icon = "🏥", Color = "#f44336", UserId = user.Id },
-                new Category { Name = "Eğitim", Icon = "📚", Color = "#673ab7", UserId = user.Id }
+                new Category { Name = "Eğitim", Icon = "📚", Color = "#673ab7", UserId = user.Id },
+                new Category { Name = "Giyim", Icon = "👕", Color = "#00bcd4", UserId = user.Id },
+                new Category { Name = "Elektronik", Icon = "💻", Color = "#607d8b", UserId = user.Id },
+                new Category { Name = "Banka İşlemleri", Icon = "🏦", Color = "#8bc34a", UserId = user.Id },
+                new Category { Name = "Gelir", Icon = "💰", Color = "#4caf50", UserId = user.Id }
             };
             categories.AddRange(userCategories);
         }
@@ -112,7 +126,7 @@ using (var scope = app.Services.CreateScope())
         if (currentUser != null)
         {
             var existingCategories = await db.Categories.Where(c => c.UserId == currentUser.Id).ToListAsync();
-            var defaultCategoryNames = new[] { "Kira", "Fatura", "Eğlence", "Ulaşım", "Market", "Sağlık", "Eğitim" };
+            var defaultCategoryNames = new[] { "Market", "Yemek", "Online Alışveriş", "Ulaşım", "Fatura", "Kira", "Eğlence", "Sağlık", "Eğitim", "Giyim", "Elektronik", "Banka İşlemleri", "Gelir" };
             
             var missingCategories = defaultCategoryNames
                 .Where(name => !existingCategories.Any(c => c.Name == name))
@@ -123,13 +137,19 @@ using (var scope = app.Services.CreateScope())
                 var newCategories = new List<Category>();
                 var categoryConfigs = new Dictionary<string, (string icon, string color)>
                 {
-                    { "Kira", ("🏠", "#9c27b0") },
-                    { "Fatura", ("💡", "#ff9800") },
-                    { "Eğlence", ("🎬", "#e91e63") },
-                    { "Ulaşım", ("🚕", "#2196f3") },
                     { "Market", ("🛒", "#4caf50") },
+                    { "Yemek", ("🍔", "#ff5722") },
+                    { "Online Alışveriş", ("🛍️", "#9c27b0") },
+                    { "Ulaşım", ("🚕", "#2196f3") },
+                    { "Fatura", ("💡", "#ff9800") },
+                    { "Kira", ("🏠", "#795548") },
+                    { "Eğlence", ("🎬", "#e91e63") },
                     { "Sağlık", ("🏥", "#f44336") },
-                    { "Eğitim", ("📚", "#673ab7") }
+                    { "Eğitim", ("📚", "#673ab7") },
+                    { "Giyim", ("👕", "#00bcd4") },
+                    { "Elektronik", ("💻", "#607d8b") },
+                    { "Banka İşlemleri", ("🏦", "#8bc34a") },
+                    { "Gelir", ("💰", "#4caf50") }
                 };
                 
                 foreach (var categoryName in missingCategories)
@@ -253,7 +273,7 @@ app.MapPost("/api/recurring-transaction", async (RecurringTransactionRequest req
         return Results.BadRequest("No user found");
     }
 
-            var startDate = DateTime.Parse(request.StartDate ?? DateTime.UtcNow.ToString("yyyy-MM-dd")).ToUniversalTime();
+            var startDate = DateTime.SpecifyKind(DateTime.Parse(request.StartDate ?? DateTime.UtcNow.ToString("yyyy-MM-dd")), DateTimeKind.Utc);
         
         var recurringTransaction = new RecurringTransaction
         {
@@ -318,7 +338,7 @@ app.MapPost("/api/transaction", async (TransactionRequest request, ApplicationDb
     {
         Description = request.Description ?? "Yeni İşlem",
         Amount = request.IsIncome ? Math.Abs(request.Amount) : -Math.Abs(request.Amount),
-        TransactionDate = DateTime.Parse(request.Date ?? DateTime.UtcNow.ToString("yyyy-MM-dd")).ToUniversalTime(),
+        TransactionDate = DateTime.SpecifyKind(DateTime.Parse(request.Date ?? DateTime.UtcNow.ToString("yyyy-MM-dd")), DateTimeKind.Utc),
         CategoryId = categoryId,
         AccountId = accountId,
         ReceiptUrl = request.ReceiptUrl
@@ -356,7 +376,7 @@ app.MapPut("/api/transaction/{id}", async (Guid id, TransactionRequest request, 
     
     transaction.Description = request.Description ?? transaction.Description ?? "Yeni İşlem";
     transaction.Amount = request.IsIncome ? Math.Abs(request.Amount) : -Math.Abs(request.Amount);
-    transaction.TransactionDate = DateTime.Parse(request.Date ?? transaction.TransactionDate.ToString("yyyy-MM-dd"));
+    transaction.TransactionDate = DateTime.SpecifyKind(DateTime.Parse(request.Date ?? transaction.TransactionDate.ToString("yyyy-MM-dd")), DateTimeKind.Utc);
     transaction.CategoryId = categoryId;
     transaction.AccountId = accountId;
     transaction.ReceiptUrl = request.ReceiptUrl ?? transaction.ReceiptUrl;
@@ -814,9 +834,155 @@ app.MapGet("/api/current-user", async (ApplicationDbContext db) =>
     if (currentUser == null)
         return Results.NotFound("No user found");
     
-    return Results.Ok(new { id = currentUser.Id, email = currentUser.Email });
+    return Results.Ok(new { 
+        id = currentUser.Id, 
+        email = currentUser.Email,
+        name = currentUser.Name,
+        surname = currentUser.Surname,
+        profilePictureUrl = currentUser.ProfilePictureUrl
+    });
 })
 .WithName("GetCurrentUser");
+
+// Get database schema information
+app.MapGet("/api/database-schema", (ApplicationDbContext db) =>
+{
+    try
+    {
+        var schema = new
+        {
+            tables = new[]
+            {
+                new { name = "users", columns = new[] { "id", "email", "name", "surname", "profile_picture_url", "created_at" } },
+                new { name = "accounts", columns = new[] { "id", "user_id", "account_name", "account_type", "balance", "currency", "created_at" } },
+                new { name = "categories", columns = new[] { "id", "user_id", "name", "icon", "color", "created_at" } },
+                new { name = "transactions", columns = new[] { "id", "account_id", "category_id", "amount", "transaction_date", "description", "created_at", "receipt_url" } },
+                new { name = "recurring_transactions", columns = new[] { "id", "user_id", "account_id", "category_id", "description", "amount", "start_date", "frequency", "is_income", "is_active", "last_processed", "created_at" } },
+                new { name = "budgets", columns = new[] { "id", "user_id", "name", "amount", "period", "start_date", "created_at" } }
+            }
+        };
+        
+        return Results.Ok(schema);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest($"Error getting schema: {ex.Message}");
+    }
+})
+.WithName("GetDatabaseSchema");
+
+// Debug endpoint to check recurring transactions
+app.MapGet("/api/debug/recurring-transactions", async (ApplicationDbContext db) =>
+{
+    try
+    {
+        var recurringTransactions = await db.RecurringTransactions
+            .Include(rt => rt.Category)
+            .Include(rt => rt.Account)
+            .ToListAsync();
+        
+        var debugInfo = recurringTransactions.Select(rt => new
+        {
+            id = rt.Id,
+            description = rt.Description,
+            amount = rt.Amount,
+            isIncome = rt.IsIncome,
+            isActive = rt.IsActive,
+            lastProcessed = rt.LastProcessed,
+            category = rt.Category?.Name,
+            account = rt.Account?.AccountName
+        });
+        
+        return Results.Ok(debugInfo);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest($"Error getting recurring transactions: {ex.Message}");
+    }
+})
+.WithName("DebugRecurringTransactions");
+
+// Force create a test transaction from recurring (for testing)
+app.MapPost("/api/debug/create-test-transaction", async (ApplicationDbContext db) =>
+{
+    try
+    {
+        // Get first recurring transaction
+        var recurring = await db.RecurringTransactions
+            .Include(rt => rt.Category)
+            .Include(rt => rt.Account)
+            .FirstOrDefaultAsync();
+        
+        if (recurring == null)
+            return Results.BadRequest("No recurring transactions found");
+        
+        // Create transaction manually with correct amount
+        var transactionAmount = recurring.IsIncome ? Math.Abs(recurring.Amount) : -Math.Abs(recurring.Amount);
+        
+        var transaction = new Transaction
+        {
+            Amount = transactionAmount,
+            Description = $"[TEST] {recurring.Description}",
+            CategoryId = recurring.CategoryId,
+            AccountId = recurring.AccountId,
+            TransactionDate = DateTime.UtcNow
+        };
+
+        db.Transactions.Add(transaction);
+        await db.SaveChangesAsync();
+
+        return Results.Ok(new { 
+            message = "Test transaction created",
+            recurringAmount = recurring.Amount,
+            recurringIsIncome = recurring.IsIncome,
+            transactionAmount = transactionAmount,
+            transactionId = transaction.Id
+        });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest($"Error creating test transaction: {ex.Message}");
+    }
+})
+.WithName("CreateTestTransaction");
+
+// Update existing recurring transactions to set isIncome based on amount
+app.MapPost("/api/debug/fix-recurring-transactions", async (ApplicationDbContext db) =>
+{
+    try
+    {
+        var recurringTransactions = await db.RecurringTransactions.ToListAsync();
+        var updatedCount = 0;
+        
+        foreach (var rt in recurringTransactions)
+        {
+            // If amount is positive, set isIncome to true
+            if (rt.Amount > 0 && !rt.IsIncome)
+            {
+                rt.IsIncome = true;
+                updatedCount++;
+            }
+            // If amount is negative, set isIncome to false
+            else if (rt.Amount < 0 && rt.IsIncome)
+            {
+                rt.IsIncome = false;
+                updatedCount++;
+            }
+        }
+        
+        await db.SaveChangesAsync();
+        
+        return Results.Ok(new { 
+            message = $"Updated {updatedCount} recurring transactions",
+            totalRecurringTransactions = recurringTransactions.Count
+        });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest($"Error fixing recurring transactions: {ex.Message}");
+    }
+})
+.WithName("FixRecurringTransactions");
 
 app.Run();
 

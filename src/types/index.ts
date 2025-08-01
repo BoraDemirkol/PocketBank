@@ -1,3 +1,12 @@
+export interface User {
+    id: string;
+    email: string;
+    name?: string;
+    surname?: string;
+    profilePictureUrl?: string;
+    createdAt?: string;
+}
+
 export interface Category {
     id: string; // Changed from number to string to match Guid
     userId: string;

@@ -71,20 +71,79 @@ const TransactionModule: React.FC = () => {
 
     // Otomatik kategori eşleştirme için anahtar kelimeler
     const categoryKeywords: { [key: string]: string[] } = {
-        'Kira': ['kira', 'ev', 'konut', 'apartman', 'mülk', 'emlak'],
-        'Fatura': ['fatura', 'elektrik', 'su', 'doğalgaz', 'internet', 'telefon', 'gsm', 'enerji', 'ısıtma'],
-        'Eğlence': ['sinema', 'tiyatro', 'konser', 'müze', 'park', 'oyun', 'eğlence', 'gezi', 'tatil', 'restoran', 'cafe', 'bar'],
-        'Ulaşım': ['otobüs', 'metro', 'taksi', 'uber', 'benzin', 'yakıt', 'park', 'otopark', 'yol', 'ulaşım', 'tren'],
-        'Market': ['market', 'süpermarket', 'alışveriş', 'gıda', 'yiyecek', 'içecek', 'ekmek', 'süt', 'et', 'sebze', 'meyve']
+        'Market': ['market', 'süpermarket', 'migros', 'carrefour', 'bim', 'a101', 'şok', 'gross', 'metro', 'gida', 'gıda', 'süper', 'hyper', 'discount', 'indirim'],
+        'Yemek': ['restoran', 'cafe', 'kafe', 'yemek', 'doner', 'döner', 'pizza', 'burger', 'mc', 'kfc', 'subway', 'starbucks', 'dominos', 'papa', 'johns', 'snowy', 'kahve', 'coffee', 'çay', 'cay', 'pastane', 'fırın', 'firin', 'bakery', 'kebap', 'kebab', 'lahmacun', 'pide', 'mantı', 'manti', 'çorba', 'corba', 'salata', 'tatlı', 'tatli', 'dessert'],
+        'Online Alışveriş': ['trendyol', 'amazon', 'hepsiburada', 'n11', 'gitti', 'gittigidiyor', 'sahibinden', 'letgo', 'dolap', 'iyzico', 'paytr', 'online', 'e-ticaret', 'eticaret', 'shop', 'store', 'mall', 'avm', 'plaza', 'center'],
+        'Ulaşım': ['taksi', 'uber', 'bitaksi', 'otobüs', 'otobus', 'metro', 'tren', 'marmaray', 'metrobus', 'dolmuş', 'dolmus', 'minibus', 'benzin', 'yakıt', 'yakit', 'petrol', 'gas', 'fuel', 'park', 'otopark', 'parking', 'yol', 'toll', 'geçiş', 'gecis', 'köprü', 'kopru', 'tünel', 'tunel', 'otoyol', 'highway', 'istasyon', 'station'],
+        'Fatura': ['fatura', 'elektrik', 'su', 'doğalgaz', 'dogalgaz', 'gas', 'internet', 'telefon', 'gsm', 'enerji', 'ısıtma', 'isitma', 'heating', 'water', 'electric', 'phone', 'mobile', 'tel', 'vodafone', 'turkcell', 'türk telekom', 'turk telekom', 'superonline', 'türknet', 'turknet', 'netflix', 'spotify', 'youtube', 'prime', 'disney', 'hbo', 'apple', 'google', 'microsoft', 'adobe', 'office'],
+        'Kira': ['kira', 'ev', 'konut', 'apartman', 'mülk', 'mulk', 'emlak', 'gayrimenkul', 'property', 'rent', 'house', 'apartment', 'condo', 'villa', 'residence', 'site', 'mahalle', 'sokak', 'cadde', 'bulvar', 'avenue'],
+        'Eğlence': ['sinema', 'tiyatro', 'konser', 'müze', 'muze', 'park', 'oyun', 'game', 'eğlence', 'eglence', 'gezi', 'tatil', 'holiday', 'vacation', 'tur', 'tour', 'seyahat', 'travel', 'hotel', 'otel', 'resort', 'spa', 'wellness', 'fitness', 'gym', 'spor', 'sport', 'yüzme', 'yuzme', 'swimming', 'tenis', 'tennis', 'futbol', 'football', 'basketbol', 'basketball', 'bowling', 'bilardo', 'billiard', 'karting', 'go-kart', 'gokart', 'lunapark', 'funfair', 'aquapark', 'waterpark', 'kayak', 'ski', 'snowboard', 'dağ', 'dag', 'mountain', 'deniz', 'sea', 'plaj', 'beach', 'ada', 'island', 'cruise', 'gemi', 'ship', 'feribot', 'ferry'],
+        'Sağlık': ['eczane', 'pharmacy', 'doktor', 'doctor', 'hastane', 'hospital', 'klinik', 'clinic', 'muayene', 'examination', 'tedavi', 'treatment', 'ilaç', 'ilac', 'medicine', 'vitamin', 'supplement', 'dental', 'diş', 'dis', 'göz', 'goz', 'eye', 'kardiyoloji', 'cardiology', 'ortopedi', 'orthopedics', 'fizik', 'physio', 'terapi', 'therapy', 'laboratuvar', 'laboratory', 'test', 'röntgen', 'rontgen', 'x-ray', 'ultrason', 'ultrasound', 'mr', 'tomografi', 'tomography', 'ameliyat', 'surgery', 'operasyon', 'operation', 'acil', 'emergency', 'ambulans', 'ambulance', 'sağlık', 'saglik', 'health'],
+        'Eğitim': ['okul', 'school', 'üniversite', 'universite', 'university', 'kolej', 'college', 'ders', 'lesson', 'kurs', 'course', 'eğitim', 'egitim', 'education', 'öğrenci', 'ogrenci', 'student', 'öğretmen', 'ogretmen', 'teacher', 'profesör', 'profesor', 'professor', 'kitap', 'book', 'kütüphane', 'kutuphane', 'library', 'yayın', 'yayin', 'publication', 'dergi', 'magazine', 'gazete', 'newspaper', 'araştırma', 'arastirma', 'research', 'seminer', 'seminar', 'konferans', 'conference', 'workshop', 'atölye', 'atolye', 'laboratuvar', 'laboratory', 'deney', 'experiment', 'proje', 'project'],
+        'Giyim': ['giyim', 'clothing', 'tekstil', 'textile', 'kumaş', 'kumas', 'fabric', 'elbise', 'dress', 'pantolon', 'pants', 'gömlek', 'gomlek', 'shirt', 'ceket', 'jacket', 'mont', 'coat', 'kazak', 'sweater', 'tişört', 'tisort', 't-shirt', 'tshirt', 'ayakkabı', 'ayakkabi', 'shoe', 'çanta', 'canta', 'bag', 'çeki', 'ceki', 'wallet', 'cüzdan', 'cuzdan', 'purse', 'saat', 'watch', 'takı', 'taki', 'jewelry', 'mücevher', 'mucevher', 'altın', 'altin', 'gold', 'gümüş', 'gumus', 'silver', 'elmas', 'diamond', 'inci', 'pearl', 'kolye', 'necklace', 'yüzük', 'yuzuk', 'ring', 'küpe', 'kupe', 'earring', 'bilezik', 'bracelet', 'kemer', 'belt', 'kravat', 'tie', 'fular', 'scarf', 'şal', 'sal', 'shawl', 'eldiven', 'glove', 'şapka', 'sapka', 'hat', 'beret', 'bere', 'çorap', 'corap', 'sock', 'iç çamaşır', 'ic camasir', 'underwear', 'mayo', 'swimsuit', 'bikini', 'şort', 'short', 'eşarp', 'esarp', 'headscarf', 'türban', 'turban', 'hijab', 'abaya', 'kıyafet', 'kiyafet', 'outfit', 'kostüm', 'kostum', 'costume', 'uniform', 'üniforma', 'uniforma', 'takım', 'takim', 'suit', 'smokin', 'tuxedo', 'abiyye', 'gown', 'gelinlik', 'wedding', 'damatlık', 'groom', 'bebek', 'baby', 'çocuk', 'cocuk', 'child', 'kadın', 'kadin', 'woman', 'erkek', 'man', 'genç', 'genc', 'young', 'yaşlı', 'yasli', 'elder', 'spor', 'sport', 'casual', 'günlük', 'gunluk', 'daily', 'resmi', 'formal', 'gece', 'night', 'gündüz', 'gunduz', 'day', 'yaz', 'summer', 'kış', 'kis', 'winter', 'ilkbahar', 'spring', 'sonbahar', 'autumn', 'fall'],
+        'Elektronik': ['elektronik', 'electronic', 'teknoloji', 'technology', 'bilgisayar', 'computer', 'laptop', 'notebook', 'tablet', 'telefon', 'phone', 'smartphone', 'akıllı', 'akilli', 'smart', 'tv', 'televizyon', 'television', 'monitör', 'monitor', 'ekran', 'screen', 'klavye', 'keyboard', 'fare', 'mouse', 'yazıcı', 'yazici', 'printer', 'tarayıcı', 'tarayici', 'scanner', 'hoparlör', 'hoparlor', 'speaker', 'kulaklık', 'kulaklik', 'headphone', 'mikrofon', 'microphone', 'kamera', 'camera', 'video', 'kayıt', 'kayit', 'recording', 'çekim', 'cekim', 'shooting', 'fotoğraf', 'fotograf', 'photo', 'resim', 'image', 'görüntü', 'goruntu', 'display', 'projeksiyon', 'projection', 'uydu', 'satellite', 'anten', 'antenna', 'modem', 'router', 'switch', 'hub', 'kablo', 'cable', 'adaptör', 'adaptor', 'şarj', 'sarj', 'charge', 'pil', 'battery', 'akü', 'aku', 'accumulator', 'güç', 'guc', 'power', 'enerji', 'energy', 'elektrik', 'electric', 'volt', 'watt', 'amper', 'ampere', 'ohm', 'frekans', 'frequency', 'dalga', 'wave', 'sinyal', 'signal', 'veri', 'data', 'dosya', 'file', 'program', 'yazılım', 'yazilim', 'software', 'uygulama', 'application', 'app', 'sistem', 'system', 'işletim', 'isletim', 'operating', 'windows', 'mac', 'linux', 'android', 'ios', 'iphone', 'ipad', 'ipod', 'apple', 'samsung', 'huawei', 'xiaomi', 'oppo', 'vivo', 'oneplus', 'sony', 'lg', 'panasonic', 'philips', 'sharp', 'toshiba', 'hitachi', 'daewoo', 'beko', 'vestel', 'arcelik', 'profilo', 'altus', 'regal', 'baymak', 'demirdöküm', 'demirdokum', 'vaillant', 'bosch', 'siemens', 'miele', 'whirlpool', 'electrolux', 'candy', 'hoover', 'dyson', 'rowenta', 'braun', 'oral-b', 'oralb', 'oral'],
+        'Banka İşlemleri': ['atm', 'nakit', 'cash', 'para', 'money', 'çekim', 'cekim', 'withdrawal', 'yatırım', 'yatirim', 'deposit', 'transfer', 'havale', 'eft', 'iban', 'hesap', 'account', 'banka', 'bank', 'kredi', 'credit', 'kart', 'card', 'pos', 'terminal', 'ödeme', 'odeme', 'payment', 'taksit', 'installment', 'faiz', 'interest', 'komisyon', 'commission', 'masraf', 'expense', 'ücret', 'ucret', 'fee', 'tutar', 'amount', 'bakiye', 'balance', 'müşteri', 'musteri', 'customer', 'şube', 'sube', 'branch', 'merkez', 'center', 'genel', 'general', 'müdürlük', 'mudurluk', 'directorate', 'müdür', 'mudur', 'director'],
+        'Gelir': ['maaş', 'maas', 'salary', 'ücret', 'ucret', 'wage', 'gelir', 'income', 'kazanç', 'kazanc', 'earnings', 'ödeme', 'odeme', 'payment', 'tahsilat', 'collection', 'alacak', 'receivable', 'borç', 'borc', 'debt', 'vakıf', 'vakif', 'foundation', 'garanti', 'akbank', 'isbank', 'ziraat', 'yapı', 'yapi', 'yurtiçi', 'yurtici', 'domestic', 'yurtdışı', 'yurtdisi', 'foreign', 'uluslararası', 'uluslararasi', 'international', 'global', 'dünya', 'dunya', 'world', 'euro', 'dolar', 'dollar', 'sterlin', 'pound', 'lira', 'tl', '₺', '$', '€', '£']
     };
 
     // Açıklamaya göre kategori eşleştirme fonksiyonu
     const matchCategoryByDescription = (description: string): string | null => {
         const lowerDesc = description.toLowerCase();
         
-        // Varsayılan kategorileri kontrol et
-        for (const [categoryName, keywords] of Object.entries(categoryKeywords)) {
-            if (keywords.some(keyword => lowerDesc.includes(keyword))) {
+        // Özel durumlar için öncelikli kontrol
+        if (lowerDesc.includes('pos') && lowerDesc.includes('domestic')) {
+            // POS işlemleri için daha detaylı analiz
+            if (lowerDesc.includes('doner') || lowerDesc.includes('döner') || lowerDesc.includes('snowy') || 
+                lowerDesc.includes('kahve') || lowerDesc.includes('gida') || lowerDesc.includes('gıda')) {
+                return 'Yemek';
+            }
+            if (lowerDesc.includes('bim') || lowerDesc.includes('market') || lowerDesc.includes('süpermarket')) {
+                return 'Market';
+            }
+        }
+        
+        // ATM işlemleri
+        if (lowerDesc.includes('atm') && lowerDesc.includes('cash')) {
+            return 'Banka İşlemleri';
+        }
+        
+        // Virtual POS işlemleri
+        if (lowerDesc.includes('virtual') && lowerDesc.includes('pos')) {
+            if (lowerDesc.includes('trendyol') || lowerDesc.includes('amazon')) {
+                return 'Online Alışveriş';
+            }
+        }
+        
+        // Kira ödemesi için özel kontrol
+        if (lowerDesc.includes('kira') && (lowerDesc.includes('ödeme') || lowerDesc.includes('odeme'))) {
+            return 'Kira';
+        }
+        
+        // Gelen işlemler (gelir)
+        if (lowerDesc.includes('incoming') || lowerDesc.includes('allowance') || lowerDesc.includes('vakıf') || lowerDesc.includes('vakif')) {
+            return 'Gelir';
+        }
+        
+        // Varsayılan kategorileri kontrol et (öncelik sırasına göre)
+        const priorityCategories = [
+            'Online Alışveriş', // Önce online alışveriş kontrol et
+            'Yemek',           // Sonra yemek
+            'Market',          // Sonra market
+            'Ulaşım',          // Sonra ulaşım
+            'Fatura',          // Sonra fatura
+            'Kira',            // Kira'yı daha yüksek önceliğe taşı
+            'Banka İşlemleri', // Sonra banka işlemleri
+            'Eğlence',         // Sonra eğlence
+            'Sağlık',          // Sonra sağlık
+            'Eğitim',          // Sonra eğitim
+            'Giyim',           // Sonra giyim
+            'Elektronik',      // Sonra elektronik
+            'Gelir'            // En son gelir
+        ];
+        
+        for (const categoryName of priorityCategories) {
+            const keywords = categoryKeywords[categoryName];
+            if (keywords && keywords.some(keyword => lowerDesc.includes(keyword))) {
                 return categoryName;
             }
         }
@@ -135,6 +194,7 @@ const TransactionModule: React.FC = () => {
         categoryId: '',
         startDate: '',
         frequency: 'aylık',
+        isIncome: false,
     });
     const [recMsg, setRecMsg] = useState<string | null>(null);
     const freqOptions = ['günlük','haftalık','aylık','yıllık'];
@@ -150,15 +210,22 @@ const TransactionModule: React.FC = () => {
         }
         
         try {
+            // Tarihi UTC formatında gönder (timezone offset olmadan)
+            const formatDateForBackend = (dateString: string) => {
+                // dateString formatı: "2025-08-02" (input type="date" formatı)
+                // Bu formatı doğrudan kullan, Date objesi oluşturma
+                return dateString;
+            };
+
             // Backend'e gönder
             const response = await axios.post('/api/recurring-transaction', {
                 description: recForm.description || `Tekrarlayan: ${recForm.amount} ₺`,
                 amount: parseFloat(recForm.amount),
                 categoryId: recForm.categoryId,
                 accountId: form.accountId || accounts[0]?.id,
-                startDate: recForm.startDate,
+                startDate: formatDateForBackend(recForm.startDate),
                 frequency: recForm.frequency,
-                isIncome: false,
+                isIncome: recForm.isIncome,
                 isActive: true
             });
             
@@ -168,7 +235,7 @@ const TransactionModule: React.FC = () => {
             // Tekrarlayan işlemleri yeniden çek
             await fetchRecurringTransactions();
             
-            setRecForm({ amount: '', description: '', categoryId: '', startDate: '', frequency: 'aylık' });
+            setRecForm({ amount: '', description: '', categoryId: '', startDate: '', frequency: 'aylık', isIncome: false });
             setRecMsg('Tekrarlayan işlem eklendi!');
         } catch (error) {
             console.error('Error adding recurring transaction:', error);
@@ -314,10 +381,17 @@ const TransactionModule: React.FC = () => {
                 }
             }
 
+            // Tarihi UTC formatında gönder (timezone offset olmadan)
+            const formatDateForBackend = (dateString: string) => {
+                // dateString formatı: "2025-08-02" (input type="date" formatı)
+                // Bu formatı doğrudan kullan, Date objesi oluşturma
+                return dateString;
+            };
+
             if (editingId) {
                 await axios.put(`/api/transaction/${editingId}`, {
                     amount: Math.abs(parseFloat(form.amount)),
-                    date: form.date,
+                    date: formatDateForBackend(form.date),
                     categoryId: form.categoryId,
                     description: form.description,
                     isIncome: form.isIncome,
@@ -330,7 +404,7 @@ const TransactionModule: React.FC = () => {
             } else {
                 await axios.post('/api/transaction', {
                     amount: Math.abs(parseFloat(form.amount)),
-                    date: form.date,
+                    date: formatDateForBackend(form.date),
                     categoryId: form.categoryId,
                     description: form.description,
                     isIncome: form.isIncome,
@@ -682,12 +756,38 @@ const TransactionModule: React.FC = () => {
             });
             
             if (response.data.success) {
-                const transactions = response.data.transactions.map((tx: any) => ({
-                    date: new Date(tx.date).toLocaleDateString('tr-TR'),
-                    description: tx.description,
-                    amount: tx.amount,
-                    category: tx.category
-                }));
+                const transactions = response.data.transactions.map((tx: any) => {
+                    // Tarihi doğru formatta formatla
+                    let formattedDate = '';
+                    if (tx.date) {
+                        if (typeof tx.date === 'string' && tx.date.includes('-')) {
+                            const parts = tx.date.split('-');
+                            if (parts.length === 3) {
+                                formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
+                            } else {
+                                formattedDate = tx.date;
+                            }
+                        } else {
+                            const d = new Date(tx.date);
+                            if (!isNaN(d.getTime())) {
+                                const localDate = new Date(d.getTime() - (d.getTimezoneOffset() * 60000));
+                                const day = String(localDate.getDate()).padStart(2, '0');
+                                const month = String(localDate.getMonth() + 1).padStart(2, '0');
+                                const year = localDate.getFullYear();
+                                formattedDate = `${day}.${month}.${year}`;
+                            } else {
+                                formattedDate = tx.date;
+                            }
+                        }
+                    }
+                    
+                    return {
+                        date: formattedDate,
+                        description: tx.description,
+                        amount: tx.amount,
+                        category: tx.category
+                    };
+                });
                 
                 setBankStatementTransactions(transactions);
                 setBankStatementMsg(`${transactions.length} işlem başarıyla okundu. Veritabanına eklemek için tekrar "Ekle" butonuna basın.`);
@@ -717,9 +817,21 @@ const TransactionModule: React.FC = () => {
                     const category = categories.find(c => c.name === tx.category);
                     const categoryId = category?.id || categories[0]?.id;
                     
+                    // Tarihi UTC formatında gönder
+                    const formatDateForBackend = (dateString: string) => {
+                        if (typeof dateString === 'string' && dateString.includes('.')) {
+                            // DD.MM.YYYY formatını YYYY-MM-DD'ye çevir
+                            const parts = dateString.split('.');
+                            if (parts.length === 3) {
+                                return `${parts[2]}-${parts[1]}-${parts[0]}`;
+                            }
+                        }
+                        return dateString;
+                    };
+
                     const transactionData = {
                         amount: Math.abs(tx.amount),
-                        date: tx.date,
+                        date: formatDateForBackend(tx.date),
                         categoryId: categoryId,
                         description: tx.description,
                         isIncome: tx.amount >= 0,
@@ -956,20 +1068,57 @@ const TransactionModule: React.FC = () => {
                                                         const formattedDate = (() => {
                                                             const raw = tx.transactionDate || tx.transaction_date || tx.date || '';
                                                             if (!raw) return '';
-                                                            const d = new Date(raw);
-                                                            if (isNaN(d.getTime())) return raw;
-                                                            const day = String(d.getDate()).padStart(2, '0');
-                                                            const month = String(d.getMonth() + 1).padStart(2, '0');
-                                                            const year = d.getFullYear();
-                                                            return `${day}.${month}.${year}`;
+                                                            
+                                                            // Eğer raw zaten string ise ve ISO formatında ise
+                                                            if (typeof raw === 'string') {
+                                                                // ISO format: "2025-08-01T00:00:00.000Z" veya "2025-08-01"
+                                                                if (raw.includes('T')) {
+                                                                    const datePart = raw.split('T')[0];
+                                                                    const parts = datePart.split('-');
+                                                                    if (parts.length === 3) {
+                                                                        return `${parts[2]}.${parts[1]}.${parts[0]}`;
+                                                                    }
+                                                                }
+                                                                // Sadece tarih format: "2025-08-01"
+                                                                else if (raw.includes('-')) {
+                                                                    const parts = raw.split('-');
+                                                                    if (parts.length === 3) {
+                                                                        return `${parts[2]}.${parts[1]}.${parts[0]}`;
+                                                                    }
+                                                                }
+                                                                // Zaten DD.MM.YYYY formatında ise
+                                                                else if (raw.includes('.')) {
+                                                                    return raw;
+                                                                }
+                                                            }
+                                                            
+                                                            // Fallback: Date objesi kullan
+                                                            try {
+                                                                const d = new Date(raw);
+                                                                if (isNaN(d.getTime())) return raw;
+                                                                
+                                                                const day = String(d.getDate()).padStart(2, '0');
+                                                                const month = String(d.getMonth() + 1).padStart(2, '0');
+                                                                const year = d.getFullYear();
+                                                                return `${day}.${month}.${year}`;
+                                                            } catch (error) {
+                                                                return raw;
+                                                            }
                                                         })();
                                                         return (
                                                             <tr key={tx.id} style={{ background: idx % 2 === 0 ? '#2a2a2a' : '#333' }}>
                                                                 <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{formattedDate}</td>
                                                                 <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{cat ? `${cat.icon} ${cat.name}` : 'Kategori yok'}</td>
                                                                 <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{tx.description}</td>
-                                                                <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{tx.amount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</td>
-                                                                <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{tx.amount >= 0 ? 'Gelir' : 'Gider'}</td>
+                                                                <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{Math.abs(tx.amount).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</td>
+                                                                <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>
+                                                                    <span style={{ 
+                                                                        color: tx.amount >= 0 ? '#4caf50' : '#e53935',
+                                                                        fontWeight: 'bold'
+                                                                    }}>
+                                                                        {tx.amount >= 0 ? 'Gelir' : 'Gider'}
+                                                                    </span>
+                                                                </td>
                                                                 <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center' }}>
                                                                     {tx.receiptUrl ? (
                                                                         <button 
@@ -996,7 +1145,7 @@ const TransactionModule: React.FC = () => {
                                                         );
                                                     })
                                                 ) : (
-                                                    <tr><td colSpan={7} style={{ textAlign: 'center', padding: 16, color: '#fff' }}>Kayıt yok.</td></tr>
+                                                    <tr><td colSpan={8} style={{ textAlign: 'center', padding: 16, color: '#fff' }}>Kayıt yok.</td></tr>
                                                 )}
                                             </tbody>
                                         </table>
@@ -1190,29 +1339,113 @@ const TransactionModule: React.FC = () => {
                                     </div>
 
                                     {bankStatementTransactions.length > 0 && (
-                                        <div style={{ marginTop: 20, overflowX: 'auto' }}>
-                                            <table style={{ width: '100%', borderCollapse: 'collapse', background: '#2a2a2a' }}>
-                                                <thead>
-                                                    <tr style={{ background: '#3a3a3a' }}>
-                                                        <th style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>Tarih</th>
-                                                        <th style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>Açıklama</th>
-                                                        <th style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>Tutar</th>
-                                                        <th style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>Otomatik Kategori</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {bankStatementTransactions.map((tx, idx) => (
-                                                        <tr key={idx} style={{ background: idx % 2 === 0 ? '#2a2a2a' : '#333' }}>
-                                                            <td style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>{tx.date}</td>
-                                                            <td style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>{tx.description}</td>
-                                                            <td style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>{tx.amount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</td>
-                                                            <td style={{ padding: 8, border: '1px solid #555', background: '#1a3a1a', fontWeight: 'bold' }}>
-                                                                <span style={{ color: '#4caf50' }}>✅ {tx.category}</span>
-                                                            </td>
+                                        <div style={{ marginTop: 20 }}>
+                                            {/* Kategori İstatistikleri */}
+                                            <div style={{ 
+                                                background: '#1a1a1a', 
+                                                padding: 16, 
+                                                borderRadius: 8, 
+                                                marginBottom: 16,
+                                                border: '1px solid #333'
+                                            }}>
+                                                <h4 style={{ color: '#fff', margin: '0 0 12px 0' }}>📊 Otomatik Kategori İstatistikleri</h4>
+                                                {(() => {
+                                                    const categoryStats = bankStatementTransactions.reduce((acc, tx) => {
+                                                        const matchedCategory = matchCategoryByDescription(tx.description);
+                                                        const isMatched = matchedCategory && matchedCategory === tx.category;
+                                                        const hasMatch = matchedCategory !== null;
+                                                        
+                                                        if (isMatched) acc.perfect++;
+                                                        else if (hasMatch) acc.different++;
+                                                        else acc.noMatch++;
+                                                        
+                                                        return acc;
+                                                    }, { perfect: 0, different: 0, noMatch: 0 });
+                                                    
+                                                    const total = bankStatementTransactions.length;
+                                                    const perfectRate = ((categoryStats.perfect / total) * 100).toFixed(1);
+                                                    const matchRate = (((categoryStats.perfect + categoryStats.different) / total) * 100).toFixed(1);
+                                                    
+                                                    return (
+                                                        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                                                            <div style={{ 
+                                                                background: '#1a3a1a', 
+                                                                padding: '8px 12px', 
+                                                                borderRadius: 6,
+                                                                border: '1px solid #4caf50'
+                                                            }}>
+                                                                <span style={{ color: '#4caf50', fontWeight: 'bold' }}>✅ Mükemmel Eşleşme: {categoryStats.perfect} ({perfectRate}%)</span>
+                                                            </div>
+                                                            <div style={{ 
+                                                                background: '#3a2a1a', 
+                                                                padding: '8px 12px', 
+                                                                borderRadius: 6,
+                                                                border: '1px solid #ff9800'
+                                                            }}>
+                                                                <span style={{ color: '#ff9800', fontWeight: 'bold' }}>⚠️ Farklı Kategori: {categoryStats.different}</span>
+                                                            </div>
+                                                            <div style={{ 
+                                                                background: '#3a1a1a', 
+                                                                padding: '8px 12px', 
+                                                                borderRadius: 6,
+                                                                border: '1px solid #f44336'
+                                                            }}>
+                                                                <span style={{ color: '#f44336', fontWeight: 'bold' }}>❌ Eşleşme Yok: {categoryStats.noMatch}</span>
+                                                            </div>
+                                                            <div style={{ 
+                                                                background: '#1a2a3a', 
+                                                                padding: '8px 12px', 
+                                                                borderRadius: 6,
+                                                                border: '1px solid #2196f3'
+                                                            }}>
+                                                                <span style={{ color: '#2196f3', fontWeight: 'bold' }}>📈 Genel Başarı: {matchRate}%</span>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })()}
+                                            </div>
+                                            
+                                            {/* İşlem Tablosu */}
+                                            <div style={{ overflowX: 'auto' }}>
+                                                <table style={{ width: '100%', borderCollapse: 'collapse', background: '#2a2a2a' }}>
+                                                    <thead>
+                                                        <tr style={{ background: '#3a3a3a' }}>
+                                                            <th style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>Tarih</th>
+                                                            <th style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>Açıklama</th>
+                                                            <th style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>Tutar</th>
+                                                            <th style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>Otomatik Kategori</th>
+                                                            <th style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>Eşleşme Durumu</th>
                                                         </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
+                                                    </thead>
+                                                    <tbody>
+                                                        {bankStatementTransactions.map((tx, idx) => {
+                                                            const matchedCategory = matchCategoryByDescription(tx.description);
+                                                            const isMatched = matchedCategory && matchedCategory === tx.category;
+                                                            const hasMatch = matchedCategory !== null;
+                                                            
+                                                            return (
+                                                                <tr key={idx} style={{ background: idx % 2 === 0 ? '#2a2a2a' : '#333' }}>
+                                                                    <td style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>{tx.date}</td>
+                                                                    <td style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>{tx.description}</td>
+                                                                    <td style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>{tx.amount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</td>
+                                                                    <td style={{ padding: 8, border: '1px solid #555', background: '#1a3a1a', fontWeight: 'bold' }}>
+                                                                        <span style={{ color: '#4caf50' }}>✅ {tx.category}</span>
+                                                                    </td>
+                                                                    <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center' }}>
+                                                                        {isMatched ? (
+                                                                            <span style={{ color: '#4caf50', fontWeight: 'bold' }}>✅ Mükemmel</span>
+                                                                        ) : hasMatch ? (
+                                                                            <span style={{ color: '#ff9800', fontWeight: 'bold' }}>⚠️ Farklı: {matchedCategory}</span>
+                                                                        ) : (
+                                                                            <span style={{ color: '#f44336', fontWeight: 'bold' }}>❌ Eşleşme Yok</span>
+                                                                        )}
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -1249,6 +1482,61 @@ const TransactionModule: React.FC = () => {
                                             {freqOptions.map(fq => <option key={fq} value={fq}>{fq}</option>)}
                                         </select>
                                     </div>
+                                    <div>
+                                        <label>İşlem Türü:</label><br />
+                                        <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
+                                            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                                <input 
+                                                    type="radio" 
+                                                    name="isIncome" 
+                                                    value="false" 
+                                                    checked={!recForm.isIncome} 
+                                                    onChange={() => setRecForm(f => ({ ...f, isIncome: false }))}
+                                                    style={{ marginRight: 8 }}
+                                                />
+                                                <span style={{ 
+                                                    display: 'inline-flex', 
+                                                    alignItems: 'center', 
+                                                    justifyContent: 'center',
+                                                    width: 24, 
+                                                    height: 24, 
+                                                    borderRadius: '50%', 
+                                                    backgroundColor: '#e53935', 
+                                                    color: 'white',
+                                                    fontSize: 12,
+                                                    fontWeight: 'bold'
+                                                }}>
+                                                    ▼
+                                                </span>
+                                                <span style={{ marginLeft: 8 }}>Gider</span>
+                                            </label>
+                                            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                                <input 
+                                                    type="radio" 
+                                                    name="isIncome" 
+                                                    value="true" 
+                                                    checked={recForm.isIncome} 
+                                                    onChange={() => setRecForm(f => ({ ...f, isIncome: true }))}
+                                                    style={{ marginRight: 8 }}
+                                                />
+                                                <span style={{ 
+                                                    display: 'inline-flex', 
+                                                    alignItems: 'center', 
+                                                    justifyContent: 'center',
+                                                    width: 24, 
+                                                    height: 24, 
+                                                    borderRadius: '50%', 
+                                                    backgroundColor: '#4caf50', 
+                                                    color: 'white',
+                                                    fontSize: 12,
+                                                    fontWeight: 'bold'
+                                                }}>
+                                                    ▲
+                                                </span>
+                                                <span style={{ marginLeft: 8 }}>Gelir</span>
+                                            </label>
+                                        </div>
+                                    </div>
                                     <button type="submit" className="category-add-btn">Ekle</button>
                                     {recMsg && <span style={{ color: recMsg.includes('eklendi') ? 'green' : 'red' }}>{recMsg}</span>}
                                 </form>
@@ -1261,6 +1549,7 @@ const TransactionModule: React.FC = () => {
                                                 <th style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>Açıklama</th>
                                                 <th style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>Başlangıç</th>
                                                 <th style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>Sıklık</th>
+                                                <th style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>Tür</th>
                                                 <th style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>Sil</th>
                                             </tr>
                                         </thead>
@@ -1270,17 +1559,64 @@ const TransactionModule: React.FC = () => {
                                                     const cat = categories.find(c => c.id.toString() === r.categoryId.toString());
                                                     return (
                                                         <tr key={r.id} style={{ background: idx % 2 === 0 ? '#2a2a2a' : '#333' }}>
-                                                            <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{r.amount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</td>
+                                                            <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{Math.abs(r.amount).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</td>
                                                             <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{cat ? `${cat.icon} ${cat.name}` : 'Kategori yok'}</td>
                                                             <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{r.description}</td>
-                                                            <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{new Date(r.startDate).toLocaleDateString('tr-TR')}</td>
+                                                            <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{(() => {
+                                                                const raw = r.startDate;
+                                                                if (!raw) return '';
+                                                                
+                                                                // Eğer raw zaten string ise ve ISO formatında ise
+                                                                if (typeof raw === 'string') {
+                                                                    // ISO format: "2025-08-01T00:00:00.000Z" veya "2025-08-01"
+                                                                    if (raw.includes('T')) {
+                                                                        const datePart = raw.split('T')[0];
+                                                                        const parts = datePart.split('-');
+                                                                        if (parts.length === 3) {
+                                                                            return `${parts[2]}.${parts[1]}.${parts[0]}`;
+                                                                        }
+                                                                    }
+                                                                    // Sadece tarih format: "2025-08-01"
+                                                                    else if (raw.includes('-')) {
+                                                                        const parts = raw.split('-');
+                                                                        if (parts.length === 3) {
+                                                                            return `${parts[2]}.${parts[1]}.${parts[0]}`;
+                                                                        }
+                                                                    }
+                                                                    // Zaten DD.MM.YYYY formatında ise
+                                                                    else if (raw.includes('.')) {
+                                                                        return raw;
+                                                                    }
+                                                                }
+                                                                
+                                                                // Fallback: Date objesi kullan
+                                                                try {
+                                                                    const d = new Date(raw);
+                                                                    if (isNaN(d.getTime())) return raw;
+                                                                    
+                                                                    const day = String(d.getDate()).padStart(2, '0');
+                                                                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                                                                    const year = d.getFullYear();
+                                                                    return `${day}.${month}.${year}`;
+                                                                } catch (error) {
+                                                                    return raw;
+                                                                }
+                                                            })()}</td>
                                                             <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{r.frequency}</td>
+                                                            <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>
+                                                                <span style={{ 
+                                                                    color: r.isIncome ? '#4caf50' : '#e53935',
+                                                                    fontWeight: 'bold'
+                                                                }}>
+                                                                    {r.isIncome ? 'Gelir' : 'Gider'}
+                                                                </span>
+                                                            </td>
                                                             <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center' }}><button onClick={() => handleDeleteRecurring(r.id)} style={{ background: '#e53935', color: 'white', border: 'none', borderRadius: 4, padding: '4px 10px', cursor: 'pointer' }}>Sil</button></td>
                                                         </tr>
                                                     );
                                                 })
                                             ) : (
-                                                <tr><td colSpan={6} style={{ textAlign: 'center', padding: 16, color: '#fff' }}>Kayıt yok.</td></tr>
+                                                <tr><td colSpan={8} style={{ textAlign: 'center', padding: 16, color: '#fff' }}>Kayıt yok.</td></tr>
                                             )}
                                         </tbody>
                                     </table>

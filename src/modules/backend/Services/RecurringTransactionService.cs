@@ -75,7 +75,7 @@ public class RecurringTransactionService : BackgroundService
         // Eğer LastProcessed null ise, StartDate'den başla
         if (recurring.LastProcessed == null)
         {
-            // StartDate bugün veya geçmişte ise hemen oluştur
+            // StartDate bugün veya geçmişte ise hemen işlem oluştur
             return now.Date >= recurring.StartDate.Date;
         }
         
@@ -99,9 +99,12 @@ public class RecurringTransactionService : BackgroundService
     {
         try
         {
+            // IsIncome değerine göre amount'u pozitif veya negatif yap
+            var transactionAmount = recurring.IsIncome ? Math.Abs(recurring.Amount) : -Math.Abs(recurring.Amount);
+            
             var transaction = new Transaction
             {
-                Amount = recurring.Amount,
+                Amount = transactionAmount,
                 Description = recurring.Description,
                 CategoryId = recurring.CategoryId,
                 AccountId = recurring.AccountId,
@@ -115,7 +118,7 @@ public class RecurringTransactionService : BackgroundService
             
             await dbContext.SaveChangesAsync();
 
-            _logger.LogInformation($"Created recurring transaction: {recurring.Description} - {recurring.Amount}");
+            _logger.LogInformation($"Created recurring transaction: {recurring.Description} - {transactionAmount} (IsIncome: {recurring.IsIncome})");
         }
         catch (Exception ex)
         {
