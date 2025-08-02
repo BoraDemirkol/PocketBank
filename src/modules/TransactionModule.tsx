@@ -8,7 +8,7 @@ import { Transaction, Category, Account, RecurringTransaction } from '../types';
 axios.defaults.baseURL = 'http://localhost:5044';
 
 const TransactionModule: React.FC = () => {
-    // Modül 3 state ve fonksiyonları
+    // Module 3 state and functions
     const [activeTab, setActiveTab] = useState<'transactions' | 'categories' | 'import' | 'bank-statement' | 'recurring'>('transactions');
     const [categories, setCategories] = useState<Category[]>([]);
     const [accounts, setAccounts] = useState<Account[]>([]);
@@ -18,7 +18,7 @@ const TransactionModule: React.FC = () => {
         categoryId: '',
         description: '',
         isIncome: false,
-        accountId: '', // her zaman tanımlı
+        accountId: '', // always defined
         receipt: null as File | null,
     });
     const [formMsg, setFormMsg] = useState<string | null>(null);
@@ -34,9 +34,8 @@ const TransactionModule: React.FC = () => {
     });
     const [pendingFilter, setPendingFilter] = useState(filter);
     const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
-    const [editingId, setEditingId] = useState<string | null>(null);
 
-    // Kategori yönetimi için state
+    // Category management state
     const [newCategory, setNewCategory] = useState({
         name: '',
         color: '#764ba2',
@@ -46,12 +45,12 @@ const TransactionModule: React.FC = () => {
     const iconOptions = ['🛒','🍔','🚕','💡','🏠','💳','🎁','📚','🧾','🗂️','🏥','🎬','✈️','🚗','🏦','📱','💻','🎵','🏃','🍕','☕','🎮','📺','🏊','🚴','🎨','📖','🎓','💼','🛍️','🏖️'];
     const colorOptions = ['#764ba2','#4caf50','#e53935','#ff9800','#2196f3','#9c27b0','#607d8b','#ffeb3b'];
 
-    // Toplu içe aktarma için state
+    // Bulk import state
     const [importedRows, setImportedRows] = useState<Record<string, string>[]>([]);
     const [importMsg, setImportMsg] = useState<string | null>(null);
     const [importMapping, setImportMapping] = useState<{ [key: string]: string }>({});
 
-    // Banka hesap özeti için state
+    // Bank statement state
     const [bankType, setBankType] = useState('generic');
     const [bankStatementTransactions, setBankStatementTransactions] = useState<Array<{
         date: string;
@@ -61,7 +60,7 @@ const TransactionModule: React.FC = () => {
     }>>([]);
     const [bankStatementMsg, setBankStatementMsg] = useState<string | null>(null);
 
-    // Mapping için desteklenen alanlar:
+    // Supported fields for mapping:
     const supportedFields = [
       { key: 'transaction_date', label: 'Tarih' },
       { key: 'description', label: 'Açıklama' },
@@ -69,7 +68,7 @@ const TransactionModule: React.FC = () => {
       { key: 'category', label: 'Kategori' }
     ];
 
-    // Otomatik kategori eşleştirme için anahtar kelimeler
+    // Keywords for automatic category matching
     const categoryKeywords: { [key: string]: string[] } = {
         'Market': ['market', 'süpermarket', 'migros', 'carrefour', 'bim', 'a101', 'şok', 'gross', 'metro', 'gida', 'gıda', 'süper', 'hyper', 'discount', 'indirim'],
         'Yemek': ['restoran', 'cafe', 'kafe', 'yemek', 'doner', 'döner', 'pizza', 'burger', 'mc', 'kfc', 'subway', 'starbucks', 'dominos', 'papa', 'johns', 'snowy', 'kahve', 'coffee', 'çay', 'cay', 'pastane', 'fırın', 'firin', 'bakery', 'kebap', 'kebab', 'lahmacun', 'pide', 'mantı', 'manti', 'çorba', 'corba', 'salata', 'tatlı', 'tatli', 'dessert'],
@@ -86,13 +85,54 @@ const TransactionModule: React.FC = () => {
         'Gelir': ['maaş', 'maas', 'salary', 'ücret', 'ucret', 'wage', 'gelir', 'income', 'kazanç', 'kazanc', 'earnings', 'ödeme', 'odeme', 'payment', 'tahsilat', 'collection', 'alacak', 'receivable', 'borç', 'borc', 'debt', 'vakıf', 'vakif', 'foundation', 'garanti', 'akbank', 'isbank', 'ziraat', 'yapı', 'yapi', 'yurtiçi', 'yurtici', 'domestic', 'yurtdışı', 'yurtdisi', 'foreign', 'uluslararası', 'uluslararasi', 'international', 'global', 'dünya', 'dunya', 'world', 'euro', 'dolar', 'dollar', 'sterlin', 'pound', 'lira', 'tl', '₺', '$', '€', '£']
     };
 
-    // Açıklamaya göre kategori eşleştirme fonksiyonu
+    // Utility function for date formatting
+    const formatDate = (raw: string | Date): string => {
+        if (!raw) return '';
+        
+        // If raw is already a string and in ISO format
+        if (typeof raw === 'string') {
+            // ISO format: "2025-08-01T00:00:00.000Z" or "2025-08-01"
+            if (raw.includes('T')) {
+                const datePart = raw.split('T')[0];
+                const parts = datePart.split('-');
+                if (parts.length === 3) {
+                    return `${parts[2]}.${parts[1]}.${parts[0]}`;
+                }
+            }
+            // Date only format: "2025-08-01"
+            else if (raw.includes('-')) {
+                const parts = raw.split('-');
+                if (parts.length === 3) {
+                    return `${parts[2]}.${parts[1]}.${parts[0]}`;
+                }
+            }
+            // Already in DD.MM.YYYY format
+            else if (raw.includes('.')) {
+                return raw;
+            }
+        }
+        
+        // Fallback: Use Date object
+        try {
+            const d = new Date(raw);
+            if (isNaN(d.getTime())) return String(raw);
+            
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            return `${day}.${month}.${year}`;
+        } catch (error) {
+            return String(raw);
+        }
+    };
+
+    // Category matching function based on description
     const matchCategoryByDescription = (description: string): string | null => {
         const lowerDesc = description.toLowerCase();
         
-        // Özel durumlar için öncelikli kontrol
+        // Priority check for special cases
         if (lowerDesc.includes('pos') && lowerDesc.includes('domestic')) {
-            // POS işlemleri için daha detaylı analiz
+            // Detailed analysis for POS transactions
             if (lowerDesc.includes('doner') || lowerDesc.includes('döner') || lowerDesc.includes('snowy') || 
                 lowerDesc.includes('kahve') || lowerDesc.includes('gida') || lowerDesc.includes('gıda')) {
                 return 'Yemek';
@@ -102,43 +142,43 @@ const TransactionModule: React.FC = () => {
             }
         }
         
-        // ATM işlemleri
+        // ATM transactions
         if (lowerDesc.includes('atm') && lowerDesc.includes('cash')) {
             return 'Banka İşlemleri';
         }
         
-        // Virtual POS işlemleri
+        // Virtual POS transactions
         if (lowerDesc.includes('virtual') && lowerDesc.includes('pos')) {
             if (lowerDesc.includes('trendyol') || lowerDesc.includes('amazon')) {
                 return 'Online Alışveriş';
             }
         }
         
-        // Kira ödemesi için özel kontrol
+        // Special check for rent payment
         if (lowerDesc.includes('kira') && (lowerDesc.includes('ödeme') || lowerDesc.includes('odeme'))) {
             return 'Kira';
         }
         
-        // Gelen işlemler (gelir)
+        // Incoming transactions (income)
         if (lowerDesc.includes('incoming') || lowerDesc.includes('allowance') || lowerDesc.includes('vakıf') || lowerDesc.includes('vakif')) {
             return 'Gelir';
         }
         
-        // Varsayılan kategorileri kontrol et (öncelik sırasına göre)
+        // Check default categories (in priority order)
         const priorityCategories = [
-            'Online Alışveriş', // Önce online alışveriş kontrol et
-            'Yemek',           // Sonra yemek
-            'Market',          // Sonra market
-            'Ulaşım',          // Sonra ulaşım
-            'Fatura',          // Sonra fatura
-            'Kira',            // Kira'yı daha yüksek önceliğe taşı
-            'Banka İşlemleri', // Sonra banka işlemleri
-            'Eğlence',         // Sonra eğlence
-            'Sağlık',          // Sonra sağlık
-            'Eğitim',          // Sonra eğitim
-            'Giyim',           // Sonra giyim
-            'Elektronik',      // Sonra elektronik
-            'Gelir'            // En son gelir
+            'Online Alışveriş', // Check online shopping first
+            'Yemek',           // Then food
+            'Market',          // Then market
+            'Ulaşım',          // Then transportation
+            'Fatura',          // Then bills
+            'Kira',            // Move rent to higher priority
+            'Banka İşlemleri', // Then bank transactions
+            'Eğlence',         // Then entertainment
+            'Sağlık',          // Then health
+            'Eğitim',          // Then education
+            'Giyim',           // Then clothing
+            'Elektronik',      // Then electronics
+            'Gelir'            // Income last
         ];
         
         for (const categoryName of priorityCategories) {
@@ -148,18 +188,18 @@ const TransactionModule: React.FC = () => {
             }
         }
         
-        // Eşleşme bulunamazsa null döndür
+        // Return null if no match found
         return null;
     };
 
-    // Dosya seçimi için state'ler
+    // File selection states
     const [selectedImportFile, setSelectedImportFile] = useState<File | null>(null);
     const [selectedBankFile, setSelectedBankFile] = useState<File | null>(null);
 
-    // Mevcut kullanıcı ID'si
+    // Current user ID
     const [currentUserId, setCurrentUserId] = useState<string>('');
 
-    // Mevcut kullanıcıyı getir
+    // Fetch current user
     const fetchCurrentUser = async () => {
         try {
             const response = await axios.get('/api/current-user');
@@ -178,7 +218,7 @@ const TransactionModule: React.FC = () => {
         if (fileExtension === 'csv' || fileExtension === 'xlsx' || fileExtension === 'xls') {
             setSelectedImportFile(file);
             setImportMsg('Dosya seçildi. "Ekle" butonuna basarak işlemi başlatın.');
-            // Önceki verileri temizle
+            // Clear previous data
             setImportedRows([]);
             setImportMapping({});
         } else {
@@ -187,7 +227,7 @@ const TransactionModule: React.FC = () => {
     };
 
 
-    // Tekrarlayan işlemler için state
+    // Recurring transactions state
     const [recForm, setRecForm] = useState({
         amount: '',
         description: '',
@@ -210,14 +250,14 @@ const TransactionModule: React.FC = () => {
         }
         
         try {
-            // Tarihi UTC formatında gönder (timezone offset olmadan)
+            // Send date in UTC format (without timezone offset)
             const formatDateForBackend = (dateString: string) => {
-                // dateString formatı: "2025-08-02" (input type="date" formatı)
-                // Bu formatı doğrudan kullan, Date objesi oluşturma
+                // dateString format: "2025-08-02" (input type="date" format)
+                // Use this format directly, don't create Date object
                 return dateString;
             };
 
-            // Backend'e gönder
+            // Send to backend
             const response = await axios.post('/api/recurring-transaction', {
                 description: recForm.description || `Tekrarlayan: ${recForm.amount} ₺`,
                 amount: parseFloat(recForm.amount),
@@ -229,10 +269,10 @@ const TransactionModule: React.FC = () => {
                 isActive: true
             });
             
-            // Frontend state'ini güncelle
+            // Update frontend state
             setRecurrings(prev => [...prev, response.data]);
             
-            // Tekrarlayan işlemleri yeniden çek
+            // Re-fetch recurring transactions
             await fetchRecurringTransactions();
             
             setRecForm({ amount: '', description: '', categoryId: '', startDate: '', frequency: 'aylık', isIncome: false });
@@ -244,13 +284,13 @@ const TransactionModule: React.FC = () => {
     };
     const handleDeleteRecurring = async (id: string) => {
         try {
-            // Backend'den sil
+            // Delete from backend
             await axios.delete(`/api/recurring-transaction/${id}`);
             
-            // Frontend state'ini güncelle
+            // Update frontend state
             setRecurrings(prev => prev.filter(r => r.id !== id));
             
-            // Tekrarlayan işlemleri yeniden çek
+            // Re-fetch recurring transactions
             await fetchRecurringTransactions();
         } catch (error) {
             console.error('Error deleting recurring transaction:', error);
@@ -258,7 +298,7 @@ const TransactionModule: React.FC = () => {
         }
     };
 
-    // İşlemleri API'den çeken fonksiyon
+    // Fetch transactions from API
     const fetchTransactions = useCallback(async () => {
         try {
             const response = await axios.get('/api/transaction');
@@ -268,7 +308,7 @@ const TransactionModule: React.FC = () => {
         }
     }, []);
 
-    // Tekrarlayan işlemleri API'den çeken fonksiyon
+    // Fetch recurring transactions from API
     const fetchRecurringTransactions = useCallback(async () => {
         try {
             const response = await axios.get('/api/recurring-transaction');
@@ -278,16 +318,13 @@ const TransactionModule: React.FC = () => {
         }
     }, []);
 
-    // Tekrarlayan işlemleri localStorage'a kaydetme fonksiyonu (artık kullanılmıyor)
-    // const saveRecurringTransactions = (transactions: RecurringTransaction[]) => {
-    //     localStorage.setItem('recurringTransactions', JSON.stringify(transactions));
-    // };
+
 
     useEffect(() => {
-        fetchCurrentUser(); // Önce mevcut kullanıcıyı getir
-    }, []); // Sadece bir kez çalıştır
+        fetchCurrentUser(); // Fetch current user first
+    }, []); // Run only once
 
-    // currentUserId değiştiğinde verileri yükle
+    // Load data when currentUserId changes
     useEffect(() => {
         if (currentUserId) {
             fetchTransactions();
@@ -318,9 +355,9 @@ const TransactionModule: React.FC = () => {
             fetchCategories();
             fetchAccounts();
         }
-    }, [currentUserId, fetchTransactions, fetchRecurringTransactions]); // currentUserId değiştiğinde yeniden yükle
+    }, [currentUserId, fetchTransactions, fetchRecurringTransactions]); // Reload when currentUserId changes
 
-    // Filtreleme işlemi
+    // Filtering logic
     useEffect(() => {
         if (!transactions) {
             setFilteredTransactions([]);
@@ -381,39 +418,24 @@ const TransactionModule: React.FC = () => {
                 }
             }
 
-            // Tarihi UTC formatında gönder (timezone offset olmadan)
+            // Send date in UTC format (without timezone offset)
             const formatDateForBackend = (dateString: string) => {
-                // dateString formatı: "2025-08-02" (input type="date" formatı)
-                // Bu formatı doğrudan kullan, Date objesi oluşturma
+                // dateString format: "2025-08-02" (input type="date" format)
+                // Use this format directly, don't create Date object
                 return dateString;
             };
 
-            if (editingId) {
-                await axios.put(`/api/transaction/${editingId}`, {
-                    amount: Math.abs(parseFloat(form.amount)),
-                    date: formatDateForBackend(form.date),
-                    categoryId: form.categoryId,
-                    description: form.description,
-                    isIncome: form.isIncome,
-                    accountId: form.accountId,
-                    receiptUrl: receiptUrl
-                });
-                setEditingId(null);
-                fetchTransactions();
-                setFormMsg('İşlem güncellendi!');
-            } else {
-                await axios.post('/api/transaction', {
-                    amount: Math.abs(parseFloat(form.amount)),
-                    date: formatDateForBackend(form.date),
-                    categoryId: form.categoryId,
-                    description: form.description,
-                    isIncome: form.isIncome,
-                    accountId: form.accountId,
-                    receiptUrl: receiptUrl
-                });
-                setFormMsg('İşlem başarıyla eklendi!');
-                fetchTransactions();
-            }
+            await axios.post('/api/transaction', {
+                amount: Math.abs(parseFloat(form.amount)),
+                date: formatDateForBackend(form.date),
+                categoryId: form.categoryId,
+                description: form.description,
+                isIncome: form.isIncome,
+                accountId: form.accountId,
+                receiptUrl: receiptUrl
+            });
+            setFormMsg('İşlem başarıyla eklendi!');
+            fetchTransactions();
             setForm({ amount: '', date: '', categoryId: '', description: '', isIncome: false, accountId: form.accountId, receipt: null });
         } catch (err: unknown) {
             const errorMessage = err instanceof Error ? err.message : 'İşlem eklenirken/güncellenirken hata oluştu.';
@@ -561,7 +583,7 @@ const TransactionModule: React.FC = () => {
                     const lines = text.split('\n').filter(Boolean);
                     const headers = lines[0].split(',').map(h => h.trim());
                     
-                    // Otomatik mapping
+                    // Automatic mapping
                     const autoMapping: { [key: string]: string } = {};
                     headers.forEach(h => {
                       if (/tarih|date/i.test(h)) autoMapping[h] = 'transaction_date';
@@ -571,17 +593,17 @@ const TransactionModule: React.FC = () => {
                       else autoMapping[h] = '';
                     });
                         
-                    // Otomatik kategori eşleştirme için açıklama sütununu bul
+                    // Find description column for automatic category matching
                     const descriptionColumn = headers.find(h => /açıklama|description/i.test(h));
                     setImportMapping(autoMapping);
                     
-                    // Satırları oku ve otomatik kategori eşleştir
+                    // Read rows and match categories automatically
                     const rows = lines.slice(1).map(line => {
                         const values = line.split(',');
                         const row: Record<string, string> = {};
                         headers.forEach((h, i) => row[h] = values[i]?.trim());
                         
-                        // Eğer açıklama sütunu varsa ve kategori sütunu boşsa, otomatik eşleştir
+                        // If description column exists and category column is empty, match automatically
                         if (descriptionColumn && row[descriptionColumn] && !row['Kategori'] && !row['category']) {
                             const matchedCategory = matchCategoryByDescription(row[descriptionColumn]);
                             if (matchedCategory) {
@@ -608,7 +630,7 @@ const TransactionModule: React.FC = () => {
                 
                 const { headers, rows } = response.data;
                 
-                // Otomatik mapping
+                // Automatic mapping
                 const autoMapping: { [key: string]: string } = {};
                 headers.forEach((h: string) => {
                   if (/tarih|date/i.test(h)) autoMapping[h] = 'transaction_date';
@@ -618,13 +640,13 @@ const TransactionModule: React.FC = () => {
                   else autoMapping[h] = '';
                 });
                 
-                // Otomatik kategori eşleştirme için açıklama sütununu bul
+                // Find description column for automatic category matching
                 const descriptionColumn = headers.find((h: string) => /açıklama|description/i.test(h));
                 setImportMapping(autoMapping);
                 
-                // Satırları işle ve otomatik kategori eşleştir
+                // Process rows and match categories automatically
                 const processedRows = rows.map((row: Record<string, string>) => {
-                    // Eğer açıklama sütunu varsa ve kategori sütunu boşsa, otomatik eşleştir
+                    // If description column exists and category column is empty, match automatically
                     if (descriptionColumn && row[descriptionColumn] && !row['Kategori'] && !row['category']) {
                         const matchedCategory = matchCategoryByDescription(row[descriptionColumn]);
                         if (matchedCategory) {
@@ -683,7 +705,7 @@ const TransactionModule: React.FC = () => {
                         continue;
                     }
                     
-                    // Kategori ID'sini bul
+                    // Find category ID
                     const category = categories.find(c => c.name === finalCategoryName);
                     const categoryId = category?.id || categories[0]?.id;
                     
@@ -709,7 +731,7 @@ const TransactionModule: React.FC = () => {
             setImportMapping({});
             setSelectedImportFile(null);
             
-            // İşlemler listesini yenile
+            // Refresh transactions list
             await fetchTransactions();
             
         } catch (error) {
@@ -725,7 +747,7 @@ const TransactionModule: React.FC = () => {
         
         const fileExtension = file.name.toLowerCase().split('.').pop();
         
-        // Desteklenen dosya formatlarını kontrol et
+        // Check supported file formats
         if (!['csv', 'txt', 'xlsx', 'xls', 'pdf'].includes(fileExtension || '')) {
             setBankStatementMsg('Desteklenmeyen dosya formatı. Sadece CSV, TXT, Excel ve PDF dosyaları desteklenir.');
             return;
@@ -733,7 +755,7 @@ const TransactionModule: React.FC = () => {
         
         setSelectedBankFile(file);
         setBankStatementMsg('Dosya seçildi. "Ekle" butonuna basarak işlemi başlatın.');
-        // Önceki verileri temizle
+        // Clear previous data
         setBankStatementTransactions([]);
     };
 
@@ -757,7 +779,7 @@ const TransactionModule: React.FC = () => {
             
             if (response.data.success) {
                 const transactions = response.data.transactions.map((tx: any) => {
-                    // Tarihi doğru formatta formatla
+                    // Format date in correct format
                     let formattedDate = '';
                     if (tx.date) {
                         if (typeof tx.date === 'string' && tx.date.includes('-')) {
@@ -813,14 +835,14 @@ const TransactionModule: React.FC = () => {
             
             for (const tx of bankStatementTransactions) {
                 try {
-                    // Kategori ID'sini bul
+                    // Find category ID
                     const category = categories.find(c => c.name === tx.category);
                     const categoryId = category?.id || categories[0]?.id;
                     
-                    // Tarihi UTC formatında gönder
+                    // Send date in UTC format
                     const formatDateForBackend = (dateString: string) => {
                         if (typeof dateString === 'string' && dateString.includes('.')) {
-                            // DD.MM.YYYY formatını YYYY-MM-DD'ye çevir
+                            // Convert DD.MM.YYYY format to YYYY-MM-DD
                             const parts = dateString.split('.');
                             if (parts.length === 3) {
                                 return `${parts[2]}-${parts[1]}-${parts[0]}`;
@@ -850,7 +872,7 @@ const TransactionModule: React.FC = () => {
             setBankStatementTransactions([]);
             setSelectedBankFile(null);
             
-            // İşlemler listesini yenile
+            // Refresh transactions list
             await fetchTransactions();
             
         } catch (error) {
@@ -859,7 +881,7 @@ const TransactionModule: React.FC = () => {
         }
     };
 
-    // Temizleme fonksiyonları
+    // Clear functions
     const handleClearImport = () => {
         setImportedRows([]);
         setImportMapping({});
@@ -1053,6 +1075,7 @@ const TransactionModule: React.FC = () => {
                                             <thead>
                                                 <tr style={{ background: '#3a3a3a' }}>
                                                     <th style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>Tarih</th>
+                                                    <th style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>Hesap</th>
                                                     <th style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>Kategori</th>
                                                     <th style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>Açıklama</th>
                                                     <th style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>Tutar</th>
@@ -1065,49 +1088,16 @@ const TransactionModule: React.FC = () => {
                                                 {filteredTransactions && filteredTransactions.length > 0 ? (
                                                     filteredTransactions.map((tx, idx) => {
                                                         const cat = tx.category || categories.find(c => String(c.id) === String(tx.categoryId || tx.category_id));
-                                                        const formattedDate = (() => {
-                                                            const raw = tx.transactionDate || tx.transaction_date || tx.date || '';
-                                                            if (!raw) return '';
-                                                            
-                                                            // Eğer raw zaten string ise ve ISO formatında ise
-                                                            if (typeof raw === 'string') {
-                                                                // ISO format: "2025-08-01T00:00:00.000Z" veya "2025-08-01"
-                                                                if (raw.includes('T')) {
-                                                                    const datePart = raw.split('T')[0];
-                                                                    const parts = datePart.split('-');
-                                                                    if (parts.length === 3) {
-                                                                        return `${parts[2]}.${parts[1]}.${parts[0]}`;
-                                                                    }
-                                                                }
-                                                                // Sadece tarih format: "2025-08-01"
-                                                                else if (raw.includes('-')) {
-                                                                    const parts = raw.split('-');
-                                                                    if (parts.length === 3) {
-                                                                        return `${parts[2]}.${parts[1]}.${parts[0]}`;
-                                                                    }
-                                                                }
-                                                                // Zaten DD.MM.YYYY formatında ise
-                                                                else if (raw.includes('.')) {
-                                                                    return raw;
-                                                                }
-                                                            }
-                                                            
-                                                            // Fallback: Date objesi kullan
-                                                            try {
-                                                                const d = new Date(raw);
-                                                                if (isNaN(d.getTime())) return raw;
-                                                                
-                                                                const day = String(d.getDate()).padStart(2, '0');
-                                                                const month = String(d.getMonth() + 1).padStart(2, '0');
-                                                                const year = d.getFullYear();
-                                                                return `${day}.${month}.${year}`;
-                                                            } catch (error) {
-                                                                return raw;
-                                                            }
-                                                        })();
+                                                        const formattedDate = formatDate(tx.transactionDate || tx.transaction_date || tx.date || '');
                                                         return (
                                                             <tr key={tx.id} style={{ background: idx % 2 === 0 ? '#2a2a2a' : '#333' }}>
                                                                 <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{formattedDate}</td>
+                                                                <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>
+                                                                    {(() => {
+                                                                        const account = accounts.find(a => String(a.id) === String(tx.accountId || tx.account_id));
+                                                                        return account ? account.accountName : 'Hesap yok';
+                                                                    })()}
+                                                                </td>
                                                                 <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{cat ? `${cat.icon} ${cat.name}` : 'Kategori yok'}</td>
                                                                 <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{tx.description}</td>
                                                                 <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{Math.abs(tx.amount).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</td>
@@ -1145,7 +1135,7 @@ const TransactionModule: React.FC = () => {
                                                         );
                                                     })
                                                 ) : (
-                                                    <tr><td colSpan={8} style={{ textAlign: 'center', padding: 16, color: '#fff' }}>Kayıt yok.</td></tr>
+                                                    <tr><td colSpan={9} style={{ textAlign: 'center', padding: 16, color: '#fff' }}>Kayıt yok.</td></tr>
                                                 )}
                                             </tbody>
                                         </table>
@@ -1340,72 +1330,7 @@ const TransactionModule: React.FC = () => {
 
                                     {bankStatementTransactions.length > 0 && (
                                         <div style={{ marginTop: 20 }}>
-                                            {/* Kategori İstatistikleri */}
-                                            <div style={{ 
-                                                background: '#1a1a1a', 
-                                                padding: 16, 
-                                                borderRadius: 8, 
-                                                marginBottom: 16,
-                                                border: '1px solid #333'
-                                            }}>
-                                                <h4 style={{ color: '#fff', margin: '0 0 12px 0' }}>📊 Otomatik Kategori İstatistikleri</h4>
-                                                {(() => {
-                                                    const categoryStats = bankStatementTransactions.reduce((acc, tx) => {
-                                                        const matchedCategory = matchCategoryByDescription(tx.description);
-                                                        const isMatched = matchedCategory && matchedCategory === tx.category;
-                                                        const hasMatch = matchedCategory !== null;
-                                                        
-                                                        if (isMatched) acc.perfect++;
-                                                        else if (hasMatch) acc.different++;
-                                                        else acc.noMatch++;
-                                                        
-                                                        return acc;
-                                                    }, { perfect: 0, different: 0, noMatch: 0 });
-                                                    
-                                                    const total = bankStatementTransactions.length;
-                                                    const perfectRate = ((categoryStats.perfect / total) * 100).toFixed(1);
-                                                    const matchRate = (((categoryStats.perfect + categoryStats.different) / total) * 100).toFixed(1);
-                                                    
-                                                    return (
-                                                        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                                                            <div style={{ 
-                                                                background: '#1a3a1a', 
-                                                                padding: '8px 12px', 
-                                                                borderRadius: 6,
-                                                                border: '1px solid #4caf50'
-                                                            }}>
-                                                                <span style={{ color: '#4caf50', fontWeight: 'bold' }}>✅ Mükemmel Eşleşme: {categoryStats.perfect} ({perfectRate}%)</span>
-                                                            </div>
-                                                            <div style={{ 
-                                                                background: '#3a2a1a', 
-                                                                padding: '8px 12px', 
-                                                                borderRadius: 6,
-                                                                border: '1px solid #ff9800'
-                                                            }}>
-                                                                <span style={{ color: '#ff9800', fontWeight: 'bold' }}>⚠️ Farklı Kategori: {categoryStats.different}</span>
-                                                            </div>
-                                                            <div style={{ 
-                                                                background: '#3a1a1a', 
-                                                                padding: '8px 12px', 
-                                                                borderRadius: 6,
-                                                                border: '1px solid #f44336'
-                                                            }}>
-                                                                <span style={{ color: '#f44336', fontWeight: 'bold' }}>❌ Eşleşme Yok: {categoryStats.noMatch}</span>
-                                                            </div>
-                                                            <div style={{ 
-                                                                background: '#1a2a3a', 
-                                                                padding: '8px 12px', 
-                                                                borderRadius: 6,
-                                                                border: '1px solid #2196f3'
-                                                            }}>
-                                                                <span style={{ color: '#2196f3', fontWeight: 'bold' }}>📈 Genel Başarı: {matchRate}%</span>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })()}
-                                            </div>
-                                            
-                                            {/* İşlem Tablosu */}
+                                            {/* Transaction Table */}
                                             <div style={{ overflowX: 'auto' }}>
                                                 <table style={{ width: '100%', borderCollapse: 'collapse', background: '#2a2a2a' }}>
                                                     <thead>
@@ -1414,15 +1339,10 @@ const TransactionModule: React.FC = () => {
                                                             <th style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>Açıklama</th>
                                                             <th style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>Tutar</th>
                                                             <th style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>Otomatik Kategori</th>
-                                                            <th style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>Eşleşme Durumu</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         {bankStatementTransactions.map((tx, idx) => {
-                                                            const matchedCategory = matchCategoryByDescription(tx.description);
-                                                            const isMatched = matchedCategory && matchedCategory === tx.category;
-                                                            const hasMatch = matchedCategory !== null;
-                                                            
                                                             return (
                                                                 <tr key={idx} style={{ background: idx % 2 === 0 ? '#2a2a2a' : '#333' }}>
                                                                     <td style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>{tx.date}</td>
@@ -1430,15 +1350,6 @@ const TransactionModule: React.FC = () => {
                                                                     <td style={{ padding: 8, border: '1px solid #555', color: '#fff' }}>{tx.amount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</td>
                                                                     <td style={{ padding: 8, border: '1px solid #555', background: '#1a3a1a', fontWeight: 'bold' }}>
                                                                         <span style={{ color: '#4caf50' }}>✅ {tx.category}</span>
-                                                                    </td>
-                                                                    <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center' }}>
-                                                                        {isMatched ? (
-                                                                            <span style={{ color: '#4caf50', fontWeight: 'bold' }}>✅ Mükemmel</span>
-                                                                        ) : hasMatch ? (
-                                                                            <span style={{ color: '#ff9800', fontWeight: 'bold' }}>⚠️ Farklı: {matchedCategory}</span>
-                                                                        ) : (
-                                                                            <span style={{ color: '#f44336', fontWeight: 'bold' }}>❌ Eşleşme Yok</span>
-                                                                        )}
                                                                     </td>
                                                                 </tr>
                                                             );
@@ -1562,46 +1473,7 @@ const TransactionModule: React.FC = () => {
                                                             <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{Math.abs(r.amount).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</td>
                                                             <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{cat ? `${cat.icon} ${cat.name}` : 'Kategori yok'}</td>
                                                             <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{r.description}</td>
-                                                            <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{(() => {
-                                                                const raw = r.startDate;
-                                                                if (!raw) return '';
-                                                                
-                                                                // Eğer raw zaten string ise ve ISO formatında ise
-                                                                if (typeof raw === 'string') {
-                                                                    // ISO format: "2025-08-01T00:00:00.000Z" veya "2025-08-01"
-                                                                    if (raw.includes('T')) {
-                                                                        const datePart = raw.split('T')[0];
-                                                                        const parts = datePart.split('-');
-                                                                        if (parts.length === 3) {
-                                                                            return `${parts[2]}.${parts[1]}.${parts[0]}`;
-                                                                        }
-                                                                    }
-                                                                    // Sadece tarih format: "2025-08-01"
-                                                                    else if (raw.includes('-')) {
-                                                                        const parts = raw.split('-');
-                                                                        if (parts.length === 3) {
-                                                                            return `${parts[2]}.${parts[1]}.${parts[0]}`;
-                                                                        }
-                                                                    }
-                                                                    // Zaten DD.MM.YYYY formatında ise
-                                                                    else if (raw.includes('.')) {
-                                                                        return raw;
-                                                                    }
-                                                                }
-                                                                
-                                                                // Fallback: Date objesi kullan
-                                                                try {
-                                                                    const d = new Date(raw);
-                                                                    if (isNaN(d.getTime())) return raw;
-                                                                    
-                                                                    const day = String(d.getDate()).padStart(2, '0');
-                                                                    const month = String(d.getMonth() + 1).padStart(2, '0');
-                                                                    const year = d.getFullYear();
-                                                                    return `${day}.${month}.${year}`;
-                                                                } catch (error) {
-                                                                    return raw;
-                                                                }
-                                                            })()}</td>
+                                                            <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{formatDate(r.startDate)}</td>
                                                             <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>{r.frequency}</td>
                                                             <td style={{ padding: 8, border: '1px solid #555', textAlign: 'center', color: '#fff' }}>
                                                                 <span style={{ 
