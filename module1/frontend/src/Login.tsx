@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LockOutlined, UserOutlined, ArrowLeftOutlined, SecurityScanOutlined } from '@ant-design/icons';
-import { Input, Button, message, Form, Typography } from '../node_modules/antd';
+import { Input, Button, message, Form, Typography } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
@@ -13,8 +13,8 @@ const Login: React.FC = () => {
   const [factorId, setFactorId] = useState('');
   const [tempSession, setTempSession] = useState(null);
   const { signIn, verifyMFA, verifyMFAWithSession } = useAuth();
-  const navigate = useNavigate();
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const onFinish = async (values: { email: string; password: string }) => {
     setLoading(true);
@@ -25,7 +25,7 @@ const Login: React.FC = () => {
       setFactorId(fId);
       setTempSession(tSession);
       setShowMFA(true);
-      message.info('Please enter your 6-digit MFA code');
+      message.info(t('mfaRequired'));
     } else if (error) {
       message.error(error.message);
     } else {
@@ -62,7 +62,7 @@ const Login: React.FC = () => {
     if (result.error) {
       message.error('Invalid MFA code: ' + result.error.message);
     } else {
-      message.success('Login successful!');
+      message.success(t('loginSuccess'));
       navigate('/dashboard');
     }
     setLoading(false);
@@ -76,7 +76,7 @@ const Login: React.FC = () => {
         {t('backToHome')}
       </Link>
       <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>
-        {showMFA ? 'Multi-Factor Authentication' : 'Login to PocketBank'}
+        {showMFA ? t('mfaTitle') : t('loginTitle')}
       </h2>
       
       {showMFA ? (
@@ -84,12 +84,12 @@ const Login: React.FC = () => {
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
             <SecurityScanOutlined style={{ fontSize: '48px', color: '#4a7c59', marginBottom: '16px' }} />
             <Typography.Text style={{ display: 'block', marginBottom: '16px' }}>
-              Enter the 6-digit code from your authenticator app
+              {t('mfaDescription')}
             </Typography.Text>
           </div>
           
           <Input
-            placeholder="Enter 6-digit code"
+            placeholder={t('mfaPlaceholder')}
             value={mfaCode}
             onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
             maxLength={6}
@@ -116,7 +116,7 @@ const Login: React.FC = () => {
               marginBottom: '16px'
             }}
           >
-            Verify Code
+            {t('verifyCode')}
           </Button>
           
           <Button 
@@ -129,7 +129,7 @@ const Login: React.FC = () => {
             }}
             style={{ width: '100%', color: '#4a7c59' }}
           >
-            Back to Login
+            {t('backToLogin')}
           </Button>
         </div>
       ) : (
@@ -185,17 +185,17 @@ const Login: React.FC = () => {
               to="/forgot-password"
               style={{ color: '#4a7c59', textDecoration: 'none', fontSize: '14px' }}
             >
-              Forgot your password?
+              {t('forgotPassword')}
             </Link>
           </div>
           
           <div style={{ textAlign: 'center', marginTop: '16px' }}>
-            <span>Don't have an account? </span>
+            <span>{t('dontHaveAccount')} </span>
             <Link
               to="/signup"
               style={{ color: '#4a7c59', fontWeight: 'bold', textDecoration: 'none' }}
             >
-              Sign Up
+              {t('signUp')}
             </Link>
           </div>
         </>

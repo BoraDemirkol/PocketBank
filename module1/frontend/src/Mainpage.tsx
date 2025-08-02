@@ -1,10 +1,11 @@
 import { Button, Typography } from '../node_modules/antd';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import { t } from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 export default function Mainpage() {
     const { user, loading } = useAuth();
+    const { t } = useTranslation();
     return (
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             {/* Top half - Text only */}
@@ -43,7 +44,7 @@ export default function Mainpage() {
                 gap: '40px'
             }}>
                 {loading ? (
-                    <div>Loading...</div>
+                    <div>{t('loading')}</div>
                 ) : user ? (
                     /* Dashboard Box for logged in users */
                     <div style={{
@@ -63,7 +64,7 @@ export default function Mainpage() {
                                 color: '#4a7c59', 
                                 marginBottom: '15px' 
                             }}>
-                                Welcome Back!
+                                {t('welcomeBack')}
                             </Typography.Title>
                             <Typography.Text style={{ 
                                 color: '#666', 
@@ -71,7 +72,7 @@ export default function Mainpage() {
                                 marginBottom: '20px',
                                 fontSize: '14px'
                             }}>
-                                Access your dashboard to manage your finances and view your account details.
+                                {t('dashboardDescription')}
                             </Typography.Text>
                         </div>
                         <Link to="/dashboard" style={{ width: '100%' }}>
@@ -85,7 +86,7 @@ export default function Mainpage() {
                                     width: '100%'
                                 }}
                             >
-                                Go to Dashboard
+                                {t('goToDashboard')}
                             </Button>
                         </Link>
                     </div>
@@ -109,7 +110,7 @@ export default function Mainpage() {
                                     color: '#4a7c59', 
                                     marginBottom: '15px' 
                                 }}>
-                                    Existing Customer
+                                    {t('existingCustomer')}
                                 </Typography.Title>
                                 <Typography.Text style={{ 
                                     color: '#666', 
@@ -117,7 +118,7 @@ export default function Mainpage() {
                                     marginBottom: '20px',
                                     fontSize: '14px'
                                 }}>
-                                    Access your account and manage your finances securely.
+                                    {t('existingCustomerDescription')}
                                 </Typography.Text>
                             </div>
                             <Link to="/signin" style={{ width: '100%' }}>
@@ -131,7 +132,7 @@ export default function Mainpage() {
                                         width: '100%'
                                     }}
                                 >
-                                    Sign In
+                                    {t('signIn')}
                                 </Button>
                             </Link>
                         </div>
@@ -154,7 +155,7 @@ export default function Mainpage() {
                                     color: '#4a7c59', 
                                     marginBottom: '15px' 
                                 }}>
-                                    New Customer
+                                    {t('newCustomer')}
                                 </Typography.Title>
                                 <Typography.Text style={{ 
                                     color: '#666', 
@@ -162,7 +163,7 @@ export default function Mainpage() {
                                     marginBottom: '20px',
                                     fontSize: '14px'
                                 }}>
-                                    Join thousands who trust PocketBank for their banking needs.
+                                    {t('newCustomerDescription')}
                                 </Typography.Text>
                             </div>
                             <Link to="/signup" style={{ width: '100%' }}>
@@ -176,7 +177,7 @@ export default function Mainpage() {
                                         width: '100%'
                                     }}
                                 >
-                                    Sign Up
+                                    {t('signUp')}
                                 </Button>
                             </Link>
                         </div>
