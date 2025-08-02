@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Button, message, Form, Input, Upload, Avatar, Spin } from '../node_modules/antd';
-import { UserOutlined, ArrowLeftOutlined, UploadOutlined, SaveOutlined } from '@ant-design/icons';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Card, Button, message, Form, Input, Upload, Avatar, Spin, Modal, Typography, Space, Divider } from '../node_modules/antd';
+import type { UploadChangeParam } from 'antd/es/upload';
+import { UserOutlined, ArrowLeftOutlined, UploadOutlined, SaveOutlined, SecurityScanOutlined, QrcodeOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
@@ -16,7 +17,7 @@ interface UserProfile {
 }
 
 const EditProfile: React.FC = () => {
-  const { user } = useAuth();
+  const { user, enrollMFA, verifyMFA, unenrollMFA, getMFAFactors } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [form] = Form.useForm();
@@ -25,6 +26,26 @@ const EditProfile: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [newProfilePicture, setNewProfilePicture] = useState<string | null>(null);
+  const [mfaFactors, setMfaFactors] = useState<Array<{ id: string; friendly_name?: string }>>([]);
+  const [mfaModalVisible, setMfaModalVisible] = useState(false);
+  const [qrCode, setQrCode] = useState<string | null>(null);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [currentFactor, setCurrentFactor] = useState<any>(null);
+
+  const loadMFAFactors = useCallback(async () => {
+    try {
+      const { data, error } = await getMFAFactors();
+      if (!error && data) {
+        setMfaFactors(data?.totp || []);
+      } else {
+        // If there's an error or no data, just set empty array
+        setMfaFactors([]);
+      }
+    } catch (error) {
+      setMfaFactors([]);
+    }
+  }, [getMFAFactors]);
+
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -32,10 +53,13 @@ const EditProfile: React.FC = () => {
         setLoading(true);
         const profileData = await apiService.get('/account/profile');
         setProfile(profileData);
-        form.setFieldsValue({
-          name: profileData.name,
-          surname: profileData.surname
-        });
+        
+        // Load MFA factors but don't let it fail the whole profile load
+        try {
+          await loadMFAFactors();
+        } catch (mfaError) {
+          setMfaFactors([]);
+        }
       } catch (error) {
         console.error('Failed to fetch profile:', error);
         message.error(t('error'));
@@ -45,7 +69,109 @@ const EditProfile: React.FC = () => {
     };
 
     fetchProfile();
-  }, [form]);
+  }, [loadMFAFactors]);
+
+
+  const handleEnableMFA = async () => {
+    try {
+      const { data: existingFactors } = await getMFAFactors();
+      
+      if (existingFactors?.totp && existingFactors.totp.length > 0) {
+        for (const factor of existingFactors.totp) {
+          try {
+            await unenrollMFA(factor.id);
+          } catch (cleanupError) {
+            console.error('Failed to cleanup factor:', factor.id, cleanupError);
+          }
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await loadMFAFactors();
+        
+        const { data: refreshedFactors } = await getMFAFactors();
+        if (refreshedFactors?.totp && refreshedFactors.totp.length > 0) {
+          message.error('Failed to clean up existing factors. Please refresh the page and try again.');
+          return;
+        }
+      }
+
+      const { data, error } = await enrollMFA();
+      if (error) {
+        if (error.message?.includes('MFA is not enabled')) {
+          message.error('MFA is not enabled in this project. Please contact support.');
+        } else if (error.message?.includes('already exists')) {
+          message.error('An MFA factor already exists. Please refresh the page and try again.');
+        } else {
+          message.error('Failed to enable MFA: ' + error.message);
+        }
+        return;
+      }
+      
+      if (data) {
+        setCurrentFactor(data);
+        const qrCodeUrl = data.totp?.qr_code || data.qr_code;
+        setQrCode(qrCodeUrl);
+        setMfaModalVisible(true);
+        
+        if (!qrCodeUrl) {
+          message.error('Failed to generate QR code');
+        }
+      }
+    } catch {
+      message.error('Failed to enable MFA');
+    }
+  };
+
+  const handleVerifyMFA = async () => {
+    if (!currentFactor || !verificationCode) {
+      message.error('Please enter the verification code');
+      return;
+    }
+
+    try {
+      // First create a challenge for the factor
+      const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
+        factorId: currentFactor.id
+      });
+
+      if (challengeError) {
+        message.error('Failed to create challenge: ' + challengeError.message);
+        return;
+      }
+
+      // Then verify with the challenge ID
+      const { error } = await verifyMFA(currentFactor.id, challengeData.id, verificationCode);
+      if (error) {
+        message.error('Invalid verification code: ' + error.message);
+        return;
+      }
+
+      message.success('MFA enabled successfully!');
+      setMfaModalVisible(false);
+      setVerificationCode('');
+      setCurrentFactor(null);
+      setQrCode(null);
+      await loadMFAFactors();
+    } catch (err) {
+      console.error('MFA verification error:', err);
+      message.error('Failed to verify MFA code');
+    }
+  };
+
+  const handleDisableMFA = async (factorId: string) => {
+    try {
+      const { error } = await unenrollMFA(factorId);
+      if (error) {
+        message.error('Failed to disable MFA: ' + error.message);
+        return;
+      }
+
+      message.success('MFA disabled successfully');
+      await loadMFAFactors();
+    } catch {
+      message.error('Failed to disable MFA');
+    }
+  };
 
   const uploadProfilePicture = async (file: File): Promise<string | null> => {
     try {
@@ -57,7 +183,7 @@ const EditProfile: React.FC = () => {
       const filePath = `${fileName}`; // Remove folder structure for now
 
       // Upload to Supabase storage
-      const { data, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('profile-pictures')
         .upload(filePath, file, {
           cacheControl: '3600',
@@ -78,16 +204,16 @@ const EditProfile: React.FC = () => {
       return urlData.publicUrl;
     } catch (error) {
       console.error('Upload error:', error);
-      message.error(t('error'));
+      message.error(`Failed to upload profile picture: ${(error as Error).message}`);
       return null;
     } finally {
       setUploading(false);
     }
   };
 
-  const handleFileChange = async (info: any) => {
+  const handleFileChange = async (info: UploadChangeParam) => {
     // Get the file - it should be the latest file in the fileList
-    const file = info.file;
+    const file = info.file.originFileObj;
     
     if (!file) {
       return;
@@ -184,6 +310,11 @@ const EditProfile: React.FC = () => {
           layout="vertical"
           onFinish={onFinish}
           autoComplete="off"
+          key={profile?.userId || 'empty'}
+          initialValues={{
+            name: profile?.name || '',
+            surname: profile?.surname || ''
+          }}
         >
           <Form.Item
             name="name"
@@ -209,6 +340,63 @@ const EditProfile: React.FC = () => {
             />
           </Form.Item>
 
+          <Divider orientation="left">
+            <SecurityScanOutlined style={{ marginRight: '8px' }} />
+            Multi-Factor Authentication
+          </Divider>
+
+          <div style={{ marginBottom: '24px' }}>
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <Typography.Text strong>TOTP (App Authenticator)</Typography.Text>
+                  <br />
+                  <Typography.Text type="secondary" style={{ fontSize: '12px' }}>
+                    Requires users to provide additional verification factors to authenticate
+                  </Typography.Text>
+                </div>
+                <div>
+                  {mfaFactors.length > 0 ? (
+                    <Space>
+                      <Typography.Text type="success" style={{ fontSize: '12px' }}>
+                        Enabled
+                      </Typography.Text>
+                      <Button
+                        type="text"
+                        danger
+                        size="small"
+                        icon={<DeleteOutlined />}
+                        onClick={() => handleDisableMFA(mfaFactors[0].id)}
+                      >
+                        Disable
+                      </Button>
+                    </Space>
+                  ) : (
+                    <Button
+                      type="primary"
+                      size="small"
+                      icon={<QrcodeOutlined />}
+                      onClick={handleEnableMFA}
+                      style={{
+                        backgroundColor: '#4a7c59',
+                        borderColor: '#4a7c59'
+                      }}
+                    >
+                      Enable
+                    </Button>
+                  )}
+                </div>
+              </div>
+              
+              {mfaFactors.length > 0 && (
+                <Typography.Text style={{ fontSize: '12px', color: '#4a7c59' }}>
+                  Maximum number of per-user MFA factors: {mfaFactors.length}/10 factors
+                </Typography.Text>
+              )}
+              
+            </Space>
+          </div>
+
           <Form.Item>
             <Button
               type="primary"
@@ -228,6 +416,75 @@ const EditProfile: React.FC = () => {
           </Form.Item>
         </Form>
       </Card>
+
+      <Modal
+        title="Set up Multi-Factor Authentication"
+        open={mfaModalVisible}
+        onCancel={() => {
+          setMfaModalVisible(false);
+          setVerificationCode('');
+          setCurrentFactor(null);
+          setQrCode(null);
+        }}
+        footer={[
+          <Button key="cancel" onClick={() => {
+            setMfaModalVisible(false);
+            setVerificationCode('');
+            setCurrentFactor(null);
+            setQrCode(null);
+          }}>
+            Cancel
+          </Button>,
+          <Button
+            key="verify"
+            type="primary"
+            onClick={handleVerifyMFA}
+            style={{
+              backgroundColor: '#4a7c59',
+              borderColor: '#4a7c59'
+            }}
+          >
+            Verify & Enable
+          </Button>
+        ]}
+      >
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <Typography.Text>
+            1. Install an authenticator app like Google Authenticator, Authy, or 1Password
+          </Typography.Text>
+          
+          <Typography.Text>
+            2. Scan this QR code with your authenticator app:
+          </Typography.Text>
+          
+          {qrCode && (
+            <div style={{ textAlign: 'center', padding: '20px' }}>
+              <img
+                src={qrCode}
+                alt="MFA QR Code"
+                style={{
+                  maxWidth: '200px',
+                  border: '1px solid #d9d9d9',
+                  borderRadius: '6px'
+                }}
+              />
+            </div>
+          )}
+          
+          <Typography.Text>
+            3. Enter the 6-digit code from your authenticator app:
+          </Typography.Text>
+          
+          <Input
+            placeholder="Enter 6-digit code"
+            value={verificationCode}
+            onChange={(e) => setVerificationCode(e.target.value)}
+            maxLength={6}
+            size="large"
+            style={{ textAlign: 'center', fontSize: '18px', letterSpacing: '4px' }}
+          />
+        </Space>
+      </Modal>
     </div>
   );
 };

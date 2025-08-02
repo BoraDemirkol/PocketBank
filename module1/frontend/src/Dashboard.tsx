@@ -42,8 +42,8 @@ const Dashboard: React.FC = () => {
         
         setProfile(profileData);
         setBalance(balanceData);
-      } catch (error) {
-        message.error(t('error'));
+      } catch {
+        message.error('Failed to load dashboard data');
       } finally {
         setLoading(false);
       }

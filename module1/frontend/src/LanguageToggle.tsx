@@ -1,17 +1,15 @@
 import React from 'react';
-import { Button, Dropdown } from '../node_modules/antd';
-import type { MenuProps } from '../node_modules/antd';
+import { Button, Dropdown} from '../node_modules/antd';
 import { GlobalOutlined, DownOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import i18n from './i18n';
 
-const LanguageToggle: React.FC = () => {
-  const { i18n } = useTranslation();
-
+const LanguageDropdown: React.FC = () => {
   const changeLanguage = (language: string) => {
     i18n.changeLanguage(language);
+    localStorage.setItem('i18nextLng', language); // optional: persist language
   };
 
-  const items: MenuProps['items'] = [
+  const items = [
     {
       key: 'en',
       label: 'English',
@@ -37,7 +35,7 @@ const LanguageToggle: React.FC = () => {
           fontWeight: 500,
           display: 'flex',
           alignItems: 'center',
-          gap: '4px'
+          gap: '4px',
         }}
       >
         <GlobalOutlined />
@@ -48,4 +46,4 @@ const LanguageToggle: React.FC = () => {
   );
 };
 
-export default LanguageToggle;
+export default LanguageDropdown;
