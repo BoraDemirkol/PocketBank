@@ -22,18 +22,18 @@ const EmailVerification: React.FC = () => {
       <CheckCircleOutlined 
         style={{ 
           fontSize: '64px', 
-          color: '#4a7c59', 
+          color: 'var(--primary-color)', 
           marginBottom: '24px' 
         }} 
       />
       
-      <Title level={2} style={{ color: '#4a7c59', marginBottom: '16px' }}>
+      <Title level={2} style={{ color: 'var(--primary-color)', marginBottom: '16px' }}>
         {t('verificationSuccess')}
       </Title>
       
       <Text style={{ 
         fontSize: '16px', 
-        color: '#666', 
+        color: 'var(--text-secondary)', 
         marginBottom: '32px',
         maxWidth: '400px',
         lineHeight: '1.6'
@@ -47,8 +47,8 @@ const EmailVerification: React.FC = () => {
             type="primary"
             size="large"
             style={{
-              backgroundColor: '#4a7c59',
-              borderColor: '#4a7c59',
+              backgroundColor: 'var(--primary-color)',
+              borderColor: 'var(--primary-color)',
               fontWeight: 500,
               minWidth: '120px'
             }}
@@ -59,7 +59,7 @@ const EmailVerification: React.FC = () => {
       </div>
       
       <div style={{ marginTop: '32px' }}>
-        <Link to="/" style={{ color: '#4a7c59', textDecoration: 'none' }}>
+        <Link to="/" style={{ color: 'var(--primary-color)', textDecoration: 'none' }}>
           ← {t('backToHome')}
         </Link>
       </div>

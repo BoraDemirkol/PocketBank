@@ -42,7 +42,7 @@ const Register: React.FC = () => {
         width: '100%',
         maxWidth: '400px',
         margin: '50px auto',
-        backgroundColor: '#ffffff',
+        backgroundColor: 'var(--card-bg)',
         padding: '30px',
         borderRadius: '16px',
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
@@ -51,18 +51,18 @@ const Register: React.FC = () => {
         <CheckCircleOutlined 
           style={{ 
             fontSize: '48px', 
-            color: '#4a7c59', 
+            color: 'var(--primary-color)', 
             marginBottom: '20px' 
           }} 
         />
         
-        <Title level={3} style={{ color: '#4a7c59', marginBottom: '16px' }}>
+        <Title level={3} style={{ color: 'var(--primary-color)', marginBottom: '16px' }}>
           {t('emailVerificationTitle')}
         </Title>
         
         <Text style={{ 
           fontSize: '16px', 
-          color: '#666', 
+          color: 'var(--text-secondary)', 
           display: 'block',
           marginBottom: '20px',
           lineHeight: '1.5'
@@ -77,15 +77,15 @@ const Register: React.FC = () => {
           marginBottom: '24px',
           border: '1px solid #e8f5e8'
         }}>
-          <MailOutlined style={{ color: '#4a7c59', marginRight: '8px' }} />
-          <Text strong style={{ color: '#4a7c59' }}>
+          <MailOutlined style={{ color: 'var(--primary-color)', marginRight: '8px' }} />
+          <Text strong style={{ color: 'var(--primary-color)' }}>
             {userEmail}
           </Text>
         </div>
         
         <Text style={{ 
           fontSize: '14px', 
-          color: '#666',
+          color: 'var(--text-secondary)',
           display: 'block',
           marginBottom: '24px',
           lineHeight: '1.4'
@@ -99,8 +99,8 @@ const Register: React.FC = () => {
               type="primary"
               size="large"
               style={{
-                backgroundColor: '#4a7c59',
-                borderColor: '#4a7c59',
+                backgroundColor: 'var(--primary-color)',
+                borderColor: 'var(--primary-color)',
                 fontWeight: 500,
                 width: '100%'
               }}
@@ -109,7 +109,7 @@ const Register: React.FC = () => {
             </Button>
           </Link>
           
-          <Link to="/" style={{ color: '#4a7c59', textDecoration: 'none' }}>
+          <Link to="/" style={{ color: 'var(--primary-color)', textDecoration: 'none' }}>
             ← {t('backToHome')}
           </Link>
         </div>
@@ -123,16 +123,16 @@ const Register: React.FC = () => {
       width: '100%',
       maxWidth: '400px',
       margin: '50px auto',
-      backgroundColor: '#ffffff',
+      backgroundColor: 'var(--card-bg)',
       padding: '30px',
       borderRadius: '16px',
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
     }}>
-      <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: '#4a7c59' }}>
+      <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: 'var(--primary-color)' }}>
         <ArrowLeftOutlined style={{ marginRight: '8px' }} />
         {t('backToHome')}
       </Link>
-      <h2 style={{ textAlign: 'center', marginBottom: '24px', color: '#4a7c59' }}>
+      <h2 style={{ textAlign: 'center', marginBottom: '24px', color: 'var(--primary-color)' }}>
         {t('registerTitle')}
       </h2>
 
@@ -214,8 +214,8 @@ const Register: React.FC = () => {
             size="large"
             style={{
               width: '100%',
-              backgroundColor: '#4a7c59',
-              borderColor: '#4a7c59',
+              backgroundColor: 'var(--primary-color)',
+              borderColor: 'var(--primary-color)',
               fontWeight: 500
             }}
           >
@@ -227,7 +227,7 @@ const Register: React.FC = () => {
         <span>{t('alreadyHaveAccount')} </span>
         <Link
           to="/signin"
-          style={{ color: '#4a7c59', fontWeight: 'bold', textDecoration: 'none' }}
+          style={{ color: 'var(--primary-color)', fontWeight: 'bold', textDecoration: 'none' }}
         >
           {t('signIn')}
         </Link>

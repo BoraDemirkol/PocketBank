@@ -121,8 +121,8 @@ const ResetPassword: React.FC = () => {
       <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', textAlign: 'center' }}>
         <div style={{ marginBottom: '30px' }}>
           <CheckCircleOutlined style={{ fontSize: '48px', color: '#52c41a', marginBottom: '16px' }} />
-          <h2 style={{ color: '#4a7c59', marginBottom: '16px' }}>{t('passwordUpdated')}</h2>
-          <p style={{ color: '#666', lineHeight: '1.6' }}>
+          <h2 style={{ color: 'var(--primary-color)', marginBottom: '16px' }}>{t('passwordUpdated')}</h2>
+          <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6' }}>
             {t('passwordUpdateSuccess')}
           </p>
         </div>
@@ -130,8 +130,8 @@ const ResetPassword: React.FC = () => {
           type="primary" 
           onClick={() => navigate('/dashboard')}
           style={{ 
-            backgroundColor: '#4a7c59',
-            borderColor: '#4a7c59'
+            backgroundColor: 'var(--primary-color)',
+            borderColor: 'var(--primary-color)'
           }}
         >
           {t('goToDashboard')}
@@ -160,7 +160,7 @@ const ResetPassword: React.FC = () => {
   return (
     <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
       <h2 style={{ textAlign: 'center', marginBottom: '10px' }}>{t('resetPasswordTitle')}</h2>
-      <p style={{ textAlign: 'center', color: '#666', marginBottom: '30px' }}>
+      <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '30px' }}>
         {t('resetPasswordSubtitle')}
       </p>
       
@@ -203,8 +203,8 @@ const ResetPassword: React.FC = () => {
             size="large"
             style={{ 
               width: '100%',
-              backgroundColor: '#4a7c59',
-              borderColor: '#4a7c59',
+              backgroundColor: 'var(--primary-color)',
+              borderColor: 'var(--primary-color)',
               fontWeight: 500,
               borderRadius: '6px'
             }}
@@ -217,7 +217,7 @@ const ResetPassword: React.FC = () => {
       <div style={{ textAlign: 'center', marginTop: '20px' }}>
         <Link
           to="/signin"
-          style={{ color: '#4a7c59', fontWeight: 'bold', textDecoration: 'none' }}
+          style={{ color: 'var(--primary-color)', fontWeight: 'bold', textDecoration: 'none' }}
         >
           {t('backToSignIn')}
         </Link>

@@ -273,7 +273,7 @@ const EditProfile: React.FC = () => {
 
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-      <Link to="/dashboard" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: '#4a7c59' }}>
+      <Link to="/dashboard" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: 'var(--primary-color)' }}>
         <ArrowLeftOutlined style={{ marginRight: '8px' }} />
         {t('backToDashboard')}
       </Link>
@@ -283,7 +283,7 @@ const EditProfile: React.FC = () => {
           <Avatar
             size={120}
             src={currentProfilePicture}
-            style={{ backgroundColor: '#4a7c59', marginBottom: '16px' }}
+            style={{ backgroundColor: 'var(--primary-color)', marginBottom: '16px' }}
           >
             {profile?.name?.[0]?.toUpperCase()}{profile?.surname?.[0]?.toUpperCase()}
           </Avatar>
@@ -297,7 +297,7 @@ const EditProfile: React.FC = () => {
               <Button 
                 icon={<UploadOutlined />} 
                 loading={uploading}
-                style={{ borderColor: '#4a7c59', color: '#4a7c59' }}
+                style={{ borderColor: 'var(--primary-color)', color: 'var(--primary-color)' }}
               >
                 {uploading ? t('loading') : t('edit')}
               </Button>
@@ -378,8 +378,8 @@ const EditProfile: React.FC = () => {
                       icon={<QrcodeOutlined />}
                       onClick={handleEnableMFA}
                       style={{
-                        backgroundColor: '#4a7c59',
-                        borderColor: '#4a7c59'
+                        backgroundColor: 'var(--primary-color)',
+                        borderColor: 'var(--primary-color)'
                       }}
                     >
                       Enable
@@ -389,7 +389,7 @@ const EditProfile: React.FC = () => {
               </div>
               
               {mfaFactors.length > 0 && (
-                <Typography.Text style={{ fontSize: '12px', color: '#4a7c59' }}>
+                <Typography.Text style={{ fontSize: '12px', color: 'var(--primary-color)' }}>
                   Maximum number of per-user MFA factors: {mfaFactors.length}/10 factors
                 </Typography.Text>
               )}
@@ -406,8 +406,8 @@ const EditProfile: React.FC = () => {
               icon={<SaveOutlined />}
               style={{
                 width: '100%',
-                backgroundColor: '#4a7c59',
-                borderColor: '#4a7c59',
+                backgroundColor: 'var(--primary-color)',
+                borderColor: 'var(--primary-color)',
                 fontWeight: 500
               }}
             >
@@ -440,8 +440,8 @@ const EditProfile: React.FC = () => {
             type="primary"
             onClick={handleVerifyMFA}
             style={{
-              backgroundColor: '#4a7c59',
-              borderColor: '#4a7c59'
+              backgroundColor: 'var(--primary-color)',
+              borderColor: 'var(--primary-color)'
             }}
           >
             Verify & Enable

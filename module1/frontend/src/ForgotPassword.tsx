@@ -28,17 +28,17 @@ const ForgotPassword: React.FC = () => {
   if (emailSent) {
     return (
       <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', textAlign: 'center' }}>
-        <Link to="/signin" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: '#4a7c59' }}>
+        <Link to="/signin" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: 'var(--primary-color)' }}>
           <ArrowLeftOutlined style={{ marginRight: '8px' }} />
           {t('backToSignIn')}
         </Link>
         <div style={{ marginBottom: '30px' }}>
-          <MailOutlined style={{ fontSize: '48px', color: '#4a7c59', marginBottom: '16px' }} />
-          <h2 style={{ color: '#4a7c59', marginBottom: '16px' }}>{t('checkYourEmail')}</h2>
-          <p style={{ color: '#666', lineHeight: '1.6' }}>
+          <MailOutlined style={{ fontSize: '48px', color: 'var(--primary-color)', marginBottom: '16px' }} />
+          <h2 style={{ color: 'var(--primary-color)', marginBottom: '16px' }}>{t('checkYourEmail')}</h2>
+          <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6' }}>
             {t('resetEmailDescription')}
           </p>
-          <p style={{ color: '#666', fontSize: '14px', marginTop: '20px' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '20px' }}>
             {t('didntReceiveEmail')}
           </p>
         </div>
@@ -46,8 +46,8 @@ const ForgotPassword: React.FC = () => {
           type="default" 
           onClick={() => setEmailSent(false)}
           style={{ 
-            borderColor: '#4a7c59',
-            color: '#4a7c59'
+            borderColor: 'var(--primary-color)',
+            color: 'var(--primary-color)'
           }}
         >
           {t('sendAnotherEmail')}
@@ -58,13 +58,13 @@ const ForgotPassword: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
-      <Link to="/signin" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: '#4a7c59' }}>
+      <Link to="/signin" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: 'var(--primary-color)' }}>
         <ArrowLeftOutlined style={{ marginRight: '8px' }} />
         {t('backToSignIn')}
       </Link>
       
       <h2 style={{ textAlign: 'center', marginBottom: '10px' }}>{t('forgotPasswordTitle')}</h2>
-      <p style={{ textAlign: 'center', color: '#666', marginBottom: '30px' }}>
+      <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '30px' }}>
         {t('forgotPasswordSubtitle')}
       </p>
       
@@ -92,8 +92,8 @@ const ForgotPassword: React.FC = () => {
             size="large"
             style={{ 
               width: '100%',
-              backgroundColor: '#4a7c59',
-              borderColor: '#4a7c59',
+              backgroundColor: 'var(--primary-color)',
+              borderColor: 'var(--primary-color)',
               fontWeight: 500,
               borderRadius: '6px'
             }}
@@ -104,10 +104,10 @@ const ForgotPassword: React.FC = () => {
       </Form>
       
       <div style={{ textAlign: 'center', marginTop: '20px' }}>
-        <span style={{ color: '#666' }}>{t('rememberPassword')} </span>
+        <span style={{ color: 'var(--text-secondary)' }}>{t('rememberPassword')} </span>
         <Link
           to="/signin"
-          style={{ color: '#4a7c59', fontWeight: 'bold', textDecoration: 'none' }}
+          style={{ color: 'var(--primary-color)', fontWeight: 'bold', textDecoration: 'none' }}
         >
           {t('signIn')}
         </Link>

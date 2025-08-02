@@ -83,7 +83,7 @@ const Dashboard: React.FC = () => {
               type="text" 
               icon={<EditOutlined />} 
               onClick={() => navigate('/profile/edit')}
-              style={{ color: '#4a7c59' }}
+              style={{ color: 'var(--primary-color)' }}
             >
               {t('edit')}
             </Button>
@@ -93,15 +93,15 @@ const Dashboard: React.FC = () => {
             <Avatar
               size={64}
               src={profile?.profilePictureUrl}
-              style={{ backgroundColor: '#4a7c59', marginRight: '16px' }}
+              style={{ backgroundColor: 'var(--primary-color)', marginRight: '16px' }}
             >
               {profile?.name?.[0]?.toUpperCase()}{profile?.surname?.[0]?.toUpperCase()}
             </Avatar>
             <div>
-              <h3 style={{ margin: 0, color: '#4a7c59' }}>
+              <h3 style={{ margin: 0, color: 'var(--primary-color)' }}>
                 {profile?.name} {profile?.surname}
               </h3>
-              <p style={{ margin: 0, color: '#666' }}>{user?.email}</p>
+              <p style={{ margin: 0, color: 'var(--text-secondary)' }}>{user?.email}</p>
             </div>
           </div>
           <p><strong>User ID:</strong> {profile?.userId}</p>
@@ -112,7 +112,7 @@ const Dashboard: React.FC = () => {
           <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#52c41a' }}>
             ${balance?.balance?.toFixed(2)} {balance?.currency}
           </div>
-          <p style={{ marginTop: '10px', color: '#666' }}>
+          <p style={{ marginTop: '10px', color: 'var(--text-secondary)' }}>
             {t('accountBalance')}
           </p>
         </Card>

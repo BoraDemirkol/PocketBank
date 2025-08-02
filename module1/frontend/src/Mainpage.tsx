@@ -19,7 +19,7 @@ export default function Mainpage() {
             }}>
                 <Typography.Title level={2} style={{ 
                     textAlign: 'center', 
-                    color: '#4a7c59', 
+                    color: 'var(--primary-color)', 
                     marginBottom: '10px',
                     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
                 }}>
@@ -48,10 +48,10 @@ export default function Mainpage() {
                 ) : user ? (
                     /* Dashboard Box for logged in users */
                     <div style={{
-                        backgroundColor: 'white',
+                        backgroundColor: 'var(--card-bg)',
                         borderRadius: '16px',
                         padding: '30px',
-                        boxShadow: '0 4px 20px rgba(74, 124, 89, 0.1)',
+                        boxShadow: '0 4px 20px rgba(46, 125, 50, 0.1)',
                         width: '320px',
                         minHeight: '180px',
                         textAlign: 'center',
@@ -61,13 +61,13 @@ export default function Mainpage() {
                     }}>
                         <div style={{ height: '120px' }}>
                             <Typography.Title level={4} style={{ 
-                                color: '#4a7c59', 
+                                color: 'var(--primary-color)', 
                                 marginBottom: '15px' 
                             }}>
                                 {t('welcomeBack')}
                             </Typography.Title>
                             <Typography.Text style={{ 
-                                color: '#666', 
+                                color: 'var(--text-secondary)', 
                                 display: 'block', 
                                 marginBottom: '20px',
                                 fontSize: '14px'
@@ -80,8 +80,8 @@ export default function Mainpage() {
                                 type="primary" 
                                 size="large"
                                 style={{ 
-                                    backgroundColor: '#4a7c59', 
-                                    borderColor: '#4a7c59',
+                                    backgroundColor: 'var(--primary-color)', 
+                                    borderColor: 'var(--primary-color)',
                                     fontWeight: 500,
                                     width: '100%'
                                 }}
@@ -94,10 +94,10 @@ export default function Mainpage() {
                     <>
                         {/* Sign In Box */}
                         <div style={{
-                            backgroundColor: 'white',
+                            backgroundColor: 'var(--card-bg)',
                             borderRadius: '16px',
                             padding: '30px',
-                            boxShadow: '0 4px 20px rgba(74, 124, 89, 0.1)',
+                            boxShadow: '0 4px 20px rgba(46, 125, 50, 0.1)',
                             width: '280px',
                             minHeight: '180px',
                             textAlign: 'center',
@@ -107,13 +107,13 @@ export default function Mainpage() {
                         }}>
                             <div style={{ height: '120px' }}>
                                 <Typography.Title level={4} style={{ 
-                                    color: '#4a7c59', 
+                                    color: 'var(--primary-color)', 
                                     marginBottom: '15px' 
                                 }}>
                                     {t('existingCustomer')}
                                 </Typography.Title>
                                 <Typography.Text style={{ 
-                                    color: '#666', 
+                                    color: 'var(--text-secondary)', 
                                     display: 'block', 
                                     marginBottom: '20px',
                                     fontSize: '14px'
@@ -126,8 +126,9 @@ export default function Mainpage() {
                                     type="default" 
                                     size="large"
                                     style={{ 
-                                        borderColor: '#4a7c59', 
-                                        color: '#4a7c59',
+                                        backgroundColor: 'var(--button-secondary-bg)',
+                                        borderColor: 'var(--button-secondary-border)', 
+                                        color: 'var(--primary-color)',
                                         fontWeight: 500,
                                         width: '100%'
                                     }}
@@ -139,10 +140,10 @@ export default function Mainpage() {
 
                         {/* Sign Up Box */}
                         <div style={{
-                            backgroundColor: 'white',
+                            backgroundColor: 'var(--card-bg)',
                             borderRadius: '16px',
                             padding: '30px',
-                            boxShadow: '0 4px 20px rgba(74, 124, 89, 0.1)',
+                            boxShadow: '0 4px 20px rgba(46, 125, 50, 0.1)',
                             width: '280px',
                             minHeight: '180px',
                             textAlign: 'center',
@@ -152,13 +153,13 @@ export default function Mainpage() {
                         }}>
                             <div style={{ height: '120px' }}>
                                 <Typography.Title level={4} style={{ 
-                                    color: '#4a7c59', 
+                                    color: 'var(--primary-color)', 
                                     marginBottom: '15px' 
                                 }}>
                                     {t('newCustomer')}
                                 </Typography.Title>
                                 <Typography.Text style={{ 
-                                    color: '#666', 
+                                    color: 'var(--text-secondary)', 
                                     display: 'block', 
                                     marginBottom: '20px',
                                     fontSize: '14px'
@@ -171,8 +172,8 @@ export default function Mainpage() {
                                     type="primary" 
                                     size="large"
                                     style={{ 
-                                        backgroundColor: '#4a7c59', 
-                                        borderColor: '#4a7c59',
+                                        backgroundColor: 'var(--primary-color)', 
+                                        borderColor: 'var(--primary-color)',
                                         fontWeight: 500,
                                         width: '100%'
                                     }}

@@ -72,6 +72,7 @@ const resources = {
       "emailVerificationTitle": "Email Verification",
       "verificationSuccess": "Your email has been verified successfully!",
       "verificationError": "There was an error verifying your email.",
+      "goToDashboard": "Go to Dashboard",
       "goToLogin": "Go to Login",
       
       // Forgot Password
@@ -188,6 +189,7 @@ const resources = {
       "emailVerificationTitle": "E-posta Doğrulama",
       "verificationSuccess": "E-postanız başarıyla doğrulandı!",
       "verificationError": "E-postanızı doğrularken bir hata oluştu.",
+      "goToDashboard": "Kontrol Paneline Git",
       "goToLogin": "Giriş Sayfasına Git",
       
       // Forgot Password
