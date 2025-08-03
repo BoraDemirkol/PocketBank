@@ -1,64 +1,38 @@
-import React, { useState } from 'react';
-import { LockOutlined, UserOutlined, ArrowLeftOutlined, MailOutlined, CheckCircleOutlined } from '@ant-design/icons';
-import { Input, Button, message, Form, Typography } from '../node_modules/antd';
+import React from 'react';
+import { LockOutlined, UserOutlined, MailOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Input, Form, Typography } from 'antd';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from './AuthContext';
+import { Button } from 'antd';
+import FormCard from './components/ui/FormCard';
+import { useRegister } from './hooks';
+import { createFormValidationRules } from './utils/validation';
+import { ROUTES } from './utils/constants';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const Register: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
-  const [userEmail, setUserEmail] = useState('');
-  const { signUp } = useAuth();
   const { t } = useTranslation();
+  const { loading, emailSent, userEmail, handleRegister } = useRegister();
+  const validationRules = createFormValidationRules(t);
 
-  const onFinish = async (values: { name: string; surname: string; email: string; password: string; confirmPassword: string }) => {
-    const { name, surname, email, password, confirmPassword } = values;
-
-    if (password !== confirmPassword) {
-      message.error(t('passwordsNoMatch'));
-      return;
-    }
-
-    setLoading(true);
-    const { error } = await signUp(email, password, name, surname);
-
-    if (error) {
-      message.error(error.message);
-      setLoading(false);
-    } else {
-      setUserEmail(email);
-      setEmailSent(true);
-      setLoading(false);
-    }
-  };
 
   // Show email verification message if signup was successful
   if (emailSent) {
     return (
-      <div style={{
-        width: '100%',
-        maxWidth: '400px',
-        margin: '50px auto',
-        backgroundColor: 'var(--card-bg)',
-        padding: '30px',
-        borderRadius: '16px',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-        textAlign: 'center'
-      }}>
-        <CheckCircleOutlined 
-          style={{ 
-            fontSize: '48px', 
-            color: 'var(--primary-color)', 
-            marginBottom: '20px' 
-          }} 
-        />
-        
-        <Title level={3} style={{ color: 'var(--primary-color)', marginBottom: '16px' }}>
-          {t('emailVerificationTitle')}
-        </Title>
+      <FormCard 
+        title={t('emailVerificationTitle')} 
+        showBackButton={false}
+        className="text-center"
+      >
+        <div style={{ textAlign: 'center' }}>
+          <CheckCircleOutlined 
+            style={{ 
+              fontSize: '48px', 
+              color: 'var(--primary-color)', 
+              marginBottom: '20px' 
+            }} 
+          />
         
         <Text style={{ 
           fontSize: '16px', 
@@ -93,53 +67,38 @@ const Register: React.FC = () => {
           {t('verificationSuccess')}
         </Text>
         
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <Link to="/signin" style={{ width: '100%' }}>
-            <Button 
-              type="primary"
-              size="large"
-              style={{
-                backgroundColor: 'var(--primary-color)',
-                borderColor: 'var(--primary-color)',
-                fontWeight: 500,
-                width: '100%'
-              }}
-            >
-              {t('goToLogin')}
-            </Button>
-          </Link>
-          
-          <Link to="/" style={{ color: 'var(--primary-color)', textDecoration: 'none' }}>
-            ← {t('backToHome')}
-          </Link>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <Link to={ROUTES.SIGNIN} style={{ width: '100%' }}>
+              <Button 
+                type="primary"
+                size="large"
+                style={{
+                  backgroundColor: 'var(--primary-color)',
+                  borderColor: 'var(--primary-color)',
+                  fontWeight: 500,
+                  width: '100%'
+                }}
+              >
+                {t('goToLogin')}
+              </Button>
+            </Link>
+            
+            <Link to={ROUTES.HOME} style={{ color: 'var(--primary-color)', textDecoration: 'none' }}>
+              ← {t('backToHome')}
+            </Link>
+          </div>
         </div>
-      </div>
+      </FormCard>
     );
   }
 
   // Show signup form if email hasn't been sent yet
   return (
-    <div style={{
-      width: '100%',
-      maxWidth: '400px',
-      margin: '50px auto',
-      backgroundColor: 'var(--card-bg)',
-      padding: '30px',
-      borderRadius: '16px',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-    }}>
-      <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: 'var(--primary-color)' }}>
-        <ArrowLeftOutlined style={{ marginRight: '8px' }} />
-        {t('backToHome')}
-      </Link>
-      <h2 style={{ textAlign: 'center', marginBottom: '24px', color: 'var(--primary-color)' }}>
-        {t('registerTitle')}
-      </h2>
-
-      <Form onFinish={onFinish} layout="vertical">
+    <FormCard title={t('registerTitle')}>
+      <Form onFinish={handleRegister} layout="vertical">
         <Form.Item
           name="name"
-          rules={[{ required: true, message: t('firstNameRequired') }]}
+          rules={validationRules.name}
         >
           <Input
             placeholder={t('firstName')}
@@ -150,7 +109,7 @@ const Register: React.FC = () => {
 
         <Form.Item
           name="surname"
-          rules={[{ required: true, message: t('lastNameRequired') }]}
+          rules={validationRules.surname}
         >
           <Input
             placeholder={t('lastName')}
@@ -161,10 +120,7 @@ const Register: React.FC = () => {
 
         <Form.Item
           name="email"
-          rules={[
-            { required: true, message: t('emailRequired') },
-            { type: 'email', message: t('emailInvalid') }
-          ]}
+          rules={validationRules.email}
         >
           <Input
             placeholder={t('email')}
@@ -175,7 +131,7 @@ const Register: React.FC = () => {
 
         <Form.Item
           name="password"
-          rules={[{ required: true, message: t('passwordRequired') }]}
+          rules={validationRules.password}
         >
           <Input.Password
             placeholder={t('password')}
@@ -226,13 +182,13 @@ const Register: React.FC = () => {
       <div style={{ textAlign: 'center', marginTop: '16px' }}>
         <span>{t('alreadyHaveAccount')} </span>
         <Link
-          to="/signin"
+          to={ROUTES.SIGNIN}
           style={{ color: 'var(--primary-color)', fontWeight: 'bold', textDecoration: 'none' }}
         >
           {t('signIn')}
         </Link>
       </div>
-    </div>
+    </FormCard>
 );
 };
 

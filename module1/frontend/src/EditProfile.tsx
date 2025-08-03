@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Button, message, Form, Input, Upload, Avatar, Spin, Modal, Typography, Space, Divider } from '../node_modules/antd';
+import { Card, Button, message, Form, Input, Upload, Avatar, Spin, Modal, Typography, Space, Divider } from 'antd';
 import type { UploadChangeParam } from 'antd/es/upload';
 import { UserOutlined, ArrowLeftOutlined, UploadOutlined, SaveOutlined, SecurityScanOutlined, QrcodeOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';

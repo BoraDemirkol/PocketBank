@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Button } from '../node_modules/antd';
+import { Modal, Button } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 

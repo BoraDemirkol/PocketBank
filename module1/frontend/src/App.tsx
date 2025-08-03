@@ -1,5 +1,5 @@
 import { Routes, Route, Link } from 'react-router-dom'
-import { Layout, Typography } from '../node_modules/antd'
+import { Layout, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
 import Mainpage from './Mainpage.tsx'
 import Signin from './Signin.tsx'

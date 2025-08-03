@@ -1,4 +1,4 @@
-import { Button, Typography } from '../node_modules/antd';
+import { Button, Typography } from 'antd';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { useTranslation } from 'react-i18next';

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeftOutlined, MailOutlined } from '@ant-design/icons';
-import { Input, Button, Form, App } from '../node_modules/antd';
+import { Input, Button, Form, App } from 'antd';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Typography } from '../node_modules/antd';
+import { Button, Typography } from 'antd';
 import { Link } from 'react-router-dom';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';

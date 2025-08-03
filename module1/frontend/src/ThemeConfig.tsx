@@ -1,5 +1,5 @@
 // ThemeConfig.tsx
-import { theme, ConfigProvider } from '../node_modules/antd';
+import { theme } from 'antd';
 
 const lightTheme = {
   algorithm: theme.defaultAlgorithm,
