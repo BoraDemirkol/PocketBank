@@ -64,6 +64,12 @@ const resources = {
       "logout": "Logout",
       "confirmLogout": "Confirm Logout",
       "logoutConfirmMessage": "Are you sure you want to logout? You will need to sign in again to access your account.",
+      "quick Access": "Quick Access",
+      "accountManagement": "Account Management",
+      "transactionManagement": "Transaction Management",
+      "budgetPlanning": "Budget Planning",
+      "analyticsReporting": "Analytics & Reporting",
+      "profile": "Profile Settings",
       
       // Edit Profile
       "editProfileTitle": "Edit Profile",
@@ -183,6 +189,12 @@ const resources = {
       "logout": "Çıkış Yap",
       "confirmLogout": "Çıkış Onayı",
       "logoutConfirmMessage": "Çıkış yapmak istediğinizden emin misiniz? Hesabınıza erişmek için tekrar giriş yapmanız gerekecek.",
+      "quick Access": "Hızlı Erişim",
+      "accountManagement": "Hesap Yönetimi",
+      "transactionManagement": "İşlem Yönetimi",
+      "budgetPlanning": "Bütçe Planlama",
+      "analyticsReporting": "Analitik ve Raporlama",
+      "profile": "Profil Ayarları",
       
       // Edit Profile
       "editProfileTitle": "Profili Düzenle",

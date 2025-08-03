@@ -24,7 +24,7 @@ function App() {
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        background: 'var(--header-bg)',
+        background: '#4a7c59',
         padding: '0 20px'
       }}>
         <Link to="/" style={{ textDecoration: 'none' }}>
@@ -75,7 +75,7 @@ function App() {
       </Content>
       <Footer style={{ 
         textAlign: 'center', 
-        backgroundColor: 'var(--footer-bg)', 
+        backgroundColor: '#4a7c59', 
         color: 'white',
         padding: '20px 0'
       }}>
