@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import { LockOutlined, UserOutlined, ArrowLeftOutlined, SecurityScanOutlined, MailOutlined } from '@ant-design/icons';
+import { LockOutlined, UserOutlined, ArrowLeftOutlined, SecurityScanOutlined } from '@ant-design/icons';
 import { Input, Button, message, Form, Typography } from '../node_modules/antd';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
-
-const { Title, Text } = Typography;
 
 const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -93,9 +91,9 @@ const Login: React.FC = () => {
         <div>
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
             <SecurityScanOutlined style={{ fontSize: '48px', color: 'var(--primary-color)', marginBottom: '16px' }} />
-            <Text style={{ display: 'block', marginBottom: '16px' }}>
+            <Typography.Text style={{ display: 'block', marginBottom: '16px' }}>
               {t('mfaDescription')}
-            </Text>
+            </Typography.Text>
           </div>
           
           <Input
@@ -144,48 +142,48 @@ const Login: React.FC = () => {
         </div>
       ) : (
         <Form onFinish={onFinish} layout="vertical">
-          <Form.Item
-            name="email"
-            rules={[
-              { required: true, message: t('emailRequired') },
-              { type: 'email', message: t('emailInvalid') }
-            ]}
+        <Form.Item
+          name="email"
+          rules={[
+            { required: true, message: t('emailRequired') },
+            { type: 'email', message: t('emailInvalid') }
+          ]}
+        >
+          <Input 
+            placeholder={t('email')} 
+            prefix={<UserOutlined />} 
+            size="large"
+          />
+        </Form.Item>
+        
+        <Form.Item
+          name="password"
+          rules={[{ required: true, message: t('passwordRequired') }]}
+        >
+          <Input.Password 
+            placeholder={t('password')} 
+            prefix={<LockOutlined />} 
+            size="large"
+          />
+        </Form.Item>
+        
+        <Form.Item>
+          <Button 
+            type="primary" 
+            htmlType="submit" 
+            loading={loading}
+            size="large"
+            style={{ 
+              width: '100%',
+              backgroundColor: 'var(--primary-color)',
+              borderColor: 'var(--primary-color)',
+              fontWeight: 500
+            }}
           >
-            <Input
-              placeholder={t('email')}
-              prefix={<MailOutlined />}
-              size="large"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="password"
-            rules={[{ required: true, message: t('passwordRequired') }]}
-          >
-            <Input.Password
-              placeholder={t('password')}
-              prefix={<LockOutlined />}
-              size="large"
-            />
-          </Form.Item>
-
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              size="large"
-              style={{
-                width: '100%',
-                backgroundColor: 'var(--primary-color)',
-                borderColor: 'var(--primary-color)',
-                fontWeight: 500
-              }}
-            >
-              {t('signIn')}
-            </Button>
-          </Form.Item>
-        </Form>
+            {t('signIn')}
+          </Button>
+        </Form.Item>
+      </Form>
       )}
       
       {!showMFA && (

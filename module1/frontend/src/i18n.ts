@@ -62,6 +62,8 @@ const resources = {
       "loading": "Loading...",
       "editProfile": "Edit Profile",
       "logout": "Logout",
+      "confirmLogout": "Confirm Logout",
+      "logoutConfirmMessage": "Are you sure you want to logout? You will need to sign in again to access your account.",
       
       // Edit Profile
       "editProfileTitle": "Edit Profile",
@@ -179,6 +181,8 @@ const resources = {
       "loading": "Yükleniyor...",
       "editProfile": "Profili Düzenle",
       "logout": "Çıkış Yap",
+      "confirmLogout": "Çıkış Onayı",
+      "logoutConfirmMessage": "Çıkış yapmak istediğinizden emin misiniz? Hesabınıza erişmek için tekrar giriş yapmanız gerekecek.",
       
       // Edit Profile
       "editProfileTitle": "Profili Düzenle",

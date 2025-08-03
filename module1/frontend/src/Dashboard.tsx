@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
 import { apiService } from './api';
 import { useNavigate } from 'react-router-dom';
+import LogoutConfirmDialog from './LogoutConfirmDialog';
 
 interface UserProfile {
   userId: string;
@@ -28,6 +29,8 @@ const Dashboard: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [balance, setBalance] = useState<UserBalance | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,8 +56,24 @@ const Dashboard: React.FC = () => {
   }, []);
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
+    setLogoutLoading(true);
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      message.error('Failed to logout');
+    } finally {
+      setLogoutLoading(false);
+      setShowLogoutDialog(false);
+    }
+  };
+
+  const showLogoutConfirmation = () => {
+    setShowLogoutDialog(true);
+  };
+
+  const hideLogoutConfirmation = () => {
+    setShowLogoutDialog(false);
   };
 
   if (loading) {
@@ -69,7 +88,7 @@ const Dashboard: React.FC = () => {
     <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1>{t('dashboard')}</h1>
-        <Button onClick={handleSignOut} type="primary" danger>
+        <Button onClick={showLogoutConfirmation} type="primary" danger>
           {t('logout')}
         </Button>
       </div>
@@ -117,6 +136,13 @@ const Dashboard: React.FC = () => {
           </p>
         </Card>
       </div>
+
+      <LogoutConfirmDialog
+        visible={showLogoutDialog}
+        onConfirm={handleSignOut}
+        onCancel={hideLogoutConfirmation}
+        loading={logoutLoading}
+      />
     </div>
   );
 };

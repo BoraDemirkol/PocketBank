@@ -13,6 +13,7 @@
   --button-secondary-bg: #F8F9FA;
   --button-secondary-border: #2E7D32;
   --text-secondary: #666666;
+  --border-color: #D1D5DB;
 }
 
 [data-theme="dark"] {
@@ -30,6 +31,7 @@
   --button-secondary-bg: #2A2A2A;
   --button-secondary-border: #81C784;
   --text-secondary: #B0B0B0;
+  --border-color: #374151;
 }
 
 * {
@@ -66,4 +68,27 @@ body {
   background-color: #2A2A2A !important;
   border-color: #81C784 !important;
   box-shadow: 0 0 0 2px rgba(129, 199, 132, 0.2) !important;
+}
+
+/* Modal dark mode styling */
+[data-theme="dark"] .ant-modal-content {
+  background-color: #1E1E1E !important;
+  color: #F3F4F6 !important;
+}
+
+[data-theme="dark"] .ant-modal-header {
+  background-color: #1E1E1E !important;
+  border-bottom-color: #374151 !important;
+}
+
+[data-theme="dark"] .ant-modal-title {
+  color: #F3F4F6 !important;
+}
+
+[data-theme="dark"] .ant-modal-close-x {
+  color: #F3F4F6 !important;
+}
+
+[data-theme="dark"] .ant-modal-close:hover .ant-modal-close-x {
+  color: #81C784 !important;
 }
