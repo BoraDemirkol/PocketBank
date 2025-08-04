@@ -3,8 +3,16 @@ import axios from 'axios';
 import Layout from '../context/Layout';
 import '../context/accountModule.css';
 import { Transaction, Category, Account, RecurringTransaction } from '../types';
+import { 
+    supabaseTransactionService, 
+    supabaseCategoryService, 
+    supabaseAccountService, 
+    supabaseRecurringTransactionService,
+    supabaseFileService,
+    supabaseAuthService 
+} from '../services/supabaseService';
 
-// Backend URL'ini ayarla
+// Backend URL'ini ayarla (fallback için)
 axios.defaults.baseURL = 'http://localhost:5044';
 
 const TransactionModule: React.FC = () => {
@@ -18,7 +26,7 @@ const TransactionModule: React.FC = () => {
         categoryId: '',
         description: '',
         isIncome: false,
-        accountId: '', // her zaman tanımlı
+        accountId: 'default-1', // Varsayılan hesap ID'si
         receipt: null as File | null,
     });
     const [formMsg, setFormMsg] = useState<string | null>(null);
@@ -162,10 +170,29 @@ const TransactionModule: React.FC = () => {
     // Mevcut kullanıcıyı getir
     const fetchCurrentUser = async () => {
         try {
-            const response = await axios.get('/api/current-user');
-            setCurrentUserId(response.data.id);
+            // Önce Supabase'den kullanıcı bilgisini al
+            const { user, error } = await supabaseAuthService.getCurrentUser();
+            if (error) {
+                console.error('Error fetching current user from Supabase:', error);
+                // Fallback olarak backend'den dene
+                try {
+                    const response = await axios.get('/api/current-user');
+                    setCurrentUserId(response.data.id);
+                } catch (backendError) {
+                    console.error('Error fetching from backend:', backendError);
+                    // Varsayılan kullanıcı ID'si ayarla
+                    setCurrentUserId('default-user');
+                }
+            } else if (user) {
+                setCurrentUserId(user.id);
+            } else {
+                // Kullanıcı bulunamadıysa varsayılan ID kullan
+                setCurrentUserId('default-user');
+            }
         } catch (error) {
             console.error('Error fetching current user:', error);
+            // Hata durumunda varsayılan kullanıcı ID'si ayarla
+            setCurrentUserId('default-user');
         }
     };
 
@@ -217,8 +244,9 @@ const TransactionModule: React.FC = () => {
                 return dateString;
             };
 
-            // Backend'e gönder
-            const response = await axios.post('/api/recurring-transaction', {
+            // Önce Supabase'e gönder
+            const recurringData = {
+                userId: currentUserId,
                 description: recForm.description || `Tekrarlayan: ${recForm.amount} ₺`,
                 amount: parseFloat(recForm.amount),
                 categoryId: recForm.categoryId,
@@ -227,16 +255,41 @@ const TransactionModule: React.FC = () => {
                 frequency: recForm.frequency,
                 isIncome: recForm.isIncome,
                 isActive: true
-            });
+            };
+
+            const newRecurring = await supabaseRecurringTransactionService.addRecurringTransaction(recurringData);
             
-            // Frontend state'ini güncelle
-            setRecurrings(prev => [...prev, response.data]);
-            
-            // Tekrarlayan işlemleri yeniden çek
-            await fetchRecurringTransactions();
-            
-            setRecForm({ amount: '', description: '', categoryId: '', startDate: '', frequency: 'aylık', isIncome: false });
-            setRecMsg('Tekrarlayan işlem eklendi!');
+            if (newRecurring) {
+                // Frontend state'ini güncelle
+                setRecurrings(prev => [...prev, newRecurring]);
+                
+                // Tekrarlayan işlemleri yeniden çek
+                await fetchRecurringTransactions();
+                
+                setRecForm({ amount: '', description: '', categoryId: '', startDate: '', frequency: 'aylık', isIncome: false });
+                setRecMsg('Tekrarlayan işlem eklendi!');
+            } else {
+                // Fallback olarak backend'e gönder
+                const response = await axios.post('/api/recurring-transaction', {
+                    description: recForm.description || `Tekrarlayan: ${recForm.amount} ₺`,
+                    amount: parseFloat(recForm.amount),
+                    categoryId: recForm.categoryId,
+                    accountId: form.accountId || accounts[0]?.id,
+                    startDate: formatDateForBackend(recForm.startDate),
+                    frequency: recForm.frequency,
+                    isIncome: recForm.isIncome,
+                    isActive: true
+                });
+                
+                // Frontend state'ini güncelle
+                setRecurrings(prev => [...prev, response.data]);
+                
+                // Tekrarlayan işlemleri yeniden çek
+                await fetchRecurringTransactions();
+                
+                setRecForm({ amount: '', description: '', categoryId: '', startDate: '', frequency: 'aylık', isIncome: false });
+                setRecMsg('Tekrarlayan işlem eklendi!');
+            }
         } catch (error) {
             console.error('Error adding recurring transaction:', error);
             setRecMsg('Tekrarlayan işlem eklenirken hata oluştu.');
@@ -244,14 +297,25 @@ const TransactionModule: React.FC = () => {
     };
     const handleDeleteRecurring = async (id: string) => {
         try {
-            // Backend'den sil
-            await axios.delete(`/api/recurring-transaction/${id}`);
+            // Önce Supabase'den sil
+            const success = await supabaseRecurringTransactionService.deleteRecurringTransaction(id);
             
-            // Frontend state'ini güncelle
-            setRecurrings(prev => prev.filter(r => r.id !== id));
-            
-            // Tekrarlayan işlemleri yeniden çek
-            await fetchRecurringTransactions();
+            if (success) {
+                // Frontend state'ini güncelle
+                setRecurrings(prev => prev.filter(r => r.id !== id));
+                
+                // Tekrarlayan işlemleri yeniden çek
+                await fetchRecurringTransactions();
+            } else {
+                // Fallback olarak backend'den sil
+                await axios.delete(`/api/recurring-transaction/${id}`);
+                
+                // Frontend state'ini güncelle
+                setRecurrings(prev => prev.filter(r => r.id !== id));
+                
+                // Tekrarlayan işlemleri yeniden çek
+                await fetchRecurringTransactions();
+            }
         } catch (error) {
             console.error('Error deleting recurring transaction:', error);
             alert('Tekrarlayan işlem silinirken hata oluştu.');
@@ -261,22 +325,36 @@ const TransactionModule: React.FC = () => {
     // İşlemleri API'den çeken fonksiyon
     const fetchTransactions = useCallback(async () => {
         try {
-            const response = await axios.get('/api/transaction');
-            setTransactions(response.data);
+            // Önce Supabase'den işlemleri al
+            const transactions = await supabaseTransactionService.getTransactions(currentUserId);
+            if (transactions.length > 0) {
+                setTransactions(transactions);
+            } else {
+                // Fallback olarak backend'den dene
+                const response = await axios.get('/api/transaction');
+                setTransactions(response.data);
+            }
         } catch (error) {
             console.error('Error fetching transactions:', error);
         }
-    }, []);
+    }, [currentUserId]);
 
     // Tekrarlayan işlemleri API'den çeken fonksiyon
     const fetchRecurringTransactions = useCallback(async () => {
         try {
-            const response = await axios.get('/api/recurring-transaction');
-            setRecurrings(response.data);
+            // Önce Supabase'den tekrarlayan işlemleri al
+            const recurrings = await supabaseRecurringTransactionService.getRecurringTransactions(currentUserId);
+            if (recurrings.length > 0) {
+                setRecurrings(recurrings);
+            } else {
+                // Fallback olarak backend'den dene
+                const response = await axios.get('/api/recurring-transaction');
+                setRecurrings(response.data);
+            }
         } catch (error) {
             console.error('Error fetching recurring transactions:', error);
         }
-    }, []);
+    }, [currentUserId]);
 
     // Tekrarlayan işlemleri localStorage'a kaydetme fonksiyonu (artık kullanılmıyor)
     // const saveRecurringTransactions = (transactions: RecurringTransaction[]) => {
@@ -289,14 +367,105 @@ const TransactionModule: React.FC = () => {
 
     // currentUserId değiştiğinde verileri yükle
     useEffect(() => {
+        console.log('currentUserId changed to:', currentUserId);
+        
+        // Hemen varsayılan hesapları yükle
+        const loadDefaultData = () => {
+            console.log('Loading default data...');
+            
+            // Varsayılan hesaplar
+            const defaultAccounts = [
+                {
+                    id: 'default-1',
+                    userId: currentUserId || 'default-user',
+                    accountName: 'Ana Hesap',
+                    accountType: 'Vadesiz' as const,
+                    balance: 0,
+                    currency: 'TRY'
+                },
+                {
+                    id: 'default-2',
+                    userId: currentUserId || 'default-user',
+                    accountName: 'Tasarruf Hesabı',
+                    accountType: 'Vadeli' as const,
+                    balance: 0,
+                    currency: 'TRY'
+                },
+                {
+                    id: 'default-3',
+                    userId: currentUserId || 'default-user',
+                    accountName: 'Kredi Kartı',
+                    accountType: 'Kredi Kartı' as const,
+                    balance: 0,
+                    currency: 'TRY'
+                }
+            ];
+            
+            // Varsayılan kategoriler
+            const defaultCategories = [
+                {
+                    id: 'cat-1',
+                    userId: currentUserId || 'default-user',
+                    name: 'Market',
+                    color: '#4caf50',
+                    icon: '🛒'
+                },
+                {
+                    id: 'cat-2',
+                    userId: currentUserId || 'default-user',
+                    name: 'Yemek',
+                    color: '#ff9800',
+                    icon: '🍔'
+                },
+                {
+                    id: 'cat-3',
+                    userId: currentUserId || 'default-user',
+                    name: 'Ulaşım',
+                    color: '#2196f3',
+                    icon: '🚕'
+                },
+                {
+                    id: 'cat-4',
+                    userId: currentUserId || 'default-user',
+                    name: 'Fatura',
+                    color: '#e53935',
+                    icon: '💡'
+                },
+                {
+                    id: 'cat-5',
+                    userId: currentUserId || 'default-user',
+                    name: 'Gelir',
+                    color: '#4caf50',
+                    icon: '💰'
+                }
+            ];
+            
+            // Hemen varsayılan verileri yükle
+            setAccounts(defaultAccounts);
+            setCategories(defaultCategories);
+            setForm(f => ({ ...f, accountId: 'default-1' }));
+            
+            console.log('Default data loaded:', { accounts: defaultAccounts, categories: defaultCategories });
+        };
+        
+        // Hemen gerçek verileri yüklemeye çalış
         if (currentUserId) {
             fetchTransactions();
             fetchRecurringTransactions();
             
             const fetchCategories = async () => {
                 try {
-                    const response = await axios.get('/api/categories');
-                    setCategories(response.data);
+                    // Önce Supabase'den kategorileri al
+                    const categories = await supabaseCategoryService.getCategories(currentUserId);
+                    if (categories.length > 0) {
+                        setCategories(categories);
+                    } else {
+                        // Fallback olarak backend'den dene
+                        const response = await axios.get('/api/categories');
+                        if (response.data.length > 0) {
+                            setCategories(response.data);
+                        }
+                    }
                 } catch (error) {
                     console.error('Error fetching categories:', error);
                 }
@@ -304,21 +473,81 @@ const TransactionModule: React.FC = () => {
             
             const fetchAccounts = async () => {
                 try {
-                    const response = await axios.get('/api/accounts');
-                    setAccounts(response.data);
-                    // Set the first account as default if available
-                    if (response.data.length > 0) {
-                        setForm(f => ({ ...f, accountId: f.accountId || response.data[0].id }));
+                    console.log('Fetching accounts for userId:', currentUserId);
+                    
+                    // Önce Supabase'den hesapları al
+                    const accounts = await supabaseAccountService.getAccounts(currentUserId);
+                    console.log('Supabase accounts:', accounts);
+                    
+                    if (accounts.length > 0) {
+                        setAccounts(accounts);
+                        setForm(f => ({ ...f, accountId: f.accountId || accounts[0].id }));
+                        console.log('Set accountId to:', accounts[0].id);
+                        console.log('Available accounts:', accounts.map(acc => `${acc.accountName} (${acc.id})`));
+                    } else {
+                        // Fallback olarak backend'den dene
+                        const response = await axios.get('/api/accounts');
+                        console.log('Backend accounts:', response.data);
+                        
+                        if (response.data.length > 0) {
+                            setAccounts(response.data);
+                            setForm(f => ({ ...f, accountId: f.accountId || response.data[0].id }));
+                            console.log('Set accountId to:', response.data[0].id);
+                        }
                     }
                 } catch (error) {
                     console.error('Error fetching accounts:', error);
                 }
             };
             
+            // Hemen gerçek verileri yükle
             fetchCategories();
             fetchAccounts();
+        } else {
+            // currentUserId yoksa varsayılan verileri yükle
+            loadDefaultData();
         }
     }, [currentUserId, fetchTransactions, fetchRecurringTransactions]); // currentUserId değiştiğinde yeniden yükle
+
+    // Debug: Hesap ve form durumunu izle
+    useEffect(() => {
+        console.log('Current form.accountId:', form.accountId);
+        console.log('Current accounts:', accounts);
+        console.log('Current form:', form);
+    }, [form.accountId, accounts, form]);
+
+    // Manuel hesap seçimi için fonksiyon
+    const selectFirstAccount = () => {
+        if (accounts.length > 0) {
+            setForm(f => ({ ...f, accountId: accounts[0].id }));
+            console.log('Manually set accountId to:', accounts[0].id);
+        }
+    };
+
+    // Test için manuel hesap yükleme
+    const loadTestAccounts = () => {
+        const testAccounts = [
+            {
+                id: 'test-1',
+                userId: 'default-user',
+                accountName: 'Test Ana Hesap',
+                accountType: 'Vadesiz' as const,
+                balance: 0,
+                currency: 'TRY'
+            },
+            {
+                id: 'test-2',
+                userId: 'default-user',
+                accountName: 'Test Yan Hesap',
+                accountType: 'Vadeli' as const,
+                balance: 0,
+                currency: 'TRY'
+            }
+        ];
+        setAccounts(testAccounts);
+        setForm(f => ({ ...f, accountId: 'test-1' }));
+        console.log('Test accounts loaded:', testAccounts);
+    };
 
     // Filtreleme işlemi
     useEffect(() => {
@@ -902,12 +1131,51 @@ const TransactionModule: React.FC = () => {
                                     </div>
                                     <div>
                                         <label>Hesap:</label><br />
-                                        <select name="accountId" value={form.accountId ?? ''} onChange={handleFormChange} required style={{ width: 180 }}>
-                                            <option value="">Seçiniz</option>
-                                            {accounts.map(account => (
-                                                <option key={account.id} value={account.id}>{account.accountName}</option>
-                                            ))}
-                                        </select>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <select name="accountId" value={form.accountId ?? ''} onChange={handleFormChange} required style={{ width: 180 }}>
+                                                <option value="">Seçiniz</option>
+                                                {accounts.map(account => (
+                                                    <option key={account.id} value={account.id}>{account.accountName}</option>
+                                                ))}
+                                            </select>
+                                            <button 
+                                                type="button" 
+                                                onClick={selectFirstAccount}
+                                                style={{ 
+                                                    padding: '4px 8px', 
+                                                    fontSize: '12px', 
+                                                    backgroundColor: '#ff9800', 
+                                                    color: 'white', 
+                                                    border: 'none', 
+                                                    borderRadius: '4px',
+                                                    cursor: 'pointer'
+                                                }}
+                                                title="İlk hesabı seç"
+                                            >
+                                                🔧
+                                            </button>
+                                            <button 
+                                                type="button" 
+                                                onClick={loadTestAccounts}
+                                                style={{ 
+                                                    padding: '4px 8px', 
+                                                    fontSize: '12px', 
+                                                    backgroundColor: '#e53935', 
+                                                    color: 'white', 
+                                                    border: 'none', 
+                                                    borderRadius: '4px',
+                                                    cursor: 'pointer'
+                                                }}
+                                                title="Test hesapları yükle"
+                                            >
+                                                🧪
+                                            </button>
+                                        </div>
+                                        <small style={{ color: '#666', fontSize: '12px' }}>
+                                            Mevcut hesap ID: {form.accountId || 'Boş'} | Hesap sayısı: {accounts.length}
+                                            <br />
+                                            Hesaplar: {accounts.map(acc => acc.accountName).join(', ') || 'Yok'}
+                                        </small>
                                     </div>
                                     <div>
                                         <label>Kategori:</label><br />

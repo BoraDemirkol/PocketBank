@@ -1,46 +1,163 @@
-# Getting Started with Create React App
+# PocketBank - Kişisel Finans Yönetimi
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Bu proje, kişisel finans yönetimi için geliştirilmiş bir React uygulamasıdır. Hem .NET backend hem de Supabase veritabanı desteği sunar.
 
-## Available Scripts
+## Özellikler
 
-In the project directory, you can run:
+- 💰 İşlem yönetimi (ekleme, düzenleme, silme)
+- 📊 Kategori yönetimi
+- 🏦 Hesap yönetimi
+- 🔄 Tekrarlayan işlemler
+- 📁 Fiş yükleme ve görüntüleme
+- 📈 İşlem filtreleme ve arama
+- 📥 CSV/Excel dosya içe aktarma
+- 🏦 Banka hesap özeti içe aktarma
+- 📤 CSV/Excel dışa aktarma
+- 🌙 Tema desteği (Açık/Koyu)
 
-### `npm start`
+## Teknolojiler
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- **Frontend**: React 19, TypeScript, CSS
+- **Backend**: .NET 8, Entity Framework Core
+- **Veritabanı**: SQL Server (Backend), Supabase (PostgreSQL)
+- **Dosya Yönetimi**: Supabase Storage
+- **Kimlik Doğrulama**: Supabase Auth
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Kurulum
 
-### `npm test`
+### 1. Gereksinimler
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Node.js 18+
+- .NET 8 SDK
+- Supabase hesabı
 
-### `npm run build`
+### 2. Proje Kurulumu
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+# Repository'yi klonlayın
+git clone https://github.com/BoraDemirkol/PocketBank.git
+cd PocketBank
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+# Frontend bağımlılıklarını yükleyin
+npm install
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+# Backend bağımlılıklarını yükleyin
+cd src/modules/backend
+dotnet restore
+```
 
-### `npm run eject`
+### 3. Supabase Kurulumu
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+1. [Supabase](https://supabase.com) hesabı oluşturun
+2. Yeni bir proje oluşturun
+3. SQL Editor'de `supabase_schema.sql` dosyasını çalıştırın
+4. Storage bucket oluşturun:
+   - Bucket adı: `receipts`
+   - Public bucket olarak ayarlayın
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 4. Environment Variables
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+`.env` dosyası oluşturun:
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+```env
+REACT_APP_SUPABASE_URL=your_supabase_url
+REACT_APP_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-## Learn More
+### 5. Uygulamayı Çalıştırma
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```bash
+# Backend'i başlatın
+cd src/modules/backend
+dotnet run
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+# Yeni terminal'de frontend'i başlatın
+npm start
+```
+
+## Supabase Entegrasyonu
+
+Bu proje hem .NET backend hem de Supabase veritabanını destekler:
+
+### Veritabanı Şeması
+
+- **users**: Kullanıcı bilgileri
+- **categories**: İşlem kategorileri
+- **accounts**: Banka hesapları
+- **transactions**: İşlem kayıtları
+- **recurring_transactions**: Tekrarlayan işlemler
+- **budgets**: Bütçe planları
+
+### Güvenlik
+
+- Row Level Security (RLS) aktif
+- Kullanıcı bazlı veri erişimi
+- Supabase Auth entegrasyonu
+
+### Dosya Yönetimi
+
+- Supabase Storage kullanımı
+- Fiş yükleme ve görüntüleme
+- Otomatik dosya organizasyonu
+
+## API Endpoints
+
+### Backend (.NET)
+
+- `GET /api/transaction` - İşlemleri listele
+- `POST /api/transaction` - İşlem ekle
+- `PUT /api/transaction/{id}` - İşlem güncelle
+- `DELETE /api/transaction/{id}` - İşlem sil
+- `GET /api/categories` - Kategorileri listele
+- `POST /api/categories` - Kategori ekle
+- `GET /api/accounts` - Hesapları listele
+- `POST /api/accounts` - Hesap ekle
+
+### Supabase
+
+Tüm CRUD işlemleri Supabase servisleri üzerinden yapılır:
+
+```typescript
+import { supabaseTransactionService } from './services/supabaseService';
+
+// İşlem ekleme
+const transaction = await supabaseTransactionService.addTransaction({
+    accountId: 'account-id',
+    categoryId: 'category-id',
+    amount: 100,
+    transactionDate: '2024-01-01',
+    description: 'Market alışverişi'
+});
+```
+
+## Geliştirme
+
+### Yeni Özellik Ekleme
+
+1. TypeScript tiplerini `src/types/index.ts`'de tanımlayın
+2. Supabase servisini `src/services/supabaseService.ts`'de ekleyin
+3. UI bileşenini ilgili modülde oluşturun
+
+### Veritabanı Değişiklikleri
+
+1. `supabase_schema.sql` dosyasını güncelleyin
+2. Supabase SQL Editor'de çalıştırın
+3. TypeScript tiplerini güncelleyin
+
+## Katkıda Bulunma
+
+1. Fork yapın
+2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
+3. Commit yapın (`git commit -m 'Add amazing feature'`)
+4. Push yapın (`git push origin feature/amazing-feature`)
+5. Pull Request oluşturun
+
+## Lisans
+
+Bu proje MIT lisansı altında lisanslanmıştır.
+
+## İletişim
+
+Bora Demirkol - [@BoraDemirkol](https://github.com/BoraDemirkol)
+
+Proje Linki: [https://github.com/BoraDemirkol/PocketBank](https://github.com/BoraDemirkol/PocketBank)

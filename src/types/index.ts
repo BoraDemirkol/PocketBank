@@ -45,6 +45,7 @@ export interface Account {
 
 export interface RecurringTransaction {
     id: string;
+    userId: string;
     description: string;
     amount: number;
     categoryId: string;
