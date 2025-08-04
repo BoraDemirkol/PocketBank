@@ -17,49 +17,25 @@ import {
   Divider
 } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
+import { supabase } from '../supabaseClient';
+import { v4 as uuidv4 } from 'uuid';
 
-// Budget and Category types
 type Period = 'monthly' | 'yearly';
 interface Category {
   name: string;
   limit: number;
 }
-interface Budget {
-  id: string;
-  name: string;
-  period: Period;
-  start: string; // YYYY-MM
-  categories: Category[];
-  createdAt: string;
-}
-
-// Utility for localStorage
-const storageKey = 'pocketbank_budgets';
-const loadBudgets = (): Budget[] => {
-  const json = localStorage.getItem(storageKey);
-  return json ? JSON.parse(json) : [];
-};
-const saveBudgets = (budgets: Budget[]) => {
-  localStorage.setItem(storageKey, JSON.stringify(budgets));
-};
 
 const steps = ['Genel Bilgiler', 'Kategori Limitleri', 'Özet & Kaydet'];
 
 const CreateBudget: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
-  // Step 1
   const [name, setName] = useState('');
   const [period, setPeriod] = useState<Period>('monthly');
-  const [start, setStart] = useState<string>(new Date().toISOString().slice(0,7));
-  // Step 2
+  const [start, setStart] = useState<string>(new Date().toISOString().slice(0, 10));
   const [categories, setCategories] = useState<Category[]>([]);
   const [newCatName, setNewCatName] = useState('');
   const [newCatLimit, setNewCatLimit] = useState<number>(0);
-
-  useEffect(() => {
-    // initialize storage if empty
-    if (!localStorage.getItem(storageKey)) saveBudgets([]);
-  }, []);
 
   const handleNext = () => {
     if (activeStep < steps.length - 1) setActiveStep(prev => prev + 1);
@@ -78,25 +54,84 @@ const CreateBudget: React.FC = () => {
     setCategories(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = () => {
-    const budgets = loadBudgets();
-    const newBudget: Budget = {
-      id: Date.now().toString(),
-      name,
-      period,
-      start,
-      categories,
-      createdAt: new Date().toISOString()
-    };
-    saveBudgets([...budgets, newBudget]);
-    // reset wizard
+  const handleSubmit = async () => {
+    const staticUserId = 'df497fd5-57e9-4cef-ab49-5d1062e5a282';
+
+    // Step 1: Fetch all categories first
+    const { data: allCategories, error: categoryError } = await supabase
+      .from('categories')
+      .select('id, name');
+
+    if (categoryError || !allCategories) {
+      alert('Kategori verileri alınamadı.');
+      return;
+    }
+
+    const categoryMap = new Map(allCategories.map(cat => [cat.name.toLowerCase(), cat.id]));
+
+    // Step 2: Validate all category names exist before inserting budget
+    const invalidCategories = categories.filter(cat => !categoryMap.has(cat.name.trim().toLowerCase()));
+    if (invalidCategories.length > 0) {
+      alert(`Bazı kategoriler bulunamadı: ${invalidCategories.map(c => `'${c.name}'`).join(', ')}.\nLütfen tekrar düzenleyin.`);
+      setActiveStep(1); // go back to category entry step
+      return;
+    }
+
+    // Step 3: Calculate total amount
+    const totalAmount = categories.reduce((sum, c) => sum + c.limit, 0);
+
+    // Step 4: Insert budget only if validation passed
+    const { data: budgetInsert, error: budgetError } = await supabase
+      .from('budgets')
+      .insert({
+        id: uuidv4(),
+        user_id: staticUserId,
+        name,
+        amount: totalAmount,
+        period,
+        start_date: start,
+        created_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (budgetError || !budgetInsert) {
+      console.error(budgetError);
+      alert('Bütçe kaydedilemedi.');
+      return;
+    }
+
+    const budgetId = budgetInsert.id;
+
+    // Step 5: Insert budget categories
+    for (const cat of categories) {
+      const categoryId = categoryMap.get(cat.name.trim().toLowerCase());
+      const { error: insertError } = await supabase
+        .from('budget_categories')
+        .insert({
+          id: uuidv4(),
+          budget_id: budgetId,
+          category_id: categoryId,
+          limit: cat.limit,
+          created_at: new Date().toISOString(),
+        });
+
+      if (insertError) {
+        console.error(insertError);
+        alert(`Kategori limiti kaydedilemedi: ${cat.name}`);
+      }
+    }
+
+    // Step 6: Reset form and notify success
     setName('');
     setPeriod('monthly');
-    setStart(new Date().toISOString().slice(0,7));
+    setStart(new Date().toISOString().slice(0, 10));
     setCategories([]);
     setActiveStep(0);
-    alert('Bütçe kaydedildi!');
+    alert('Bütçe başarıyla kaydedildi!');
   };
+
+
 
   return (
     <Paper sx={{ p: 4 }}>
@@ -111,7 +146,6 @@ const CreateBudget: React.FC = () => {
         ))}
       </Stepper>
 
-      {/* Step Content */}
       {activeStep === 0 && (
         <Box sx={{ display: 'grid', gap: 2 }}>
           <TextField
@@ -130,8 +164,8 @@ const CreateBudget: React.FC = () => {
             <MenuItem value="yearly">Yıllık</MenuItem>
           </TextField>
           <TextField
-            label={period === 'monthly' ? 'Başlangıç (YYYY-MM)' : 'Başlangıç Yılı (YYYY)'}
-            type="month"
+            label={period === 'monthly' ? 'Başlangıç (YYYY-MM-DD)' : 'Başlangıç Yılı (YYYY)'}
+            type="date"
             value={start}
             onChange={e => setStart(e.target.value)}
             fullWidth
