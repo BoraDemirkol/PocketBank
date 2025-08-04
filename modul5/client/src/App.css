@@ -1,42 +1,87 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* Ana Renk Paletimiz (Root Değişkenleri) */
+:root {
+  --font-family-sans: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  
+  /* Açık Yeşil Tema Renkleri */
+  --color-primary: #2e7d32;      /* Ana Yeşil (Koyu) */
+  --color-secondary: #66bb6a;   /* İkincil Yeşil (Orta) */
+  --color-accent: #a5d6a7;     /* Vurgu Yeşili (Açık) */
+  
+  --color-background: #f1f8e9;   /* Sayfa Arka Planı (Çok Açık Yeşil) */
+  --color-surface: #ffffff;      /* Kart ve Form Arka Planları (Beyaz) */
+  
+  --color-text-primary: #1b5e20;   /* Ana Metin Rengi */
+  --color-text-secondary: #4caf50; /* İkincil Metin Rengi */
+  --color-text-on-primary: #ffffff; /* Ana Rengin Üzerindeki Yazı (Beyaz) */
+
+  --border-radius: 8px;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Genel Sayfa Ayarları */
+body {
+  margin: 0;
+  font-family: var(--font-family-sans);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  line-height: 1.6;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Genel Başlık Stilleri */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-primary);
+  margin-bottom: 0.5em;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Buton Stilleri */
+button {
+  cursor: pointer;
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--color-primary);
+  color: var(--color-text-on-primary);
+  font-weight: bold;
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
+button:hover {
+  background-color: var(--color-secondary);
+  transform: translateY(-2px);
+}
+
+/* Form Elemanları Stilleri */
+input, select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--border-radius);
+  background-color: #fafdf8;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-sans);
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(102, 187, 106, 0.3);
+}
+
+/* Kart Stilleri (Dashboard vb. için) */
 .card {
-  padding: 2em;
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius);
+  padding: 20px;
+  box-shadow: var(--box-shadow);
+  border: 1px solid #e8f5e9;
 }
 
-.read-the-docs {
-  color: #888;
+/* Link Stilleri */
+a {
+  color: var(--color-secondary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }

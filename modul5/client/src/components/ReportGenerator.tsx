@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import 'jspdf-autotable';
+import Papa from 'papaparse';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable'; // Kütüphaneyi doğrudan fonksiyon olarak import ediyoruz
 
-
-interface Category { id: string; name: string; }
-interface Account { id: string; account_name: string; }
+// Veritabanından gelecek tipleri tanımlıyoruz
+interface Category {
+  id: string;
+  name: string;
+}
+interface Account {
+  id: string;
+  account_name: string;
+}
 
 const ReportGenerator = () => {
+  // State'ler
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [startDate, setStartDate] = useState('');
@@ -17,6 +26,7 @@ const ReportGenerator = () => {
   const [loading, setLoading] = useState(true);
   const [generatingReport, setGeneratingReport] = useState(false);
 
+  // Filtre verilerini çekme
   useEffect(() => {
     const fetchDataForFilters = async () => {
       const { data: categoriesData } = await supabase.from('categories').select('id, name');
@@ -28,19 +38,26 @@ const ReportGenerator = () => {
     fetchDataForFilters();
   }, []);
 
+  // Rapor oluşturma
   const handleGenerateReport = async (event: React.FormEvent) => {
     event.preventDefault();
     setGeneratingReport(true);
     setReportData([]);
-    let query = supabase.from('transactions').select(`id, transaction_date, description, amount, categories ( name ), accounts ( account_name )`);
+    let query = supabase
+      .from('transactions')
+      .select(`id, transaction_date, description, amount, categories ( name ), accounts ( account_name )`);
     if (startDate) query = query.gte('transaction_date', startDate);
     if (endDate) query = query.lte('transaction_date', endDate);
     if (selectedCategories.length > 0) query = query.in('category_id', selectedCategories);
     if (selectedAccounts.length > 0) query = query.in('account_id', selectedAccounts);
     const { data, error } = await query;
-    if (error) alert('Rapor verisi çekilirken hata oluştu: ' + error.message);
-    else if (data && data.length > 0) setReportData(data);
-    else alert('Seçili filtrelere uygun hiçbir işlem bulunamadı.');
+    if (error) {
+      alert('Rapor verisi çekilirken hata oluştu: ' + error.message);
+    } else if (data && data.length > 0) {
+      setReportData(data);
+    } else {
+      alert('Seçili filtrelere uygun hiçbir işlem bulunamadı.');
+    }
     setGeneratingReport(false);
   };
 
@@ -49,38 +66,82 @@ const ReportGenerator = () => {
     setter(selectedOptions);
   };
   
-  const handleExportCSV = () => { /* ... (Bu fonksiyonlar aynı kalabilir) ... */ };
-  const handleExportPDF = () => { /* ... (Bu fonksiyonlar aynı kalabilir) ... */ };
+  // CSV Dışa Aktarma Fonksiyonu
+  const handleExportCSV = () => {
+    if (reportData.length === 0) return;
+    const flattenedData = reportData.map(row => ({
+      Tarih: String(row.transaction_date || '-'),
+      Açıklama: String(row.description || ''),
+      Tutar: String(row.amount || '0'),
+      Kategori: String(row.categories?.name || '-'),
+      Hesap: String(row.accounts?.account_name || '-'),
+    }));
+    const csv = Papa.unparse(flattenedData);
+    const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', 'rapor.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
-  // --- YENİ YEŞİL TEMA STİLLERİ ---
-  const formContainerStyle: React.CSSProperties = { backgroundColor: 'rgba(0, 77, 64, 0.2)', padding: '20px', borderRadius: '15px', border: '1px solid #004d40' };
-  const formStyle: React.CSSProperties = { display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'center' };
-  const formGroupStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column' };
-  const labelStyle: React.CSSProperties = { marginBottom: '5px', fontWeight: 'bold', fontSize: '0.9em', color: '#b2dfdb' }; 
-  const inputStyle: React.CSSProperties = { padding: '8px', border: '1px solid #00796b', borderRadius: '8px', backgroundColor: '#e0f2f1', color: '#004d40' };
-  const selectStyle: React.CSSProperties = { ...inputStyle, height: '100px' };
-  const buttonStyle: React.CSSProperties = { padding: '10px 20px', border: 'none', borderRadius: '8px', backgroundColor: '#00c853', color: 'white', cursor: 'pointer', height: 'fit-content', fontWeight: 'bold' };
-  const exportButtonStyle: React.CSSProperties = { ...buttonStyle, backgroundColor: '#64dd17', marginLeft: '10px' };
-  const tableStyle: React.CSSProperties = { width: '100%', borderCollapse: 'collapse', marginTop: '20px', color: 'white' };
-  const thStyle: React.CSSProperties = { borderBottom: '2px solid #00796b', padding: '12px', textAlign: 'left', backgroundColor: 'rgba(0, 77, 64, 0.5)', color: '#e0f2f1' };
-  const tdStyle: React.CSSProperties = { borderBottom: '1px solid #004d40', padding: '12px' };
+  // PDF Dışa Aktarma Fonksiyonu (Düzeltilmiş Hali)
+  const handleExportPDF = () => {
+    if (reportData.length === 0) return;
+    try {
+      const doc = new jsPDF();
+      const tableColumn = ["Tarih", "Açıklama", "Tutar", "Kategori", "Hesap"];
+      const tableRows: string[][] = [];
 
-  if (loading) {
-    return <p style={{color: 'white', textAlign: 'center'}}>Filtreleme seçenekleri yükleniyor...</p>;
-  }
+      reportData.forEach(item => {
+        const itemData = [
+          String(item.transaction_date || '-'),
+          String(item.description || '-'),
+          String(item.amount || '0'), 
+          String(item.categories?.name || '-'),
+          String(item.accounts?.account_name || '-'),
+        ];
+        tableRows.push(itemData);
+      });
+
+      doc.text("İşlem Raporu", 14, 15);
+      
+      // autoTable fonksiyonunu doğrudan çağırıyoruz. Bu en güvenilir yöntemdir.
+      autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: 20,
+      });
+
+      doc.save("rapor.pdf");
+
+    } catch (e) {
+      console.error("PDF oluşturulurken hata:", e);
+      alert("PDF oluşturulurken beklenmedik bir hata oluştu. Lütfen konsolu kontrol edin.");
+    }
+  };
+
+  // Stil Tanımlamaları
+  const formStyle: React.CSSProperties = { display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'center', padding: '20px' };
+  const formGroupStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', minWidth: '150px' };
+  const labelStyle: React.CSSProperties = { marginBottom: '5px', fontWeight: 'bold', fontSize: '0.9em' };
+  const selectStyle: React.CSSProperties = { height: '120px' };
+  const tableContainerStyle: React.CSSProperties = { marginTop: '30px' };
+
+  if (loading) return <p>Filtreleme seçenekleri yükleniyor...</p>;
 
   return (
-    <div>
-      <p style={{color: '#e1bee7', textAlign: 'center'}}>Belirlediğiniz filtrelere göre özel bir işlem raporu oluşturun ve dışa aktarın.</p>
-      <div style={formContainerStyle}>
-        <form onSubmit={handleGenerateReport} style={formStyle}>
+    <div className="card"> 
+      <p style={{textAlign: 'center'}}>Belirlediğiniz filtrelere göre özel bir işlem raporu oluşturun ve dışa aktarın.</p>
+      <form onSubmit={handleGenerateReport} style={formStyle}>
           <div style={formGroupStyle}>
             <label htmlFor="startDate" style={labelStyle}>Başlangıç Tarihi:</label>
-            <input type="date" id="startDate" value={startDate} onChange={e => setStartDate(e.target.value)} style={inputStyle} />
+            <input type="date" id="startDate" value={startDate} onChange={e => setStartDate(e.target.value)} />
           </div>
           <div style={formGroupStyle}>
             <label htmlFor="endDate" style={labelStyle}>Bitiş Tarihi:</label>
-            <input type="date" id="endDate" value={endDate} onChange={e => setEndDate(e.target.value)} style={inputStyle} />
+            <input type="date" id="endDate" value={endDate} onChange={e => setEndDate(e.target.value)} />
           </div>
           <div style={formGroupStyle}>
             <label htmlFor="categories" style={labelStyle}>Kategoriler:</label>
@@ -94,40 +155,32 @@ const ReportGenerator = () => {
               {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.account_name}</option>)}
             </select>
           </div>
-          <button type="submit" style={buttonStyle} disabled={generatingReport}>
+          <button type="submit" disabled={generatingReport}>
             {generatingReport ? 'Oluşturuluyor...' : 'Rapor Oluştur'}
           </button>
-        </form>
-      </div>
+      </form>
       
       {reportData.length > 0 && (
-        <div>
-          <hr style={{margin: '30px 0', border: 'none', borderTop: '1px solid #004d40'}} />
+        <div style={tableContainerStyle}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-            <h3 style={{color: 'white'}}>Rapor Ön İzlemesi ({reportData.length} işlem bulundu)</h3>
+            <h3>Rapor Ön İzlemesi ({reportData.length} işlem bulundu)</h3>
             <div>
-              <button onClick={handleExportCSV} style={exportButtonStyle}>CSV Olarak İndir</button>
-              <button onClick={handleExportPDF} style={exportButtonStyle}>PDF Olarak İndir</button>
+              <button onClick={handleExportCSV}>CSV Olarak İndir</button>
+              <button onClick={handleExportPDF} style={{marginLeft: '10px'}}>PDF Olarak İndir</button>
             </div>
           </div>
-          <table style={tableStyle}>
+          <table>
             <thead>
-              <tr>
-                <th style={thStyle}>Tarih</th>
-                <th style={thStyle}>Açıklama</th>
-                <th style={thStyle}>Tutar</th>
-                <th style={thStyle}>Kategori</th>
-                <th style={thStyle}>Hesap</th>
-              </tr>
+              <tr><th>Tarih</th><th>Açıklama</th><th>Tutar</th><th>Kategori</th><th>Hesap</th></tr>
             </thead>
             <tbody>
               {reportData.map((row) => (
                 <tr key={row.id}>
-                  <td style={tdStyle}>{row.transaction_date}</td>
-                  <td style={tdStyle}>{row.description}</td>
-                  <td style={tdStyle}>{row.amount}</td>
-                  <td style={tdStyle}>{row.categories?.name || '-'}</td>
-                  <td style={tdStyle}>{row.accounts?.account_name || '-'}</td>
+                  <td>{row.transaction_date}</td>
+                  <td>{row.description}</td>
+                  <td>{row.amount}</td>
+                  <td>{row.categories?.name || '-'}</td>
+                  <td>{row.accounts?.account_name || '-'}</td>
                 </tr>
               ))}
             </tbody>
