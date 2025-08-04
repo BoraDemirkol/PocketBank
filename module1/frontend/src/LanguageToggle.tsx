@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Dropdown} from '../node_modules/antd';
+import { Button, Dropdown} from 'antd';
 import { GlobalOutlined, DownOutlined } from '@ant-design/icons';
 import i18n from './i18n';
 

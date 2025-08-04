@@ -1,97 +1,45 @@
-import React, { useState } from 'react';
-import { LockOutlined, UserOutlined, ArrowLeftOutlined, SecurityScanOutlined } from '@ant-design/icons';
-import { Input, Button, message, Form, Typography } from '../node_modules/antd';
-import { Link, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { LockOutlined, UserOutlined, SecurityScanOutlined } from '@ant-design/icons';
+import { Input, Form, Typography } from 'antd';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from './AuthContext';
+import { Button } from 'antd';
+import FormCard from './components/ui/FormCard';
+import { useLogin } from './hooks';
+import { createFormValidationRules } from './utils/validation';
+import { ROUTES } from './utils/constants';
 
 const Login: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const [showMFA, setShowMFA] = useState(false);
-  const [mfaCode, setMfaCode] = useState('');
-  const [challengeId, setChallengeId] = useState('');
-  const [factorId, setFactorId] = useState('');
-  const [tempSession, setTempSession] = useState(null);
-  const { signIn, verifyMFA, verifyMFAWithSession } = useAuth();
-  const navigate = useNavigate();
   const { t } = useTranslation();
+  const { 
+    loading, 
+    mfaState, 
+    handleLogin, 
+    handleMFAVerification, 
+    updateMFACode, 
+    resetMFAState 
+  } = useLogin();
+  
+  const validationRules = createFormValidationRules(t);
 
-  const onFinish = async (values: { email: string; password: string }) => {
-    setLoading(true);
-    const { error, needsMFA, challengeId: cId, factorId: fId, tempSession: tSession } = await signIn(values.email, values.password);
-    
-    if (needsMFA && fId) {
-      setChallengeId(cId || '');
-      setFactorId(fId);
-      setTempSession(tSession);
-      setShowMFA(true);
-      message.info('Please enter your 6-digit MFA code');
-    } else if (error) {
-      message.error(error.message);
-    } else {
-      message.success(t('loginSuccess'));
-      navigate('/dashboard');
-    }
-    setLoading(false);
-  };
-
-  const handleMFAVerification = async () => {
-    if (!mfaCode || mfaCode.length !== 6) {
-      message.error('Please enter a valid 6-digit code');
-      return;
-    }
-
-    if (!factorId) {
-      message.error('Missing factor ID');
-      return;
-    }
-
-    setLoading(true);
-    
-    let result;
-    if (tempSession) {
-      result = await verifyMFAWithSession(factorId, mfaCode, tempSession);
-    } else if (challengeId) {
-      result = await verifyMFA(factorId, challengeId, mfaCode);
-    } else {
-      message.error('Missing verification data');
-      setLoading(false);
-      return;
-    }
-    
-    if (result.error) {
-      message.error('Invalid MFA code: ' + result.error.message);
-    } else {
-      message.success('Login successful!');
-      navigate('/dashboard');
-    }
-    setLoading(false);
-  };
 
 
   return (
-    <div style={{ maxWidth: '300px', margin: '50px auto', padding: '20px' }}>
-      <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: '#4a7c59' }}>
-        <ArrowLeftOutlined style={{ marginRight: '8px' }} />
-        {t('backToHome')}
-      </Link>
-      <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>
-        {showMFA ? 'Multi-Factor Authentication' : 'Login to PocketBank'}
-      </h2>
+    <FormCard title={mfaState.showMFA ? t('mfaTitle') : t('loginTitle')}>
       
-      {showMFA ? (
+      {mfaState.showMFA ? (
         <div>
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <SecurityScanOutlined style={{ fontSize: '48px', color: '#4a7c59', marginBottom: '16px' }} />
+            <SecurityScanOutlined style={{ fontSize: '48px', color: 'var(--primary-color)', marginBottom: '16px' }} />
             <Typography.Text style={{ display: 'block', marginBottom: '16px' }}>
-              Enter the 6-digit code from your authenticator app
+              {t('mfaDescription')}
             </Typography.Text>
           </div>
           
           <Input
-            placeholder="Enter 6-digit code"
-            value={mfaCode}
-            onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            placeholder={t('mfaPlaceholder')}
+            value={mfaState.code}
+            onChange={(e) => updateMFACode(e.target.value)}
             maxLength={6}
             size="large"
             style={{ 
@@ -103,43 +51,35 @@ const Login: React.FC = () => {
             onPressEnter={handleMFAVerification}
           />
           
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             onClick={handleMFAVerification}
             loading={loading}
             size="large"
             style={{ 
               width: '100%',
-              backgroundColor: '#4a7c59',
-              borderColor: '#4a7c59',
+              backgroundColor: 'var(--primary-color)',
+              borderColor: 'var(--primary-color)',
               fontWeight: 500,
               marginBottom: '16px'
             }}
           >
-            Verify Code
+            {t('verifyCode')}
           </Button>
           
-          <Button 
+          <Button
             type="text"
-            onClick={() => {
-              setShowMFA(false);
-              setMfaCode('');
-              setChallengeId('');
-              setFactorId('');
-            }}
-            style={{ width: '100%', color: '#4a7c59' }}
+            onClick={resetMFAState}
+            style={{ width: '100%', color: 'var(--primary-color)' }}
           >
-            Back to Login
+            {t('backToLogin')}
           </Button>
         </div>
       ) : (
-        <Form onFinish={onFinish} layout="vertical">
+        <Form onFinish={handleLogin} layout="vertical">
         <Form.Item
           name="email"
-          rules={[
-            { required: true, message: t('emailRequired') },
-            { type: 'email', message: t('emailInvalid') }
-          ]}
+          rules={validationRules.email}
         >
           <Input 
             placeholder={t('email')} 
@@ -150,7 +90,7 @@ const Login: React.FC = () => {
         
         <Form.Item
           name="password"
-          rules={[{ required: true, message: t('passwordRequired') }]}
+          rules={validationRules.password}
         >
           <Input.Password 
             placeholder={t('password')} 
@@ -160,15 +100,15 @@ const Login: React.FC = () => {
         </Form.Item>
         
         <Form.Item>
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             htmlType="submit" 
             loading={loading}
             size="large"
             style={{ 
               width: '100%',
-              backgroundColor: '#4a7c59',
-              borderColor: '#4a7c59',
+              backgroundColor: 'var(--primary-color)',
+              borderColor: 'var(--primary-color)',
               fontWeight: 500
             }}
           >
@@ -178,29 +118,29 @@ const Login: React.FC = () => {
       </Form>
       )}
       
-      {!showMFA && (
+      {!mfaState.showMFA && (
         <>
           <div style={{ textAlign: 'center', marginTop: '16px' }}>
             <Link
-              to="/forgot-password"
-              style={{ color: '#4a7c59', textDecoration: 'none', fontSize: '14px' }}
+              to={ROUTES.FORGOT_PASSWORD}
+              style={{ color: 'var(--primary-color)', textDecoration: 'none', fontSize: '14px' }}
             >
-              Forgot your password?
+              {t('forgotPassword')}
             </Link>
           </div>
           
           <div style={{ textAlign: 'center', marginTop: '16px' }}>
-            <span>Don't have an account? </span>
+            <span>{t('dontHaveAccount')} </span>
             <Link
-              to="/signup"
-              style={{ color: '#4a7c59', fontWeight: 'bold', textDecoration: 'none' }}
+              to={ROUTES.SIGNUP}
+              style={{ color: 'var(--primary-color)', fontWeight: 'bold', textDecoration: 'none' }}
             >
-              Sign Up
+              {t('signUp')}
             </Link>
           </div>
         </>
       )}
-    </div>
+    </FormCard>
   );
 };
 

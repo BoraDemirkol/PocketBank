@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { LockOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { Input, Button, Form, App } from 'antd';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
 import { supabase } from './supabase';
 
@@ -15,6 +16,7 @@ const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { message } = App.useApp();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const checkResetSession = async () => {
@@ -30,11 +32,11 @@ const ResetPassword: React.FC = () => {
       if (error) {
         errorShownRef.current = true;
         
-        let errorMessage = 'Invalid or expired reset link. Please request a new one.';
+        let errorMessage = t('invalidResetLink');
         if (errorCode === 'otp_expired') {
-          errorMessage = 'Reset link has expired. Please request a new one.';
+          errorMessage = t('invalidResetLink');
         } else if (error === 'access_denied') {
-          errorMessage = 'Reset link is invalid or has been used. Please request a new one.';
+          errorMessage = t('invalidResetLink');
         }
         
         message.error(errorMessage);
@@ -58,13 +60,13 @@ const ResetPassword: React.FC = () => {
           });
           
           if (error) {
-            message.error('Invalid or expired reset link. Please request a new one.');
+            message.error(t('invalidResetLink'));
             navigate('/forgot-password');
           } else {
             setIsValidSession(true);
           }
         } catch {
-          message.error('Invalid or expired reset link. Please request a new one.');
+          message.error(t('invalidResetLink'));
           navigate('/forgot-password');
         }
       } else if (session && user) {
@@ -74,7 +76,7 @@ const ResetPassword: React.FC = () => {
         // No valid session or URL parameters
         if (!errorShownRef.current) {
           errorShownRef.current = true;
-          message.error('Invalid or expired reset link. Please request a new one.');
+          message.error(t('invalidResetLink'));
           setTimeout(() => {
             navigate('/forgot-password');
           }, 1500);
@@ -89,12 +91,12 @@ const ResetPassword: React.FC = () => {
 
   const onFinish = async (values: { password: string; confirmPassword: string }) => {
     if (values.password !== values.confirmPassword) {
-      message.error('Passwords do not match!');
+      message.error(t('passwordsDoNotMatch'));
       return;
     }
 
     if (values.password.length < 6) {
-      message.error('Password must be at least 6 characters long!');
+      message.error(t('passwordTooShort'));
       return;
     }
 
@@ -102,9 +104,9 @@ const ResetPassword: React.FC = () => {
     const { error } = await updatePassword(values.password);
     
     if (error) {
-      message.error(error.message || 'Failed to update password');
+      message.error(error.message || t('passwordUpdateFailed'));
     } else {
-      message.success('Password updated successfully!');
+      message.success(t('passwordUpdated'));
       setPasswordUpdated(true);
       // Redirect to dashboard after 2 seconds
       setTimeout(() => {
@@ -119,20 +121,20 @@ const ResetPassword: React.FC = () => {
       <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', textAlign: 'center' }}>
         <div style={{ marginBottom: '30px' }}>
           <CheckCircleOutlined style={{ fontSize: '48px', color: '#52c41a', marginBottom: '16px' }} />
-          <h2 style={{ color: '#4a7c59', marginBottom: '16px' }}>Password Updated!</h2>
-          <p style={{ color: '#666', lineHeight: '1.6' }}>
-            Your password has been successfully updated. You will be redirected to your dashboard shortly.
+          <h2 style={{ color: 'var(--primary-color)', marginBottom: '16px' }}>{t('passwordUpdated')}</h2>
+          <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+            {t('passwordUpdateSuccess')}
           </p>
         </div>
         <Button 
           type="primary" 
           onClick={() => navigate('/dashboard')}
           style={{ 
-            backgroundColor: '#4a7c59',
-            borderColor: '#4a7c59'
+            backgroundColor: 'var(--primary-color)',
+            borderColor: 'var(--primary-color)'
           }}
         >
-          Go to Dashboard
+          {t('goToDashboard')}
         </Button>
       </div>
     );
@@ -146,7 +148,7 @@ const ResetPassword: React.FC = () => {
         padding: '20px', 
         textAlign: 'center' 
       }}>
-        <div>Verifying reset link...</div>
+        <div>{t('verifyingResetLink')}</div>
       </div>
     );
   }
@@ -157,21 +159,21 @@ const ResetPassword: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '10px' }}>Reset Your Password</h2>
-      <p style={{ textAlign: 'center', color: '#666', marginBottom: '30px' }}>
-        Enter your new password below.
+      <h2 style={{ textAlign: 'center', marginBottom: '10px' }}>{t('resetPasswordTitle')}</h2>
+      <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '30px' }}>
+        {t('resetPasswordSubtitle')}
       </p>
       
       <Form onFinish={onFinish} layout="vertical">
         <Form.Item
           name="password"
           rules={[
-            { required: true, message: 'Please input your new password!' },
-            { min: 6, message: 'Password must be at least 6 characters long!' }
+            { required: true, message: t('pleaseInputNewPassword') },
+            { min: 6, message: t('passwordMinLength') }
           ]}
         >
           <Input.Password 
-            placeholder="New password" 
+            placeholder={t('newPassword')} 
             prefix={<LockOutlined />} 
             size="large"
             style={{ borderRadius: '6px' }}
@@ -181,12 +183,12 @@ const ResetPassword: React.FC = () => {
         <Form.Item
           name="confirmPassword"
           rules={[
-            { required: true, message: 'Please confirm your new password!' },
-            { min: 6, message: 'Password must be at least 6 characters long!' }
+            { required: true, message: t('pleaseConfirmNewPassword') },
+            { min: 6, message: t('passwordMinLength') }
           ]}
         >
           <Input.Password 
-            placeholder="Confirm new password" 
+            placeholder={t('confirmNewPassword')} 
             prefix={<LockOutlined />} 
             size="large"
             style={{ borderRadius: '6px' }}
@@ -201,13 +203,13 @@ const ResetPassword: React.FC = () => {
             size="large"
             style={{ 
               width: '100%',
-              backgroundColor: '#4a7c59',
-              borderColor: '#4a7c59',
+              backgroundColor: 'var(--primary-color)',
+              borderColor: 'var(--primary-color)',
               fontWeight: 500,
               borderRadius: '6px'
             }}
           >
-            Update Password
+            {t('updatePassword')}
           </Button>
         </Form.Item>
       </Form>
@@ -215,9 +217,9 @@ const ResetPassword: React.FC = () => {
       <div style={{ textAlign: 'center', marginTop: '20px' }}>
         <Link
           to="/signin"
-          style={{ color: '#4a7c59', fontWeight: 'bold', textDecoration: 'none' }}
+          style={{ color: 'var(--primary-color)', fontWeight: 'bold', textDecoration: 'none' }}
         >
-          Back to Sign In
+          {t('backToSignIn')}
         </Link>
       </div>
     </div>

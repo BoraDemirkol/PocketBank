@@ -1,10 +1,11 @@
-import { Button, Typography } from '../node_modules/antd';
+import { Button, Typography } from 'antd';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import { t } from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 export default function Mainpage() {
     const { user, loading } = useAuth();
+    const { t } = useTranslation();
     return (
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             {/* Top half - Text only */}
@@ -18,7 +19,7 @@ export default function Mainpage() {
             }}>
                 <Typography.Title level={2} style={{ 
                     textAlign: 'center', 
-                    color: '#4a7c59', 
+                    color: 'var(--primary-color)', 
                     marginBottom: '10px',
                     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
                 }}>
@@ -43,14 +44,14 @@ export default function Mainpage() {
                 gap: '40px'
             }}>
                 {loading ? (
-                    <div>Loading...</div>
+                    <div>{t('loading')}</div>
                 ) : user ? (
                     /* Dashboard Box for logged in users */
                     <div style={{
-                        backgroundColor: 'white',
+                        backgroundColor: 'var(--card-bg)',
                         borderRadius: '16px',
                         padding: '30px',
-                        boxShadow: '0 4px 20px rgba(74, 124, 89, 0.1)',
+                        boxShadow: '0 4px 20px rgba(46, 125, 50, 0.1)',
                         width: '320px',
                         minHeight: '180px',
                         textAlign: 'center',
@@ -60,18 +61,18 @@ export default function Mainpage() {
                     }}>
                         <div style={{ height: '120px' }}>
                             <Typography.Title level={4} style={{ 
-                                color: '#4a7c59', 
+                                color: 'var(--primary-color)', 
                                 marginBottom: '15px' 
                             }}>
-                                Welcome Back!
+                                {t('welcomeBack')}
                             </Typography.Title>
                             <Typography.Text style={{ 
-                                color: '#666', 
+                                color: 'var(--text-secondary)', 
                                 display: 'block', 
                                 marginBottom: '20px',
                                 fontSize: '14px'
                             }}>
-                                Access your dashboard to manage your finances and view your account details.
+                                {t('dashboardDescription')}
                             </Typography.Text>
                         </div>
                         <Link to="/dashboard" style={{ width: '100%' }}>
@@ -79,13 +80,13 @@ export default function Mainpage() {
                                 type="primary" 
                                 size="large"
                                 style={{ 
-                                    backgroundColor: '#4a7c59', 
-                                    borderColor: '#4a7c59',
+                                    backgroundColor: 'var(--primary-color)', 
+                                    borderColor: 'var(--primary-color)',
                                     fontWeight: 500,
                                     width: '100%'
                                 }}
                             >
-                                Go to Dashboard
+                                {t('goToDashboard')}
                             </Button>
                         </Link>
                     </div>
@@ -93,10 +94,10 @@ export default function Mainpage() {
                     <>
                         {/* Sign In Box */}
                         <div style={{
-                            backgroundColor: 'white',
+                            backgroundColor: 'var(--card-bg)',
                             borderRadius: '16px',
                             padding: '30px',
-                            boxShadow: '0 4px 20px rgba(74, 124, 89, 0.1)',
+                            boxShadow: '0 4px 20px rgba(46, 125, 50, 0.1)',
                             width: '280px',
                             minHeight: '180px',
                             textAlign: 'center',
@@ -106,18 +107,18 @@ export default function Mainpage() {
                         }}>
                             <div style={{ height: '120px' }}>
                                 <Typography.Title level={4} style={{ 
-                                    color: '#4a7c59', 
+                                    color: 'var(--primary-color)', 
                                     marginBottom: '15px' 
                                 }}>
-                                    Existing Customer
+                                    {t('existingCustomer')}
                                 </Typography.Title>
                                 <Typography.Text style={{ 
-                                    color: '#666', 
+                                    color: 'var(--text-secondary)', 
                                     display: 'block', 
                                     marginBottom: '20px',
                                     fontSize: '14px'
                                 }}>
-                                    Access your account and manage your finances securely.
+                                    {t('existingCustomerDescription')}
                                 </Typography.Text>
                             </div>
                             <Link to="/signin" style={{ width: '100%' }}>
@@ -125,23 +126,24 @@ export default function Mainpage() {
                                     type="default" 
                                     size="large"
                                     style={{ 
-                                        borderColor: '#4a7c59', 
-                                        color: '#4a7c59',
+                                        backgroundColor: 'var(--button-secondary-bg)',
+                                        borderColor: 'var(--button-secondary-border)', 
+                                        color: 'var(--primary-color)',
                                         fontWeight: 500,
                                         width: '100%'
                                     }}
                                 >
-                                    Sign In
+                                    {t('signIn')}
                                 </Button>
                             </Link>
                         </div>
 
                         {/* Sign Up Box */}
                         <div style={{
-                            backgroundColor: 'white',
+                            backgroundColor: 'var(--card-bg)',
                             borderRadius: '16px',
                             padding: '30px',
-                            boxShadow: '0 4px 20px rgba(74, 124, 89, 0.1)',
+                            boxShadow: '0 4px 20px rgba(46, 125, 50, 0.1)',
                             width: '280px',
                             minHeight: '180px',
                             textAlign: 'center',
@@ -151,18 +153,18 @@ export default function Mainpage() {
                         }}>
                             <div style={{ height: '120px' }}>
                                 <Typography.Title level={4} style={{ 
-                                    color: '#4a7c59', 
+                                    color: 'var(--primary-color)', 
                                     marginBottom: '15px' 
                                 }}>
-                                    New Customer
+                                    {t('newCustomer')}
                                 </Typography.Title>
                                 <Typography.Text style={{ 
-                                    color: '#666', 
+                                    color: 'var(--text-secondary)', 
                                     display: 'block', 
                                     marginBottom: '20px',
                                     fontSize: '14px'
                                 }}>
-                                    Join thousands who trust PocketBank for their banking needs.
+                                    {t('newCustomerDescription')}
                                 </Typography.Text>
                             </div>
                             <Link to="/signup" style={{ width: '100%' }}>
@@ -170,13 +172,13 @@ export default function Mainpage() {
                                     type="primary" 
                                     size="large"
                                     style={{ 
-                                        backgroundColor: '#4a7c59', 
-                                        borderColor: '#4a7c59',
+                                        backgroundColor: 'var(--primary-color)', 
+                                        borderColor: 'var(--primary-color)',
                                         fontWeight: 500,
                                         width: '100%'
                                     }}
                                 >
-                                    Sign Up
+                                    {t('signUp')}
                                 </Button>
                             </Link>
                         </div>

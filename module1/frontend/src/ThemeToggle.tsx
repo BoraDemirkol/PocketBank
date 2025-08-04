@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '../node_modules/antd';
+import { Button } from 'antd';
 import { SunOutlined, MoonOutlined } from '@ant-design/icons';
 import { useTheme } from './ThemeContext';
 

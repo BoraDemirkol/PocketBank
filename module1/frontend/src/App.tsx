@@ -1,5 +1,5 @@
 import { Routes, Route, Link } from 'react-router-dom'
-import { Layout, Typography } from '../node_modules/antd'
+import { Layout, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
 import Mainpage from './Mainpage.tsx'
 import Signin from './Signin.tsx'
@@ -24,7 +24,7 @@ function App() {
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        background: 'var(--header-bg)',
+        background: '#4a7c59',
         padding: '0 20px'
       }}>
         <Link to="/" style={{ textDecoration: 'none' }}>
@@ -54,10 +54,10 @@ function App() {
         flex: 1,
         backgroundColor: 'var(--content-bg)',
         backgroundImage: `
-          radial-gradient(circle at 25% 25%, rgba(74, 124, 89, 0.08) 0%, transparent 50%),
-          radial-gradient(circle at 75% 75%, rgba(74, 124, 89, 0.06) 0%, transparent 50%),
-          linear-gradient(45deg, rgba(74, 124, 89, 0.02) 25%, transparent 25%),
-          linear-gradient(-45deg, rgba(74, 124, 89, 0.02) 25%, transparent 25%)
+          radial-gradient(circle at 25% 25%, rgba(46, 125, 50, 0.08) 0%, transparent 50%),
+          radial-gradient(circle at 75% 75%, rgba(46, 125, 50, 0.06) 0%, transparent 50%),
+          linear-gradient(45deg, rgba(46, 125, 50, 0.02) 25%, transparent 25%),
+          linear-gradient(-45deg, rgba(46, 125, 50, 0.02) 25%, transparent 25%)
         `,
         backgroundSize: '200px 200px, 300px 300px, 20px 20px, 20px 20px',
         padding: '40px'
@@ -75,7 +75,7 @@ function App() {
       </Content>
       <Footer style={{ 
         textAlign: 'center', 
-        backgroundColor: 'var(--footer-bg)', 
+        backgroundColor: '#4a7c59', 
         color: 'white',
         padding: '20px 0'
       }}>

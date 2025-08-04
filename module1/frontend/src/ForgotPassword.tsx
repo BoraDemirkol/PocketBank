@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowLeftOutlined, MailOutlined } from '@ant-design/icons';
-import { Input, Button, Form, App } from '../node_modules/antd';
+import { Input, Button, Form, App } from 'antd';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
 
 const ForgotPassword: React.FC = () => {
@@ -9,15 +10,16 @@ const ForgotPassword: React.FC = () => {
   const [emailSent, setEmailSent] = useState(false);
   const { resetPassword } = useAuth();
   const { message } = App.useApp();
+  const { t } = useTranslation();
 
   const onFinish = async (values: { email: string }) => {
     setLoading(true);
     const { error } = await resetPassword(values.email);
     
     if (error) {
-      message.error(error.message || 'Failed to send reset email');
+      message.error(error.message || t('resetEmailFailed'));
     } else {
-      message.success('Password reset email sent! Check your inbox.');
+      message.success(t('resetEmailSent'));
       setEmailSent(true);
     }
     setLoading(false);
@@ -26,30 +28,29 @@ const ForgotPassword: React.FC = () => {
   if (emailSent) {
     return (
       <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', textAlign: 'center' }}>
-        <Link to="/signin" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: '#4a7c59' }}>
+        <Link to="/signin" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: 'var(--primary-color)' }}>
           <ArrowLeftOutlined style={{ marginRight: '8px' }} />
-          Back to Sign In
+          {t('backToSignIn')}
         </Link>
         <div style={{ marginBottom: '30px' }}>
-          <MailOutlined style={{ fontSize: '48px', color: '#4a7c59', marginBottom: '16px' }} />
-          <h2 style={{ color: '#4a7c59', marginBottom: '16px' }}>Check Your Email</h2>
-          <p style={{ color: '#666', lineHeight: '1.6' }}>
-            We've sent a password reset link to your email address. 
-            Click the link in the email to reset your password.
+          <MailOutlined style={{ fontSize: '48px', color: 'var(--primary-color)', marginBottom: '16px' }} />
+          <h2 style={{ color: 'var(--primary-color)', marginBottom: '16px' }}>{t('checkYourEmail')}</h2>
+          <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+            {t('resetEmailDescription')}
           </p>
-          <p style={{ color: '#666', fontSize: '14px', marginTop: '20px' }}>
-            Didn't receive the email? Check your spam folder or try again.
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '20px' }}>
+            {t('didntReceiveEmail')}
           </p>
         </div>
         <Button 
           type="default" 
           onClick={() => setEmailSent(false)}
           style={{ 
-            borderColor: '#4a7c59',
-            color: '#4a7c59'
+            borderColor: 'var(--primary-color)',
+            color: 'var(--primary-color)'
           }}
         >
-          Send Another Email
+          {t('sendAnotherEmail')}
         </Button>
       </div>
     );
@@ -57,26 +58,26 @@ const ForgotPassword: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
-      <Link to="/signin" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: '#4a7c59' }}>
+      <Link to="/signin" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '20px', textDecoration: 'none', color: 'var(--primary-color)' }}>
         <ArrowLeftOutlined style={{ marginRight: '8px' }} />
-        Back to Sign In
+        {t('backToSignIn')}
       </Link>
       
-      <h2 style={{ textAlign: 'center', marginBottom: '10px' }}>Forgot Password</h2>
-      <p style={{ textAlign: 'center', color: '#666', marginBottom: '30px' }}>
-        Enter your email address and we'll send you a link to reset your password.
+      <h2 style={{ textAlign: 'center', marginBottom: '10px' }}>{t('forgotPasswordTitle')}</h2>
+      <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '30px' }}>
+        {t('forgotPasswordSubtitle')}
       </p>
       
       <Form onFinish={onFinish} layout="vertical">
         <Form.Item
           name="email"
           rules={[
-            { required: true, message: 'Please input your email!' },
-            { type: 'email', message: 'Please enter a valid email!' }
+            { required: true, message: t('emailRequired') },
+            { type: 'email', message: t('emailInvalid') }
           ]}
         >
           <Input 
-            placeholder="Enter your email address" 
+            placeholder={t('enterEmailAddress')} 
             prefix={<MailOutlined />} 
             size="large"
             style={{ borderRadius: '6px' }}
@@ -91,24 +92,24 @@ const ForgotPassword: React.FC = () => {
             size="large"
             style={{ 
               width: '100%',
-              backgroundColor: '#4a7c59',
-              borderColor: '#4a7c59',
+              backgroundColor: 'var(--primary-color)',
+              borderColor: 'var(--primary-color)',
               fontWeight: 500,
               borderRadius: '6px'
             }}
           >
-            Send Reset Email
+            {t('sendResetEmail')}
           </Button>
         </Form.Item>
       </Form>
       
       <div style={{ textAlign: 'center', marginTop: '20px' }}>
-        <span style={{ color: '#666' }}>Remember your password? </span>
+        <span style={{ color: 'var(--text-secondary)' }}>{t('rememberPassword')} </span>
         <Link
           to="/signin"
-          style={{ color: '#4a7c59', fontWeight: 'bold', textDecoration: 'none' }}
+          style={{ color: 'var(--primary-color)', fontWeight: 'bold', textDecoration: 'none' }}
         >
-          Sign In
+          {t('signIn')}
         </Link>
       </div>
     </div>
