@@ -9,15 +9,19 @@ import {
 } from '@mui/material';
 import PageWrapper from '../components/PageWrapper';
 import BudgetCard from '../components/BudgetCard';
-import { mockBudgets } from '../mock/mockBudgets';
+import { useBudgets } from '../hooks/useBudgets'; // new hook
 
 const BudgetListPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<'all' | string>('all');
+  const { budgets, loading } = useBudgets();
+
+  console.log('Budgets fetched:', budgets);
 
   const allCategories = Array.from(
-    new Set(mockBudgets.flatMap((b) => b.categories.map((c) => c.name)))
+    new Set(budgets.flatMap((b) => b.categories.map((c) => c.name)))
   );
-  const filteredBudgets = mockBudgets.filter((b) =>
+
+  const filteredBudgets = budgets.filter((b) =>
     selectedCategory === 'all'
       ? true
       : b.categories.some((c) => c.name === selectedCategory)
@@ -25,7 +29,6 @@ const BudgetListPage: React.FC = () => {
 
   return (
     <PageWrapper>
-      {/* Use Box instead of Container to remove default padding and centering */}
       <Box sx={{ mt: 4, maxWidth: '100%', pl: 0, pr: 0 }}>
         <Typography variant="h4" gutterBottom>
           📋 Bütçeler
@@ -49,25 +52,29 @@ const BudgetListPage: React.FC = () => {
           </FormControl>
         </Box>
 
-        <Box
-          display="grid"
-          gap={3}
-          sx={{
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: '1fr 1fr',
-              md: '1fr 1fr 1fr',
-            },
-          }}
-        >
-          {filteredBudgets.map((budget) => (
-            <BudgetCard
-              key={budget.id}
-              budget={budget}
-              selectedCategory={selectedCategory}
-            />
-          ))}
-        </Box>
+        {loading ? (
+          <Typography>Yükleniyor...</Typography>
+        ) : (
+          <Box
+            display="grid"
+            gap={3}
+            sx={{
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: '1fr 1fr',
+                md: '1fr 1fr 1fr',
+              },
+            }}
+          >
+            {filteredBudgets.map((budget) => (
+              <BudgetCard
+                key={budget.id}
+                budget={budget}
+                selectedCategory={selectedCategory}
+              />
+            ))}
+          </Box>
+        )}
       </Box>
     </PageWrapper>
   );
