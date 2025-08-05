@@ -6,6 +6,7 @@ import { ThemeProvider } from './ThemeContext';
 import TransactionModule from './modules/TransactionModule';
 import SupabaseTest from './components/SupabaseTest';
 import Dashboard from './Dashboard';
+import Module1Home from './Module1Home';
 import Login from './Login';
 import Register from './Register';
 import EditProfile from './EditProfile';
@@ -70,7 +71,7 @@ const App: React.FC = () => {
                             padding: '40px'
                         }}>
                             <Routes>
-                                <Route path="/" element={<Dashboard />} />
+                                <Route path="/" element={<Module1Home />} />
                                 <Route path="/login" element={<Login />} />
                                 <Route path="/register" element={<Register />} />
                                 <Route path="/dashboard" element={<Dashboard />} />
