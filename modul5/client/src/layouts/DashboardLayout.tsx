@@ -26,10 +26,13 @@ const DashboardLayout = () => {
     transition: 'all 0.2s ease-in-out',
   });
 
+  // --- DEĞİŞİKLİK BURADA ---
+  // Menü ve ana içeriği saran bu konteynıra düz bir arka plan rengi veriyoruz.
   const contentContainerStyle: React.CSSProperties = {
     maxWidth: '1400px',
     margin: '0 auto',
     padding: '20px',
+    backgroundColor: 'var(--color-background, #f1f8e9)' // Bu satır, alttaki damalı deseni örter.
   };
   
   return (
@@ -50,15 +53,15 @@ const DashboardLayout = () => {
             <div>
               <h2 style={{ textAlign: 'center' }}>Dashboard</h2>
               <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px', alignItems: 'flex-start' }}>
-                <div style={{ flex: '1 1 500px', minWidth: '400px', border: '1px solid #eee', borderRadius: '8px', padding: '10px' }}>
+                <div className="card" style={{ flex: '1 1 500px', minWidth: '400px' }}>
                   <h3 style={{ textAlign: 'center' }}>Kategori Dağılımı</h3>
                   <CategoryPieChart />
                 </div>
-                <div style={{ flex: '1 1 500px', minWidth: '400px', border: '1px solid #eee', borderRadius: '8px', padding: '10px' }}>
+                <div className="card" style={{ flex: '1 1 500px', minWidth: '400px' }}>
                   <h3 style={{ textAlign: 'center' }}>En Çok Harcananlar</h3>
                   <TopSpendingBarChart />
                 </div>
-                <div style={{ flex: '1 1 100%', marginTop: '20px', border: '1px solid #eee', borderRadius: '8px', padding: '10px' }}>
+                <div className="card" style={{ flex: '1 1 100%', marginTop: '20px' }}>
                   <h3 style={{ textAlign: 'center' }}>Gelir-Gider Genel Bakış</h3>
                   <IncomeExpenseChart />
                 </div>
@@ -67,19 +70,18 @@ const DashboardLayout = () => {
           )}
 
           {activeTab === 'category' && <CategoryAnalysisPage />}
-          
           {activeTab === 'trends' && (
-              <div>
-                  <h2 style={{ textAlign: 'center' }}>Aylık Gelir - Gider Trendi</h2>
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '30px', flexWrap: 'wrap' }}>
-                    <div style={{ flex: '2 1 600px', border: '1px solid #eee', borderRadius: '8px', padding: '10px' }}>
-                      <IncomeExpenseChart />
-                    </div>
-                    <div style={{ flex: '1 1 300px', border: '1px solid #eee', borderRadius: '8px', padding: '10px' }}>
-                      <ForecastCard />
-                    </div>
-                  </div>
+            <div>
+              <h2 style={{ textAlign: 'center' }}>Aylık Gelir - Gider Trendi</h2>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '30px', flexWrap: 'wrap' }}>
+                <div className="card" style={{ flex: '2 1 600px' }}>
+                  <IncomeExpenseChart />
+                </div>
+                <div className="card" style={{ flex: '1 1 300px' }}>
+                  <ForecastCard />
+                </div>
               </div>
+            </div>
           )}
 
           {activeTab === 'health' && <FinancialHealthScorePage />}
