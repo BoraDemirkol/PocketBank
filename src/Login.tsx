@@ -26,6 +26,23 @@ const Login: React.FC = () => {
 
   return (
     <FormCard title={mfaState.showMFA ? t('mfaTitle') : t('loginTitle')}>
+      {!mfaState.showMFA && (
+        <div style={{ 
+          marginBottom: '20px', 
+          padding: '16px', 
+          backgroundColor: '#f0f8ff', 
+          borderRadius: '8px',
+          border: '1px solid #d6e4ff'
+        }}>
+          <h4 style={{ margin: '0 0 12px 0', color: '#1890ff' }}>🧪 Test Kullanıcıları:</h4>
+          <div style={{ fontSize: '14px', color: '#666' }}>
+            <div><strong>Email:</strong> test1@gmail.com | <strong>Şifre:</strong> .com</div>
+            <div><strong>Email:</strong> admin@gmail.com | <strong>Şifre:</strong> .com</div>
+            <div><strong>Email:</strong> user@gmail.com | <strong>Şifre:</strong> .com</div>
+            <div><strong>Email:</strong> demo@gmail.com | <strong>Şifre:</strong> .com</div>
+          </div>
+        </div>
+      )}
       
       {mfaState.showMFA ? (
         <div>
