@@ -14,7 +14,7 @@ import ForgotPassword from './ForgotPassword';
 import ResetPassword from './ResetPassword';
 import ThemeToggle from './ThemeToggle';
 import LanguageToggle from './LanguageToggle';
-import AuthContext from './AuthContext';
+import { AuthProvider } from './AuthContext';
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
@@ -23,7 +23,7 @@ const App: React.FC = () => {
     const { t } = useTranslation();
 
     return (
-        <AuthContext>
+        <AuthProvider>
             <ThemeProvider>
                 <Router>
                     <Layout style={{ minHeight: '100vh' }}>
@@ -95,7 +95,7 @@ const App: React.FC = () => {
                     </Layout>
                 </Router>
             </ThemeProvider>
-        </AuthContext>
+        </AuthProvider>
     );
 };
 
