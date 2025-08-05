@@ -5,16 +5,16 @@ import { useAuth } from './AuthContext';
 
 interface LogoutConfirmDialogProps {
   visible: boolean;
+  onConfirm: () => void;
   onCancel: () => void;
+  loading?: boolean;
 }
 
-const LogoutConfirmDialog: React.FC<LogoutConfirmDialogProps> = ({ visible, onCancel }) => {
+const LogoutConfirmDialog: React.FC<LogoutConfirmDialogProps> = ({ visible, onConfirm, onCancel, loading = false }) => {
   const { t } = useTranslation();
-  const { signOut } = useAuth();
 
   const handleLogout = async () => {
-    await signOut();
-    onCancel();
+    await onConfirm();
   };
 
   return (
@@ -25,6 +25,7 @@ const LogoutConfirmDialog: React.FC<LogoutConfirmDialogProps> = ({ visible, onCa
       onCancel={onCancel}
       okText={t('logout.confirm')}
       cancelText={t('common.cancel')}
+      confirmLoading={loading}
     >
       <p>{t('logout.confirmMessage')}</p>
     </Modal>

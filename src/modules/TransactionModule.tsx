@@ -8,7 +8,6 @@ import {
     supabaseCategoryService, 
     supabaseAccountService, 
     supabaseRecurringTransactionService,
-    supabaseFileService,
     supabaseAuthService 
 } from '../services/supabaseService';
 
