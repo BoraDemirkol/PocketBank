@@ -1,9 +1,13 @@
 import React from 'react';
-import { useTheme } from './ThemeContext';
+import { useTheme } from '../ThemeContext';
 import './Layout.css';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { theme, toggleTheme } = useTheme();
+    const { theme, setTheme } = useTheme();
+    
+    const toggleTheme = () => {
+        setTheme(theme === 'light' ? 'dark' : 'light');
+    };
 
     return (
         <div className={`layout-root ${theme}`}>

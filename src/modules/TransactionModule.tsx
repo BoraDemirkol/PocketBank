@@ -3,7 +3,7 @@ import axios from 'axios';
 import Layout from '../context/Layout';
 import '../context/accountModule.css';
 import { Transaction, Category, Account, RecurringTransaction } from '../types';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { 
     supabaseTransactionService, 
     supabaseCategoryService, 
@@ -17,6 +17,7 @@ axios.defaults.baseURL = 'http://localhost:5044';
 
 const TransactionModule: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
+    const navigate = useNavigate();
     
     // URL'den tab parametresini al
     const tabFromUrl = searchParams.get('tab') as 'transactions' | 'categories' | 'import' | 'bank-statement' | 'recurring' | null;
@@ -1127,7 +1128,37 @@ const TransactionModule: React.FC = () => {
     return (
         <Layout>
             <div className="account-container">
-                <h2 className="module-title">💸 Modül 3: İşlem Yönetimi</h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <h2 className="module-title">💸 Modül 3: İşlem Yönetimi</h2>
+                    <button 
+                        onClick={() => navigate('/')}
+                        style={{
+                            padding: '10px 20px',
+                            backgroundColor: '#4a7c59',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = '#3d6b4a';
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = '#4a7c59';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                        }}
+                    >
+                        ← Ana Sayfaya Dön
+                    </button>
+                </div>
                 
                 <div style={{ marginTop: 40 }}>
                     <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
