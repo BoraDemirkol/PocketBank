@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Layout, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { ThemeProvider } from './context/ThemeContext';
+import { ThemeProvider } from './ThemeContext';
 import TransactionModule from './modules/TransactionModule';
 import SupabaseTest from './components/SupabaseTest';
 import Dashboard from './Dashboard';

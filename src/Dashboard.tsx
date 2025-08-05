@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserOutlined, TransactionOutlined, PieChartOutlined, BarChartOutlined, SettingOutlined } from '@ant-design/icons';
+import { UserOutlined, TransactionOutlined, PieChartOutlined, BarChartOutlined, SettingOutlined, FileTextOutlined, BankOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
 import { useDashboard } from './hooks';
@@ -7,10 +7,12 @@ import { LoadingSpinner } from './components/ui';
 import { QuickAccessCard, ProfileCard, BalanceCard, DashboardHeader } from './components/dashboard';
 import { UI_CONSTANTS } from './utils/constants';
 import LogoutConfirmDialog from './LogoutConfirmDialog';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const {
     profile,
     balance,
@@ -31,9 +33,29 @@ const Dashboard: React.FC = () => {
       onClick: () => console.log('Navigate to Account Management')
     },
     {
-      title: t('transactionManagement') || 'Transaction Management',
+      title: t('transactions') || 'Transactions',
       icon: <TransactionOutlined />,
-      onClick: () => console.log('Navigate to Transaction Management')
+      onClick: () => navigate('/transactions')
+    },
+    {
+      title: t('categories') || 'Categories',
+      icon: <FileTextOutlined />,
+      onClick: () => navigate('/transactions?tab=categories')
+    },
+    {
+      title: t('importTransactions') || 'Import Transactions',
+      icon: <FileTextOutlined />,
+      onClick: () => navigate('/transactions?tab=import')
+    },
+    {
+      title: t('bankStatement') || 'Bank Statement',
+      icon: <BankOutlined />,
+      onClick: () => navigate('/transactions?tab=bank-statement')
+    },
+    {
+      title: t('recurringTransactions') || 'Recurring Transactions',
+      icon: <ReloadOutlined />,
+      onClick: () => navigate('/transactions?tab=recurring')
     },
     {
       title: t('budgetPlanning') || 'Budget Planning',

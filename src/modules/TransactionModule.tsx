@@ -3,6 +3,7 @@ import axios from 'axios';
 import Layout from '../context/Layout';
 import '../context/accountModule.css';
 import { Transaction, Category, Account, RecurringTransaction } from '../types';
+import { useSearchParams } from 'react-router-dom';
 import { 
     supabaseTransactionService, 
     supabaseCategoryService, 
@@ -15,8 +16,13 @@ import {
 axios.defaults.baseURL = 'http://localhost:5044';
 
 const TransactionModule: React.FC = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
+    
+    // URL'den tab parametresini al
+    const tabFromUrl = searchParams.get('tab') as 'transactions' | 'categories' | 'import' | 'bank-statement' | 'recurring' | null;
+    
     // Modül 3 state ve fonksiyonları
-    const [activeTab, setActiveTab] = useState<'transactions' | 'categories' | 'import' | 'bank-statement' | 'recurring'>('transactions');
+    const [activeTab, setActiveTab] = useState<'transactions' | 'categories' | 'import' | 'bank-statement' | 'recurring'>(tabFromUrl || 'transactions');
     const [categories, setCategories] = useState<Category[]>([]);
     const [accounts, setAccounts] = useState<Account[]>([]);
     const [form, setForm] = useState({
@@ -92,6 +98,22 @@ const TransactionModule: React.FC = () => {
         'Banka İşlemleri': ['atm', 'nakit', 'cash', 'para', 'money', 'çekim', 'cekim', 'withdrawal', 'yatırım', 'yatirim', 'deposit', 'transfer', 'havale', 'eft', 'iban', 'hesap', 'account', 'banka', 'bank', 'kredi', 'credit', 'kart', 'card', 'pos', 'terminal', 'ödeme', 'odeme', 'payment', 'taksit', 'installment', 'faiz', 'interest', 'komisyon', 'commission', 'masraf', 'expense', 'ücret', 'ucret', 'fee', 'tutar', 'amount', 'bakiye', 'balance', 'müşteri', 'musteri', 'customer', 'şube', 'sube', 'branch', 'merkez', 'center', 'genel', 'general', 'müdürlük', 'mudurluk', 'directorate', 'müdür', 'mudur', 'director'],
         'Gelir': ['maaş', 'maas', 'salary', 'ücret', 'ucret', 'wage', 'gelir', 'income', 'kazanç', 'kazanc', 'earnings', 'ödeme', 'odeme', 'payment', 'tahsilat', 'collection', 'alacak', 'receivable', 'borç', 'borc', 'debt', 'vakıf', 'vakif', 'foundation', 'garanti', 'akbank', 'isbank', 'ziraat', 'yapı', 'yapi', 'yurtiçi', 'yurtici', 'domestic', 'yurtdışı', 'yurtdisi', 'foreign', 'uluslararası', 'uluslararasi', 'international', 'global', 'dünya', 'dunya', 'world', 'euro', 'dolar', 'dollar', 'sterlin', 'pound', 'lira', 'tl', '₺', '$', '€', '£']
     };
+
+    // URL'deki tab değişikliklerini dinle
+    useEffect(() => {
+        if (tabFromUrl && tabFromUrl !== activeTab) {
+            setActiveTab(tabFromUrl);
+        }
+    }, [tabFromUrl]);
+
+    // activeTab değiştiğinde URL'i güncelle
+    useEffect(() => {
+        if (activeTab !== 'transactions') {
+            setSearchParams({ tab: activeTab });
+        } else {
+            setSearchParams({});
+        }
+    }, [activeTab, setSearchParams]);
 
     // Açıklamaya göre kategori eşleştirme fonksiyonu
     const matchCategoryByDescription = (description: string): string | null => {

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from './AuthContext';
 
 interface LogoutConfirmDialogProps {
   visible: boolean;
