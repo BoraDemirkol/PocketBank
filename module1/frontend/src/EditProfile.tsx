@@ -264,7 +264,11 @@ const EditProfile: React.FC = () => {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <Spin size="large" tip={t('loading')} />
+        <Spin size="large">
+          <div style={{ padding: '20px' }}>
+            {t('loading')}
+          </div>
+        </Spin>
       </div>
     );
   }

@@ -41,14 +41,16 @@ const QuickAccessCard: React.FC<QuickAccessCardProps> = ({ items }) => {
         border: '1px solid var(--border-color, #e8f5e8)',
         backgroundColor: 'var(--card-bg, #ffffff)'
       }}
-      headStyle={{
-        backgroundColor: 'var(--card-header-bg, #4a7c59)',
-        borderBottom: '1px solid var(--border-color, #e8f5e8)',
-        borderRadius: '12px 12px 0 0',
-        padding: '16px 20px',
-        color: '#ffffff'
+      styles={{
+        header: {
+          backgroundColor: 'var(--card-header-bg, #4a7c59)',
+          borderBottom: '1px solid var(--border-color, #e8f5e8)',
+          borderRadius: '12px 12px 0 0',
+          padding: '16px 20px',
+          color: '#ffffff'
+        },
+        body: { padding: '8px' }
       }}
-      bodyStyle={{ padding: '8px' }}
     >
       <List
         dataSource={items}

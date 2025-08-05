@@ -16,7 +16,11 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   const { t } = useTranslation();
   
   const content = (
-    <Spin size={size} tip={tip || t('loading')} />
+    <Spin size={size}>
+      <div style={{ padding: '20px' }}>
+        {tip || t('loading')}
+      </div>
+    </Spin>
   );
 
   if (centered) {
