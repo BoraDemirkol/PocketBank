@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { message } from 'antd';
+import { App } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../AuthContext';
 import { validateMFACode } from '../utils/validation';
@@ -32,6 +32,7 @@ export const useLogin = () => {
   const { signIn, verifyMFA, verifyMFAWithSession } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { message } = App.useApp();
 
   const handleLogin = async (formData: LoginFormData) => {
     setLoading(true);
