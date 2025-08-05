@@ -1,13 +1,12 @@
 import React from 'react';
-import { Card, Button, Row, Col, Typography, Space } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { Card, Button, Row, Col, Typography } from 'antd';
+
 import { useNavigate } from 'react-router-dom';
 import { UserOutlined, LoginOutlined, UserAddOutlined } from '@ant-design/icons';
 
 const { Title, Paragraph } = Typography;
 
 const Module1Home: React.FC = () => {
-    const { t } = useTranslation();
     const navigate = useNavigate();
 
     return (

@@ -34,12 +34,14 @@ const Login: React.FC = () => {
           borderRadius: '8px',
           border: '1px solid #d6e4ff'
         }}>
-          <h4 style={{ margin: '0 0 12px 0', color: '#1890ff' }}>🧪 Test Kullanıcıları:</h4>
+          <h4 style={{ margin: '0 0 12px 0', color: '#1890ff' }}>🔐 Supabase Kullanıcıları:</h4>
           <div style={{ fontSize: '14px', color: '#666' }}>
-            <div><strong>Email:</strong> test1@gmail.com | <strong>Şifre:</strong> .com</div>
-            <div><strong>Email:</strong> admin@gmail.com | <strong>Şifre:</strong> .com</div>
-            <div><strong>Email:</strong> user@gmail.com | <strong>Şifre:</strong> .com</div>
-            <div><strong>Email:</strong> demo@gmail.com | <strong>Şifre:</strong> .com</div>
+            <div><strong>Şifre seçenekleri:</strong></div>
+            <div>• Email'in son 4 karakteri (örn: test@gmail.com → .com)</div>
+            <div>• Veya her zaman: <strong>1234</strong></div>
+            <div style={{ marginTop: '8px', fontSize: '12px', color: '#999' }}>
+              Supabase'deki herhangi bir email ile giriş yapabilirsiniz
+            </div>
           </div>
         </div>
       )}

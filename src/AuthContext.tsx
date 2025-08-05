@@ -72,25 +72,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           return { error: { message: 'Kullanıcı bulunamadı veya şifre hatalı' } };
         }
         
-        // Basit şifre kontrolü (gerçek uygulamada hash'lenmiş şifreler kullanılır)
-        // Bu örnek için email'in son 4 karakterini şifre olarak kabul ediyoruz
-        const expectedPassword = email.slice(-4);
-        if (password !== expectedPassword) {
-          return { error: { message: 'Şifre hatalı' } };
+        // Basit şifre kontrolü - Supabase'deki kullanıcılar için
+        // Email'in son 4 karakteri veya '1234' şifre olarak kabul ediliyor
+        const expectedPassword1 = email.slice(-4);
+        const expectedPassword2 = '1234';
+        
+        if (password !== expectedPassword1 && password !== expectedPassword2) {
+          return { error: { message: 'Şifre hatalı. Deneyin: ' + expectedPassword1 + ' veya 1234' } };
         }
         
         // Kullanıcıyı session'a ekle
-        const mockUser = {
+        const mockUser: User = {
           id: userData.id,
           email: userData.email,
-          created_at: userData.created_at
+          created_at: userData.created_at,
+          app_metadata: {},
+          user_metadata: {},
+          aud: 'authenticated',
+          role: 'authenticated'
         };
         
         // Mock session oluştur
-        const mockSession = {
+        const mockSession: Session = {
           user: mockUser,
           access_token: 'mock_token',
-          refresh_token: 'mock_refresh_token'
+          refresh_token: 'mock_refresh_token',
+          expires_in: 3600,
+          token_type: 'bearer'
         };
         
         // Session'ı set et
