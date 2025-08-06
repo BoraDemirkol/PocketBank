@@ -1,3 +1,4 @@
+// src/pages/CreateBudget.tsx
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -19,227 +20,177 @@ import {
 import { Add, Delete } from '@mui/icons-material';
 import { supabase } from '../supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
+import { useBudgets, CategoryInput } from '../hooks/useBudgets';
 
-type Period = 'monthly' | 'yearly';
-interface Category {
-  name: string;
-  limit: number;
-}
+// Önceden tanımlı şablonlar
+const budgetTemplates: { name: string; categories: Omit<CategoryInput, 'spent'>[] }[] = [
+  {
+    name: 'Öğrenci',
+    categories: [
+      { name: 'Yemek', limit: 1000 },
+      { name: 'Ulaşım', limit: 500 },
+      { name: 'Eğlence', limit: 300 }
+    ]
+  },
+  {
+    name: 'Çalışan',
+    categories: [
+      { name: 'Kira', limit: 3000 },
+      { name: 'Market', limit: 1500 },
+      { name: 'Faturalar', limit: 800 },
+      { name: 'Tasarruf', limit: 1000 }
+    ]
+  },
+  {
+    name: 'Emekli',
+    categories: [
+      { name: 'Sağlık', limit: 1200 },
+      { name: 'Giderler', limit: 1000 },
+      { name: 'Hobi', limit: 400 }
+    ]
+  }
+];
 
 const steps = ['Genel Bilgiler', 'Kategori Limitleri', 'Özet & Kaydet'];
 
+type Period = 'monthly' | 'yearly';
+interface Category { name: string; limit: number; }
+
 const CreateBudget: React.FC = () => {
+  const { addBudget } = useBudgets();
   const [activeStep, setActiveStep] = useState(0);
-  const [name, setName] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [name, setName] = useState<string>('');
   const [period, setPeriod] = useState<Period>('monthly');
   const [start, setStart] = useState<string>(new Date().toISOString().slice(0, 10));
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [newCatName, setNewCatName] = useState('');
+  const [categories, setCategories] = useState<CategoryInput[]>([]);
+
+  // Yeni kategori inputları
+  const [newCatName, setNewCatName] = useState<string>('');
   const [newCatLimit, setNewCatLimit] = useState<number>(0);
 
-  const handleNext = () => {
-    if (activeStep < steps.length - 1) setActiveStep(prev => prev + 1);
-  };
-  const handleBack = () => {
-    if (activeStep > 0) setActiveStep(prev => prev - 1);
-  };
+  // Şablon seçildiğinde form otomatik doldurma
+  useEffect(() => {
+    const tpl = budgetTemplates.find(t => t.name === selectedTemplate);
+    if (tpl) {
+      setName(`${tpl.name} Bütçesi`);
+      setCategories(tpl.categories.map(c => ({ ...c, spent: 0 })));
+    } else {
+      setName('');
+      setCategories([]);
+    }
+  }, [selectedTemplate]);
+
+  const handleNext = () => setActiveStep(prev => Math.min(prev + 1, steps.length - 1));
+  const handleBack = () => setActiveStep(prev => Math.max(prev - 1, 0));
 
   const addCategory = () => {
     if (!newCatName || newCatLimit <= 0) return;
-    setCategories(prev => [...prev, { name: newCatName, limit: newCatLimit }]);
+    setCategories(prev => [...prev, { name: newCatName, limit: newCatLimit, spent: 0 }]);
     setNewCatName('');
     setNewCatLimit(0);
   };
-  const removeCategory = (index: number) => {
-    setCategories(prev => prev.filter((_, i) => i !== index));
+
+  const removeCategory = (idx: number) => {
+    setCategories(prev => prev.filter((_, i) => i !== idx));
   };
 
-  const handleSubmit = async () => {
+  const handleSave = async () => {
+    // Kullanıcı id
     const staticUserId = 'df497fd5-57e9-4cef-ab49-5d1062e5a282';
-
-    // Step 1: Fetch all categories first
-    const { data: allCategories, error: categoryError } = await supabase
-      .from('categories')
-      .select('id, name');
-
-    if (categoryError || !allCategories) {
-      alert('Kategori verileri alınamadı.');
+    // Kategorileri supabaseden çek ve eşleştir
+    const { data: allCats } = await supabase.from('categories').select('id, name');
+    const catMap = new Map(allCats?.map(c => [c.name.toLowerCase(), c.id]));
+    const invalid = categories.filter(c => !catMap.has(c.name.toLowerCase()));
+    if (invalid.length) {
+      alert(`Bulunamadı: ${invalid.map(i => i.name).join(', ')}`);
+      setActiveStep(1);
       return;
     }
-
-    const categoryMap = new Map(allCategories.map(cat => [cat.name.toLowerCase(), cat.id]));
-
-    // Step 2: Validate all category names exist before inserting budget
-    const invalidCategories = categories.filter(cat => !categoryMap.has(cat.name.trim().toLowerCase()));
-    if (invalidCategories.length > 0) {
-      alert(`Bazı kategoriler bulunamadı: ${invalidCategories.map(c => `'${c.name}'`).join(', ')}.\nLütfen tekrar düzenleyin.`);
-      setActiveStep(1); // go back to category entry step
-      return;
-    }
-
-    // Step 3: Calculate total amount
     const totalAmount = categories.reduce((sum, c) => sum + c.limit, 0);
-
-    // Step 4: Insert budget only if validation passed
-    const { data: budgetInsert, error: budgetError } = await supabase
+    // Bütçeyi ekle
+    const { error: bErr, data: bData } = await supabase
       .from('budgets')
-      .insert({
-        id: uuidv4(),
-        user_id: staticUserId,
-        name,
-        amount: totalAmount,
-        period,
-        start_date: start,
-        created_at: new Date().toISOString(),
-      })
-      .select()
+      .insert([{ id: uuidv4(), user_id: staticUserId, name, amount: totalAmount, period, start_date: start, created_at: new Date().toISOString() }])
+      .select('id')
       .single();
-
-    if (budgetError || !budgetInsert) {
-      console.error(budgetError);
-      alert('Bütçe kaydedilemedi.');
-      return;
-    }
-
-    const budgetId = budgetInsert.id;
-
-    // Step 5: Insert budget categories
+    if (bErr || !bData) { alert('Bütçe kaydedilemedi'); return; }
+    // Budget categories ekle
     for (const cat of categories) {
-      const categoryId = categoryMap.get(cat.name.trim().toLowerCase());
-      const { error: insertError } = await supabase
-        .from('budget_categories')
-        .insert({
-          id: uuidv4(),
-          budget_id: budgetId,
-          category_id: categoryId,
-          limit: cat.limit,
-          created_at: new Date().toISOString(),
-        });
-
-      if (insertError) {
-        console.error(insertError);
-        alert(`Kategori limiti kaydedilemedi: ${cat.name}`);
-      }
+      await supabase.from('budget_categories').insert([{ id: uuidv4(), budget_id: bData.id, category_id: catMap.get(cat.name.toLowerCase()), limit: cat.limit, created_at: new Date().toISOString() }]);
     }
-
-    // Step 6: Reset form and notify success
-    setName('');
-    setPeriod('monthly');
-    setStart(new Date().toISOString().slice(0, 10));
-    setCategories([]);
-    setActiveStep(0);
     alert('Bütçe başarıyla kaydedildi!');
+    // Reset
+    setSelectedTemplate(''); setName(''); setPeriod('monthly'); setStart(new Date().toISOString().slice(0,10)); setCategories([]); setActiveStep(0);
   };
 
 
 
   return (
     <Paper sx={{ p: 4 }}>
-      <Typography variant="h5" gutterBottom>
-        Bütçe Oluşturma Sihirbazı
-      </Typography>
-      <Stepper activeStep={activeStep} sx={{ mb: 3 }}>
-        {steps.map(label => (
-          <Step key={label}>
-            <StepLabel>{label}</StepLabel>
-          </Step>
-        ))}
+      <Typography variant="h5" gutterBottom>➕ Bütçe Oluşturma Sihirbazı</Typography>
+      <TextField select fullWidth label="Şablon Seç" value={selectedTemplate} onChange={e => setSelectedTemplate(e.target.value)} sx={{ mb:3 }}>
+        <MenuItem value="">⦿ Şablonsuz Başla</MenuItem>
+        {budgetTemplates.map(t => <MenuItem key={t.name} value={t.name}>{t.name}</MenuItem>)}
+      </TextField>
+      <Stepper activeStep={activeStep} sx={{ mb:3 }}>
+        {steps.map(label => <Step key={label}><StepLabel>{label}</StepLabel></Step>)}
       </Stepper>
-
-      {activeStep === 0 && (
-        <Box sx={{ display: 'grid', gap: 2 }}>
-          <TextField
-            label="Bütçe Adı"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            fullWidth
-          />
-          <TextField
-            select
-            label="Periyot"
-            value={period}
-            onChange={e => setPeriod(e.target.value as Period)}
-          >
+      {/* Step Content */}
+      {activeStep===0 && (
+        <Box sx={{ display:'grid', gap:2 }}>
+          <TextField label="Bütçe Adı" value={name} onChange={e=>setName(e.target.value)} fullWidth />
+          <TextField select label="Periyot" value={period} onChange={e=>setPeriod(e.target.value as Period)}>
             <MenuItem value="monthly">Aylık</MenuItem>
             <MenuItem value="yearly">Yıllık</MenuItem>
           </TextField>
-          <TextField
-            label={period === 'monthly' ? 'Başlangıç (YYYY-MM-DD)' : 'Başlangıç Yılı (YYYY)'}
-            type="date"
-            value={start}
-            onChange={e => setStart(e.target.value)}
-            fullWidth
-          />
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Button variant="contained" onClick={handleNext} disabled={!name || !start}>
-              İleri
-            </Button>
+          <TextField label="Başlangıç" type="date" value={start} onChange={e=>setStart(e.target.value)} fullWidth />
+          <Box sx={{ display:'flex', justifyContent:'flex-end' }}>
+            <Button variant="contained" onClick={handleNext} disabled={!name||!start}>İleri</Button>
           </Box>
         </Box>
       )}
-
-      {activeStep === 1 && (
-        <Box sx={{ display: 'grid', gap: 2 }}>
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-            <TextField
-              label="Kategori Adı"
-              value={newCatName}
-              onChange={e => setNewCatName(e.target.value)}
-            />
-            <TextField
-              label="Limit"
-              type="number"
-              value={newCatLimit}
-              onChange={e => setNewCatLimit(Number(e.target.value))}
-            />
-            <IconButton color="primary" onClick={addCategory}>
-              <Add />
-            </IconButton>
+      {activeStep===1 && (
+        <Box sx={{ display:'grid', gap:2 }}>
+          <Box sx={{ display:'flex', gap:1, alignItems:'center' }}>
+            <TextField label="Kategori Adı" value={newCatName} onChange={e=>setNewCatName(e.target.value)} />
+            <TextField label="Limit" type="number" value={newCatLimit} onChange={e=>setNewCatLimit(+e.target.value)} sx={{ width:120 }} />
+            <IconButton color="primary" onClick={addCategory}><Add/></IconButton>
           </Box>
           <List>
-            {categories.map((cat, idx) => (
+            {categories.map((cat, idx)=>(
               <React.Fragment key={idx}>
                 <ListItem>
                   <ListItemText primary={cat.name} secondary={`Limit: ${cat.limit} TL`} />
                   <ListItemSecondaryAction>
-                    <IconButton edge="end" onClick={() => removeCategory(idx)}>
-                      <Delete />
-                    </IconButton>
+                    <IconButton edge="end" onClick={()=>removeCategory(idx)}><Delete/></IconButton>
                   </ListItemSecondaryAction>
                 </ListItem>
-                <Divider />
+                <Divider/>
               </React.Fragment>
             ))}
           </List>
-
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Box sx={{ display:'flex', justifyContent:'space-between' }}>
             <Button onClick={handleBack}>Geri</Button>
-            <Button variant="contained" onClick={handleNext} disabled={categories.length === 0}>
-              İleri
-            </Button>
+            <Button variant="contained" onClick={handleNext} disabled={categories.length===0}>İleri</Button>
           </Box>
         </Box>
       )}
-
-      {activeStep === 2 && (
-        <Box sx={{ display: 'grid', gap: 2 }}>
+      {activeStep===2 && (
+        <Box sx={{ display:'grid', gap:2 }}>
           <Typography variant="h6">Özet</Typography>
           <Typography><strong>Bütçe Adı:</strong> {name}</Typography>
-          <Typography><strong>Periyot:</strong> {period === 'monthly' ? 'Aylık' : 'Yıllık'}</Typography>
+          <Typography><strong>Periyot:</strong> {period==='monthly'? 'Aylık':'Yıllık'}</Typography>
           <Typography><strong>Başlangıç:</strong> {start}</Typography>
-          <Typography variant="subtitle1">Kategoriler ve Limitleri:</Typography>
+          <Typography variant="subtitle1" mt={2}>Kategoriler ve Limitleri:</Typography>
           <List>
-            {categories.map((cat, idx) => (
-              <ListItem key={idx}>
-                <ListItemText primary={cat.name} secondary={`${cat.limit} TL`} />
-              </ListItem>
+            {categories.map((cat,idx)=>(
+              <ListItem key={idx}><ListItemText primary={cat.name} secondary={`${cat.limit} TL`} /></ListItem>
             ))}
           </List>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Box sx={{ display:'flex', justifyContent:'space-between' }}>
             <Button onClick={handleBack}>Geri</Button>
-            <Button variant="contained" onClick={handleSubmit}>
-              Bütçeyi Kaydet
-            </Button>
+            <Button variant="contained" onClick={handleSave}>Bütçeyi Kaydet</Button>
           </Box>
         </Box>
       )}

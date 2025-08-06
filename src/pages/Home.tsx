@@ -1,26 +1,36 @@
+// src/pages/Home.tsx
 import React from 'react';
 import {
   Container,
   Box,
-  Stack,
-  Button,
-  Typography
+  Typography,
+  CircularProgress
 } from '@mui/material';
 import PageWrapper from '../components/PageWrapper';
 import BudgetList from '../components/BudgetList';
-import { mockBudgets } from '../mock/mockBudgets';
+import { useBudgets } from '../hooks/useBudgets';
 
-{/* Yeni değişikliklerden sonra home sayfası kullanılmıyor*/}
+const Home: React.FC = () => {
+  const { budgets, loading, error } = useBudgets();
 
-interface HomeProps {
-  onNavigate: (view: 'home' | 'create' | 'list') => void;
-}
+  if (loading) {
+    return (
+      <Box textAlign="center" mt={8}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  if (error) {
+    return (
+      <Box textAlign="center" mt={8}>
+        <Typography color="error">{error}</Typography>
+      </Box>
+    );
+  }
 
-const Home: React.FC<HomeProps> = ({ onNavigate }) => {
-  // Özet istatistik hesaplamaları
-  const totalBudget = mockBudgets.reduce((sum, b) => sum + b.amount, 0);
-  const totalSpent = mockBudgets.reduce((sum, b) => sum + b.spent, 0);
-  const remaining = totalBudget - totalSpent;
+  const totalBudget = budgets.reduce((sum, b) => sum + b.amount, 0);
+  const totalSpent  = budgets.reduce((sum, b) => sum + b.spent, 0);
+  const remaining   = totalBudget - totalSpent;
 
   return (
     <PageWrapper>
@@ -32,46 +42,12 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           Harcamalarını kolayca yönet, bütçeni kontrol altında tut!
         </Typography>
 
-        <Box mt={6}>
-          <Stack direction="column" spacing={2} alignItems="center">
-            <Button
-              variant="contained"
-              size="large"
-              onClick={() => onNavigate('list')}
-            >
-              📋 Bütçeleri Gör
-            </Button>
-
-            <Button
-              variant="outlined"
-              size="large"
-              onClick={() => onNavigate('create')}
-            >
-              ➕ Yeni Bütçe Oluştur
-            </Button>
-
-            <Button
-              variant="outlined"
-              size="large"
-              onClick={() => alert(`Toplam Harcama: ${totalSpent} TL`)}
-            >
-              💸 Toplam Harcama
-            </Button>
-
-            <Button
-              variant="outlined"
-              size="large"
-              onClick={() => alert(`Kalan Bakiye: ${remaining} TL`)}
-            >
-              🏦 Kalan Bakiye
-            </Button>
-          </Stack>
-        </Box>
+        {/* Buton navigasyonları AppBar’da taşındı, buradaki kaldırıldı */}
 
         {/* Dashboard: Bütçe Kartları */}
-        {/* <Box sx={{ mt: 6, px: { xs: 2, md: 4 } }}>
+        <Box sx={{ mt: 6, px: { xs: 2, md: 4 } }}>
           <BudgetList />
-        </Box> */}
+        </Box>
       </Container>
     </PageWrapper>
   );
