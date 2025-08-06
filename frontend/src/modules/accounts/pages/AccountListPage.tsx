@@ -3,8 +3,8 @@ import Layout from "../../../layout/Layout";
 import { fetchAccounts, createAccount as apiCreate } from "../api/account.api";
 import { Account } from "../types/account";
 import TransactionModal from "../components/TransactionModal";
+import StatementModal from "../components/StatementModal";
 import "../styles/AccountStyles.css";
-import { downloadExtractPdf } from "../api/extract.api";
 import { fetchExchangeRates } from "../api/currencyRates";
 
 // Tip tanımı
@@ -18,12 +18,13 @@ const AccountListPage = () => {
   const [error, setError] = useState("");
   const [hovering, setHovering] = useState(false);
   const [showHistoryFor, setShowHistoryFor] = useState<string | null>(null);
-  const [targetCurrency, setTargetCurrency] = useState("USD");
+  const [showStatementFor, setShowStatementFor] = useState<string | null>(null);
+
   const [rates, setRates] = useState<Record<string, number>>({});
-  const cardWidth = "250px";
   const [currencies, setCurrencies] = useState<number[]>([]);
   const currencyIcons = ["₺", "$", "€"];
   const currencyMap = ["TRY", "USD", "EUR"];
+  const cardWidth = "250px";
 
   useEffect(() => {
     fetchAccounts()
@@ -42,9 +43,7 @@ const AccountListPage = () => {
     };
 
     getRates();
-    const interval = setInterval(() => {
-      getRates();
-    }, 30000);
+    const interval = setInterval(getRates, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -93,16 +92,11 @@ const AccountListPage = () => {
   return (
     <Layout>
       <div className="account-container">
-        <h2 className="module-title">
-          <span style={{ fontSize: "1.8rem" }}>🏦</span>
-          Hesap Yönetimi
-        </h2>
+        <h2 className="module-title">🏦 Hesap Yönetimi</h2>
 
+        {/* Yeni Hesap Kartı */}
         <div className="create-card">
-          <h3>
-            <span style={{ fontSize: "1.2rem" }}>✨</span>
-            Yeni Hesap Oluştur
-          </h3>
+          <h3>✨ Yeni Hesap Oluştur</h3>
           <label>Hesap Adı:</label>
           <input
             value={name}
@@ -118,29 +112,13 @@ const AccountListPage = () => {
             <option value="Vadeli">Vadeli</option>
             <option value="Kredi Kartı">Kredi Kartı</option>
           </select>
-          {error && (
-            <p
-              style={{
-                color: "#ef4444",
-                fontSize: "0.9em",
-                marginBottom: 10,
-                fontWeight: 500,
-              }}
-            >
-              {error}
-            </p>
-          )}
-          <button onClick={createAccount}>
-            <span style={{ marginRight: "8px" }}>➕</span>
-            Hesap Oluştur
-          </button>
+          {error && <p style={{ color: "#ef4444" }}>{error}</p>}
+          <button onClick={createAccount}>➕ Hesap Oluştur</button>
         </div>
 
+        {/* Filtre */}
         <div className="account-filter">
-          <h3>
-            <span style={{ fontSize: "1.3rem" }}>📊</span>
-            Hesaplarım
-          </h3>
+          <h3>📊 Hesaplarım</h3>
           <div className="account-filter-buttons">
             {["All", "Vadesiz", "Vadeli", "Kredi Kartı"].map((t) => (
               <button
@@ -152,23 +130,11 @@ const AccountListPage = () => {
               </button>
             ))}
           </div>
-
-          
         </div>
 
+        {/* Hesap Listesi */}
         {filteredAccounts.length === 0 ? (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "40px",
-              color: "#64748b",
-              fontSize: "1.1rem",
-              fontWeight: 500,
-            }}
-          >
-            <div style={{ fontSize: "3rem", marginBottom: "16px" }}>🔍</div>
-            Seçilen türde hesap bulunamadı.
-          </div>
+          <p>Seçilen türde hesap bulunamadı.</p>
         ) : (
           <div
             className="account-card-container"
@@ -197,43 +163,30 @@ const AccountListPage = () => {
                     <button
                       className="currency-switch-btn"
                       onClick={(e) => handleCurrencySwitch(e, idx)}
-                      style={{ position: "absolute", top: 12, right: 12, zIndex: 20 }}
-                      aria-label="Para birimini değiştir"
-                      type="button"
-                      tabIndex={0}
+                      style={{ position: "absolute", top: 12, right: 12 }}
                     >
                       {currencyIcons[currencies[idx] || 0]}
                     </button>
                     <h4>{account.accountName}</h4>
-                    <p>
-                      <strong>Tür:</strong> {account.accountType}
-                    </p>
+                    <p><strong>Tür:</strong> {account.accountType}</p>
                     <p>
                       <strong>Bakiye:</strong>{" "}
                       {account.balance.toLocaleString("tr-TR", {
                         minimumFractionDigits: 2,
-                      })}{" "}
-                      ₺
+                      })} ₺
                     </p>
-                    {currencyMap[currencies[idx]] !== "TRY" && rates[currencyMap[currencies[idx]]] ? (
+                    {selectedCurrency !== "TRY" && rates[selectedCurrency] && (
                       <p>
-                        <strong>{currencyMap[currencies[idx]]} Karşılığı:</strong>{" "}
-                        {(account.balance * rates[currencyMap[currencies[idx]]]).toFixed(2)}{" "}
-                        {currencyMap[currencies[idx]]}
+                        <strong>{selectedCurrency} Karşılığı:</strong>{" "}
+                        {(account.balance * rates[selectedCurrency]).toFixed(2)}{" "}
+                        {selectedCurrency}
                       </p>
-                    ) : null}
+                    )}
                     <div className="account-card-buttons">
                       <button onClick={() => setShowHistoryFor(account.id)}>
                         📈 Geçmiş
                       </button>
-                      <button
-                        onClick={() => {
-                          const today = new Date();
-                          const year = today.getFullYear();
-                          const month = today.getMonth() + 1;
-                          downloadExtractPdf(account.id, year, month);
-                        }}
-                      >
+                      <button onClick={() => setShowStatementFor(account.id)}>
                         📄 Ekstre
                       </button>
                     </div>
@@ -241,38 +194,21 @@ const AccountListPage = () => {
                 );
               })}
             </div>
-
-            {filteredAccounts.length > 4 && (
-              <>
-                <button
-                  onClick={() => {
-                    const container = document.getElementById("scroll-container");
-                    container?.scrollBy({ left: -300, behavior: "smooth" });
-                  }}
-                  className={`account-scroll-button ${hovering ? "visible" : ""}`}
-                  style={{ left: -10 }}
-                >
-                  ‹
-                </button>
-                <button
-                  onClick={() => {
-                    const container = document.getElementById("scroll-container");
-                    container?.scrollBy({ left: 300, behavior: "smooth" });
-                  }}
-                  className={`account-scroll-button ${hovering ? "visible" : ""}`}
-                  style={{ right: -10 }}
-                >
-                  ›
-                </button>
-              </>
-            )}
           </div>
         )}
 
+        {/* Modaller */}
         {showHistoryFor && (
           <TransactionModal
             accountId={showHistoryFor}
             onClose={() => setShowHistoryFor(null)}
+          />
+        )}
+
+        {showStatementFor && (
+          <StatementModal
+            accountId={showStatementFor}
+            onClose={() => setShowStatementFor(null)}
           />
         )}
       </div>

@@ -1,18 +1,16 @@
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using QuestPDF.Drawing;
-using QuestPDF.Elements;
 using System.Globalization;
-using PocketBank.Models; // Transaction modelin buradaysa
+using PocketBank.Models;
 
 namespace PocketBank.Services
 {
     public static class PdfBuilder
     {
-        public static byte[] BuildStatementPdf(List<Transaction> transactions, int year, int month)
+        public static byte[] BuildStatementPdf(List<Transaction> transactions, DateTime start, DateTime end)
         {
-            var monthName = new DateTime(year, month, 1).ToString("MMMM yyyy", new CultureInfo("tr-TR"));
+            var dateRange = $"{start:dd.MM.yyyy} - {end:dd.MM.yyyy}";
 
             var document = Document.Create(container =>
             {
@@ -21,8 +19,11 @@ namespace PocketBank.Services
                     page.Margin(30);
                     page.Size(PageSizes.A4);
 
-                    page.Header().Text($"📄 Hesap Özeti - {monthName}")
-                        .FontSize(20).Bold().FontColor(Colors.Blue.Medium);
+                    page.Header()
+                        .Text($"📄 Hesap Özeti ({dateRange})")
+                        .FontSize(20)
+                        .Bold()
+                        .FontColor(Colors.Blue.Medium);
 
                     page.Content().Table(table =>
                     {
@@ -33,7 +34,7 @@ namespace PocketBank.Services
                             columns.RelativeColumn();    // Tutar
                         });
 
-                        // Başlıklar
+                        // Tablo başlıkları
                         table.Header(header =>
                         {
                             header.Cell().Text("Tarih").Bold();
@@ -41,12 +42,12 @@ namespace PocketBank.Services
                             header.Cell().Text("Tutar (₺)").Bold();
                         });
 
-                        // Veriler
+                        // İşlem verileri
                         foreach (var tx in transactions)
                         {
                             table.Cell().Text(tx.Date.ToString("dd.MM.yyyy"));
                             table.Cell().Text(tx.Description);
-                            table.Cell().Text(tx.Amount.ToString("N2"));
+                            table.Cell().Text(tx.Amount.ToString("N2", CultureInfo.InvariantCulture));
                         }
                     });
 

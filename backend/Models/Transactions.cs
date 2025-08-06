@@ -1,23 +1,25 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace PocketBank.Models // ✅ Burası önemli
+[Table("transactions")]
+public class Transaction
 {
-    [Table("transactions")]
-    public class Transaction
+    [Column("id")]
+    public Guid Id { get; set; }
+
+    [Column("account_id")]
+    public Guid AccountId { get; set; }
+
+    [Column("transaction_date")]
+    public DateTime Date { get; set; }  // PostgreSQL'de UTC olarak tutulur
+
+    [Column("amount")]
+    public decimal Amount { get; set; }
+
+    [Column("description")]
+    public string Description { get; set; } = string.Empty;
+
+    public void SetUtcDate(DateTime date)
     {
-        [Column("id")]
-        public Guid Id { get; set; }
-
-        [Column("account_id")]
-        public Guid AccountId { get; set; }
-
-        [Column("transaction_date")]
-        public DateTime Date { get; set; }
-
-        [Column("amount")]
-        public decimal Amount { get; set; }
-
-        [Column("description")]
-        public string Description { get; set; } = string.Empty;
+        Date = DateTime.SpecifyKind(date, DateTimeKind.Utc);
     }
 }

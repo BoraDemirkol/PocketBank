@@ -8,7 +8,7 @@ using PocketBank.Services;
 namespace PocketBank.Controllers
 {
     [ApiController]
-    [Route("api/transactions")]
+    [Route("api/account/{accountId}/transaction")]
     public class TransactionController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -18,7 +18,7 @@ namespace PocketBank.Controllers
             _context = context;
         }
 
-        // GET: /api/transactions?accountId=xxx
+        // GET: /api/account/{accountId}/transaction
         [HttpGet]
         public async Task<IActionResult> GetAll(Guid accountId)
         {
@@ -30,18 +30,24 @@ namespace PocketBank.Controllers
             return Ok(transactions);
         }
 
-        // GET: /api/transactions/extract?accountId=xxx&startDate=...&endDate=...
-        [HttpGet("extract")]
-        public async Task<IActionResult> GetExtract(Guid accountId, DateTime? startDate, DateTime? endDate)
+        // GET: /api/account/{accountId}/transaction/statement?start=...&end=...
+        [HttpGet("statement")]
+        public async Task<IActionResult> GetStatement(Guid accountId, DateTime? start, DateTime? end)
         {
+            if (start.HasValue)
+                start = DateTime.SpecifyKind(start.Value, DateTimeKind.Utc);
+
+            if (end.HasValue)
+                end = DateTime.SpecifyKind(end.Value, DateTimeKind.Utc);
+
             var query = _context.Transactions
                 .Where(t => t.AccountId == accountId);
 
-            if (startDate.HasValue)
-                query = query.Where(t => t.Date >= startDate.Value);
+            if (start.HasValue)
+                query = query.Where(t => t.Date >= start.Value);
 
-            if (endDate.HasValue)
-                query = query.Where(t => t.Date <= endDate.Value);
+            if (end.HasValue)
+                query = query.Where(t => t.Date <= end.Value);
 
             var result = await query
                 .OrderByDescending(t => t.Date)
@@ -56,37 +62,46 @@ namespace PocketBank.Controllers
             return Ok(result);
         }
 
-        // GET: /api/transactions/extractPdf?accountId=xxx&year=2025&month=7
+        // GET: /api/account/{accountId}/transaction/extractPdf?start=...&end=...
         [HttpGet("extractPdf")]
-        public async Task<IActionResult> GetMonthlyExtractPdf(Guid accountId, int year, int month)
+        public async Task<IActionResult> GetExtractPdf(Guid accountId, DateTime start, DateTime end)
         {
+            start = DateTime.SpecifyKind(start, DateTimeKind.Utc);
+            end = DateTime.SpecifyKind(end, DateTimeKind.Utc);
+
+            if (start > end)
+                return BadRequest("Başlangıç tarihi bitiş tarihinden büyük olamaz.");
+
             var transactions = await _context.Transactions
-                .Where(t => t.AccountId == accountId && t.Date.Year == year && t.Date.Month == month)
+                .Where(t => t.AccountId == accountId && t.Date >= start && t.Date <= end)
                 .OrderBy(t => t.Date)
                 .ToListAsync();
 
             if (!transactions.Any())
                 return NotFound("Bu dönemde işlem bulunamadı.");
 
-            var pdfBytes = PdfBuilder.BuildStatementPdf(transactions, year, month);
+            var pdfBytes = PdfBuilder.BuildStatementPdf(transactions, start, end);
 
-            return File(pdfBytes, "application/pdf", $"ekstre-{year}-{month}.pdf");
+            return File(pdfBytes, "application/pdf",
+                $"ekstre-{start:yyyy-MM-dd}_to_{end:yyyy-MM-dd}.pdf");
         }
+
+        // GET: /api/account/{accountId}/transaction/balance?currency=USD
         [HttpGet("balance")]
         public async Task<IActionResult> GetAccountBalance(Guid accountId, string? currency = "TRY")
         {
             var account = await _context.Accounts.FindAsync(accountId);
             if (account == null)
                 return NotFound("Hesap bulunamadı.");
-        
+
             var balance = account.Balance;
             var originalCurrency = account.Currency;
-        
+
             if (!CurrencyConverter.IsSupported(currency))
                 return BadRequest("Desteklenmeyen para birimi.");
-        
+
             var converted = CurrencyConverter.Convert(balance, originalCurrency, currency);
-        
+
             return Ok(new
             {
                 accountId = account.Id,
@@ -96,6 +111,5 @@ namespace PocketBank.Controllers
                 targetCurrency = currency
             });
         }
-
     }
 }
