@@ -20,7 +20,12 @@ import {
 import { Add, Delete } from '@mui/icons-material';
 import { supabase } from '../supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
-import { useBudgets, CategoryInput } from '../hooks/useBudgets';
+
+// Adım başlıkları
+const steps = ['Genel Bilgiler', 'Kategori Limitleri', 'Özet & Kaydet'];
+
+type Period = 'monthly' | 'yearly';
+interface CategoryInput { name: string; limit: number; spent?: number; }
 
 // Önceden tanımlı şablonlar
 const budgetTemplates: { name: string; categories: Omit<CategoryInput, 'spent'>[] }[] = [
@@ -51,25 +56,17 @@ const budgetTemplates: { name: string; categories: Omit<CategoryInput, 'spent'>[
   }
 ];
 
-const steps = ['Genel Bilgiler', 'Kategori Limitleri', 'Özet & Kaydet'];
-
-type Period = 'monthly' | 'yearly';
-interface Category { name: string; limit: number; }
-
 const CreateBudget: React.FC = () => {
-  const { addBudget } = useBudgets();
   const [activeStep, setActiveStep] = useState(0);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [period, setPeriod] = useState<Period>('monthly');
   const [start, setStart] = useState<string>(new Date().toISOString().slice(0, 10));
   const [categories, setCategories] = useState<CategoryInput[]>([]);
-
-  // Yeni kategori inputları
   const [newCatName, setNewCatName] = useState<string>('');
   const [newCatLimit, setNewCatLimit] = useState<number>(0);
 
-  // Şablon seçildiğinde form otomatik doldurma
+  // Şablon seçildiğinde otomatik doldurma
   useEffect(() => {
     const tpl = budgetTemplates.find(t => t.name === selectedTemplate);
     if (tpl) {
@@ -96,9 +93,8 @@ const CreateBudget: React.FC = () => {
   };
 
   const handleSave = async () => {
-    // Kullanıcı id
     const staticUserId = 'df497fd5-57e9-4cef-ab49-5d1062e5a282';
-    // Kategorileri supabaseden çek ve eşleştir
+    // Kategorileri al ve eşleştir
     const { data: allCats } = await supabase.from('categories').select('id, name');
     const catMap = new Map(allCats?.map(c => [c.name.toLowerCase(), c.id]));
     const invalid = categories.filter(c => !catMap.has(c.name.toLowerCase()));
@@ -108,18 +104,18 @@ const CreateBudget: React.FC = () => {
       return;
     }
     const totalAmount = categories.reduce((sum, c) => sum + c.limit, 0);
-    // Bütçeyi ekle
-    const { error: bErr, data: bData } = await supabase
+    // Bütçe ekle
+    const { data: bData, error: bErr } = await supabase
       .from('budgets')
       .insert([{ id: uuidv4(), user_id: staticUserId, name, amount: totalAmount, period, start_date: start, created_at: new Date().toISOString() }])
       .select('id')
       .single();
     if (bErr || !bData) { alert('Bütçe kaydedilemedi'); return; }
-    // Budget categories ekle
+    // Kategori limitleri ekle
     for (const cat of categories) {
       await supabase.from('budget_categories').insert([{ id: uuidv4(), budget_id: bData.id, category_id: catMap.get(cat.name.toLowerCase()), limit: cat.limit, created_at: new Date().toISOString() }]);
     }
-    alert('Bütçe başarıyla kaydedildi!');
+    alert('Bütçe başarılı kaydedildi!');
     // Reset
     setSelectedTemplate(''); setName(''); setPeriod('monthly'); setStart(new Date().toISOString().slice(0,10)); setCategories([]); setActiveStep(0);
   };
@@ -129,14 +125,17 @@ const CreateBudget: React.FC = () => {
   return (
     <Paper sx={{ p: 4 }}>
       <Typography variant="h5" gutterBottom>➕ Bütçe Oluşturma Sihirbazı</Typography>
-      <TextField select fullWidth label="Şablon Seç" value={selectedTemplate} onChange={e => setSelectedTemplate(e.target.value)} sx={{ mb:3 }}>
+      <TextField
+        select fullWidth label="Şablon Seç" value={selectedTemplate}
+        onChange={e => setSelectedTemplate(e.target.value)} sx={{ mb:3 }}
+      >
         <MenuItem value="">⦿ Şablonsuz Başla</MenuItem>
         {budgetTemplates.map(t => <MenuItem key={t.name} value={t.name}>{t.name}</MenuItem>)}
       </TextField>
       <Stepper activeStep={activeStep} sx={{ mb:3 }}>
         {steps.map(label => <Step key={label}><StepLabel>{label}</StepLabel></Step>)}
       </Stepper>
-      {/* Step Content */}
+
       {activeStep===0 && (
         <Box sx={{ display:'grid', gap:2 }}>
           <TextField label="Bütçe Adı" value={name} onChange={e=>setName(e.target.value)} fullWidth />
@@ -150,6 +149,7 @@ const CreateBudget: React.FC = () => {
           </Box>
         </Box>
       )}
+
       {activeStep===1 && (
         <Box sx={{ display:'grid', gap:2 }}>
           <Box sx={{ display:'flex', gap:1, alignItems:'center' }}>
@@ -176,6 +176,7 @@ const CreateBudget: React.FC = () => {
           </Box>
         </Box>
       )}
+
       {activeStep===2 && (
         <Box sx={{ display:'grid', gap:2 }}>
           <Typography variant="h6">Özet</Typography>
@@ -184,9 +185,7 @@ const CreateBudget: React.FC = () => {
           <Typography><strong>Başlangıç:</strong> {start}</Typography>
           <Typography variant="subtitle1" mt={2}>Kategoriler ve Limitleri:</Typography>
           <List>
-            {categories.map((cat,idx)=>(
-              <ListItem key={idx}><ListItemText primary={cat.name} secondary={`${cat.limit} TL`} /></ListItem>
-            ))}
+            {categories.map((cat,idx)=>(<ListItem key={idx}><ListItemText primary={cat.name} secondary={`${cat.limit} TL`} /></ListItem>))}
           </List>
           <Box sx={{ display:'flex', justifyContent:'space-between' }}>
             <Button onClick={handleBack}>Geri</Button>

@@ -30,13 +30,7 @@ const Module4Layout: React.FC = () => {
             🏦 PocketBank - Modül Seçici
           </Typography>
           <Stack direction="row" spacing={1}>
-            <Button
-              variant={view === 'home' ? 'contained' : 'outlined'}
-              color="primary"
-              onClick={() => setView('home')}
-            >
-              Ana Sayfa
-            </Button>
+           
             <Button
               variant={view === 'list' ? 'contained' : 'outlined'}
               color="primary"
@@ -72,7 +66,7 @@ const Module4Layout: React.FC = () => {
       {/* İçerik Alanı */}
       <Container sx={{ mt: 4, mb: 4 }}>
         <Paper elevation={2} sx={{ p: 3 }}>
-          {view === 'home' && <Home onNavigate={setView} />}
+            
           {view === 'list' && <BudgetList />}
           {view === 'create' && <CreateBudget />}
         </Paper>

@@ -11,26 +11,26 @@ import BudgetList from '../components/BudgetList';
 import { useBudgets } from '../hooks/useBudgets';
 
 const Home: React.FC = () => {
-  const { budgets, loading, error } = useBudgets();
+  const { budgets, loading } = useBudgets();
 
   if (loading) {
     return (
       <Box textAlign="center" mt={8}>
-        <CircularProgress />
+        <CircularProgress />    
       </Box>
     );
   }
-  if (error) {
+  if (budgets.length === 0) {
     return (
       <Box textAlign="center" mt={8}>
-        <Typography color="error">{error}</Typography>
+        <Typography color="error"></Typography>
       </Box>
     );
   }
 
-  const totalBudget = budgets.reduce((sum, b) => sum + b.amount, 0);
-  const totalSpent  = budgets.reduce((sum, b) => sum + b.spent, 0);
-  const remaining   = totalBudget - totalSpent;
+  //const totalBudget = budgets.reduce((sum, b) => sum + b.amount, 0);
+  //const totalSpent  = budgets.reduce((sum, b) => sum + b.spent, 0);
+  //const remaining   = totalBudget - totalSpent;
 
   return (
     <PageWrapper>

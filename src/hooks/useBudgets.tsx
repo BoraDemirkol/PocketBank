@@ -1,210 +1,176 @@
+// src/hooks/useBudgets.tsx
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
-// Define types for your database rows
-type BudgetRow = {
+// Database row types
+interface BudgetRow {
   id: string;
   user_id: string;
   name: string;
   amount: number;
   period: string;
-};
-
-type CategoryRow = {
+}
+interface CategoryRow {
   id: string;
   name: string;
-};
-
-type BudgetCategoryRow = {
+}
+interface BudgetCategoryRow {
   budget_id: string;
   category_id: string;
   limit: number;
-  categories: {
-    name: string;
-  } | null; // null if no join found
-};
-
-type TransactionRow = {
+  // Supabase returns related rows as an array
+  categories: { name: string }[] | null;
+}
+interface TransactionRow {
   account_id: string;
   amount: number;
   description: string;
-};
-
-type AccountRow = {
+}
+interface AccountRow {
   id: string;
   user_id: string;
-};
+}
 
-interface Category {
+// Frontend models
+export interface Category {
   name: string;
   limit: number;
   spent: number;
 }
-
-interface Budget {
+export interface Budget {
   id: string;
   name: string;
   amount: number;
+  spent: number;
   period: string;
   categories: Category[];
   totalSpent: number;
 }
 
-/**
- * Classify transaction description by matching category names (case-insensitive).
- */
+// Classify transaction by description
 function classifyCategoryFromDescription(
   description: string,
   categoryNames: string[]
 ): string | null {
-  const lowerDesc = description.toLowerCase();
-  for (const category of categoryNames) {
-    if (lowerDesc.includes(category.toLowerCase())) {
-      return category;
-    }
+  const lower = description.toLowerCase();
+  for (const c of categoryNames) {
+    if (lower.includes(c.toLowerCase())) return c;
   }
   return null;
 }
 
 export const useBudgets = () => {
   const [budgets, setBudgets] = useState<Budget[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBudgets = async () => {
       setLoading(true);
+      try {
+        // Fetch budgets
+        const { data: budgetsData, error: budgetsErr } = await supabase
+          .from<'budgets', BudgetRow>('budgets')
+          .select('id, user_id, name, amount, period');
+        if (budgetsErr || !budgetsData) throw budgetsErr;
 
-      const { data: budgetsDataRaw, error: budgetsError } = await supabase
-        .from<'budgets', BudgetRow>('budgets')
-        .select('id, user_id, name, amount, period');
+        // Fetch accounts
+        const { data: accountsData, error: accountsErr } = await supabase
+          .from<'accounts', AccountRow>('accounts')
+          .select('id, user_id');
+        if (accountsErr || !accountsData) throw accountsErr;
 
-      if (budgetsError || !budgetsDataRaw) {
-        console.error('Error fetching budgets:', budgetsError);
+        // Map accounts by user
+        const userToAccounts: Record<string, string[]> = {};
+        accountsData.forEach(a => {
+          userToAccounts[a.user_id] = userToAccounts[a.user_id] || [];
+          userToAccounts[a.user_id].push(a.id);
+        });
+
+        // Fetch transactions
+        const { data: txData, error: txErr } = await supabase
+          .from<'transactions', TransactionRow>('transactions')
+          .select('account_id, amount, description');
+        if (txErr || !txData) throw txErr;
+
+        // Classify and sum spent per user and per category
+        const totalSpentMap: Record<string, number> = {};
+        const spentByCategory: Record<string, Record<string, number>> = {};
+
+        // Get all category names
+        const { data: catRows, error: catErr } = await supabase
+          .from<'categories', CategoryRow>('categories')
+          .select('id, name');
+        if (catErr || !catRows) throw catErr;
+        const categoryNames = catRows.map(c => c.name);
+
+        // Classify each transaction
+        txData.forEach(tx => {
+          const account = accountsData.find(a => a.id === tx.account_id);
+          const userId = account?.user_id;
+          if (!userId) return;
+          // total spent per user
+          totalSpentMap[userId] = (totalSpentMap[userId] || 0) - tx.amount;
+          // categorize
+          const catName = classifyCategoryFromDescription(tx.description, categoryNames);
+          if (catName) {
+            spentByCategory[userId] = spentByCategory[userId] || {};
+            spentByCategory[userId][catName] = (spentByCategory[userId][catName] || 0) - tx.amount;
+          }
+        });
+
+        // Fetch budget_categories with join to categories
+        const { data: bcData, error: bcErr } = await supabase
+          .from<'budget_categories', BudgetCategoryRow>('budget_categories')
+          .select('budget_id, category_id, limit, categories(name)');
+        if (bcErr || !bcData) throw bcErr;
+
+        // Organize categories per budget
+        const budgetCategoryMap: Record<string, Category[]> = {};
+        bcData.forEach(entry => {
+          const catArray = entry.categories || [];
+          const catName = catArray.length ? catArray[0].name : 'Unknown';
+          const spent =
+            budgetsData
+              .find(b => b.id === entry.budget_id)
+              ?.user_id in spentByCategory
+              ? spentByCategory[
+                  budgetsData.find(b => b.id === entry.budget_id)!.user_id
+                ][catName] || 0
+              : 0;
+          const category: Category = { name: catName, limit: entry.limit, spent };
+          budgetCategoryMap[entry.budget_id] = budgetCategoryMap[entry.budget_id] || [];
+          budgetCategoryMap[entry.budget_id].push(category);
+        });
+
+        // Assemble final budgets
+        const finalBudgets: Budget[] = budgetsData.map(b => {
+          const cats = budgetCategoryMap[b.id] || [];
+          const spentSum = cats.reduce((sum, c) => sum + c.spent, 0);
+          const totalUserSpent = totalSpentMap[b.user_id] || 0;
+          return {
+            id: b.id,
+            name: b.name,
+            amount: b.amount,
+            spent: spentSum,
+            period: b.period,
+            categories: cats,
+            totalSpent: totalUserSpent
+          };
+        });
+
+        setBudgets(finalBudgets);
+        setError(null);
+      } catch (e: any) {
+        console.error(e);
+        setError(e.message);
+      } finally {
         setLoading(false);
-        return;
       }
-      const budgetsData = budgetsDataRaw;
-      const userIds = Array.from(new Set(budgetsData.map((b) => b.user_id)));
-
-      const { data: accountsDataRaw, error: accountsError } = await supabase
-        .from<'accounts', AccountRow>('accounts')
-        .select('id, user_id');
-
-      if (accountsError || !accountsDataRaw) {
-        console.error('Error fetching accounts:', accountsError);
-        setLoading(false);
-        return;
-      }
-
-      const userToAccountsMap: Record<string, string[]> = {};
-      for (const acc of accountsDataRaw) {
-        if (!userToAccountsMap[acc.user_id]) userToAccountsMap[acc.user_id] = [];
-        userToAccountsMap[acc.user_id].push(acc.id);
-      }
-
-      const { data: transactionsDataRaw, error: transactionsError } = await supabase
-        .from<'transactions', TransactionRow>('transactions')
-        .select('account_id, amount, description');
-
-      if (transactionsError || !transactionsDataRaw) {
-        console.error('Error fetching transactions:', transactionsError);
-        setLoading(false);
-        return;
-      }
-      const transactionsData = transactionsDataRaw;
-
-      const { data: categoriesDataRaw, error: categoriesError } = await supabase
-        .from<'categories', CategoryRow>('categories')
-        .select('id, name');
-
-      if (categoriesError || !categoriesDataRaw) {
-        console.error('Error fetching categories:', categoriesError);
-        setLoading(false);
-        return;
-      }
-      const categoriesData = categoriesDataRaw;
-      const categoryNames = categoriesData.map((c) => c.name);
-
-      const { data: bcDataRaw, error: bcError } = await supabase
-        .from<'budget_categories', BudgetCategoryRow>('budget_categories')
-        .select('budget_id, category_id, limit, categories(name)');
-
-      if (bcError || !bcDataRaw) {
-        console.error('Error fetching budget_categories:', bcError);
-        setLoading(false);
-        return;
-      }
-      const bcData = bcDataRaw;
-
-      const classifiedTransactions = transactionsData.map((tx) => {
-        const matchedCategory = classifyCategoryFromDescription(tx.description, categoryNames);
-        return {
-          ...tx,
-          category: matchedCategory,
-        };
-      });
-
-      const spentMap: Record<string, Record<string, number>> = {};
-      const totalSpentMap: Record<string, number> = {};
-
-      for (const tx of classifiedTransactions) {
-        const accountId = tx.account_id;
-        const account = accountsDataRaw.find((a) => a.id === accountId);
-        const userId = account?.user_id;
-        if (!userId) continue;
-
-        if (!totalSpentMap[userId]) totalSpentMap[userId] = 0;
-        totalSpentMap[userId] -= tx.amount;
-
-        if (tx.category) {
-          if (!spentMap[userId]) spentMap[userId] = {};
-          if (!spentMap[userId][tx.category]) spentMap[userId][tx.category] = 0;
-          spentMap[userId][tx.category] -= tx.amount;
-        }
-      }
-
-      console.log('Total spent map:', totalSpentMap);
-      console.log('Spent map:', spentMap);
-
-      const budgetCategoryMap: Record<string, Category[]> = {};
-      for (const entry of bcData) {
-        const budgetId = entry.budget_id;
-        const categoryName = entry.categories?.name ?? 'Unknown';
-        const limit = entry.limit;
-
-        const budgetOwner = budgetsData.find((b) => b.id === budgetId);
-        const userId = budgetOwner?.user_id;
-
-        const spent =
-          userId && spentMap[userId] && spentMap[userId][categoryName]
-            ? spentMap[userId][categoryName]
-            : 0;
-
-        const category: Category = {
-          name: categoryName,
-          limit,
-          spent,
-        };
-
-        if (!budgetCategoryMap[budgetId]) budgetCategoryMap[budgetId] = [];
-        budgetCategoryMap[budgetId].push(category);
-      }
-
-      const finalBudgets: Budget[] = budgetsData.map((b) => ({
-        id: b.id,
-        name: b.name,
-        amount: b.amount,
-        period: b.period,
-        categories: budgetCategoryMap[b.id] || [],
-        totalSpent: totalSpentMap[b.user_id] || 0,
-      }));
-
-      setBudgets(finalBudgets);
-      setLoading(false);
     };
 
     fetchBudgets();
   }, []);
 
-  return { budgets, loading };
+  return { budgets, loading, error };
 };
