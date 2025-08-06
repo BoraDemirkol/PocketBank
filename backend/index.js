@@ -1,3 +1,7 @@
+//Backend ve uygun API call'ları yazmak için deneme dosyası ancak yaşanan bağlantı
+// sorunlarından dolayı bu dosya en azından benim bilgisayarımda çalışıyor.
+
+
 require('dotenv').config(); //Load environment variables from .env file
 const express = require('express'); // Import express for creating the server
 const cors = require('cors'); // Import cors for handling cross-origin requests
@@ -8,6 +12,9 @@ const port =  4000;
 
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json()); // Parse JSON request bodies
+
+console.log('Connecting to:', process.env.DATABASE_URL);
+
 
 const pool = new Pool({ // Creating a PostgreSQL connection
   connectionString: process.env.DATABASE_URL, // Use the DATABASE_URL from environment variables
