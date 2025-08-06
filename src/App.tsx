@@ -1,3 +1,4 @@
+// src/App.tsx
 import React, { useMemo } from 'react';
 import {
   CssBaseline,
@@ -7,11 +8,10 @@ import {
 } from '@mui/material';
 import { ThemeProvider, useTheme } from './pages/ThemeContext';
 import Module4Layout from './pages/Module4Layout';
-import CreateBudget from './pages/CreateBudget';
-import BudgetList from './pages/BudgetList';
 import { supabase } from './supabaseClient';
 
 console.log('Supabase client initialized:', supabase);
+
 const ThemeToggle: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   return (
@@ -43,10 +43,8 @@ const ThemedApp: React.FC = () => {
       <div style={{ padding: 20, position: 'relative' }}>
         <h1>🏦 PocketBank - Modül Seçici</h1>
         <ThemeToggle />
-        <Module4Layout
-          renderCreate={<CreateBudget />}
-          renderList={<BudgetList />}
-        />
+        {/* Module4Layout props removed to match expected signature */}
+        <Module4Layout />
       </div>
     </MuiThemeProvider>
   );
@@ -58,6 +56,6 @@ const App: React.FC = () => {
       <ThemedApp />
     </ThemeProvider>
   );
-}
+};
 
 export default App;
