@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: pocketbank_postgres
+    environment:
+      POSTGRES_DB: pocketbank
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pocketbanklocal
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    networks:
+      - pocketbank_network
+
+volumes:
+  postgres_data:
+
+networks:
+  pocketbank_network:
+    driver: bridge
