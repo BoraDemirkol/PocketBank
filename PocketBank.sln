@@ -2,9 +2,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modul5", "modul5", "{D1044229-D307-E457-5C98-29C93D6A7EE0}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "module1", "module1", "{5EE45ACC-6F30-F549-7712-6812471CC54E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "server", "modul5\server\server.csproj", "{13472E2A-2A60-25CA-A7BD-901305902F58}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "backend", "backend", "{4E6067A1-5972-2C3D-07D8-7554BAD20BD4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pocketbank.API", "module1\backend\Pocketbank.API\Pocketbank.API.csproj", "{886DBD96-7E5A-11C7-343A-6BBC5414FB32}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,18 +14,19 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{13472E2A-2A60-25CA-A7BD-901305902F58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{13472E2A-2A60-25CA-A7BD-901305902F58}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{13472E2A-2A60-25CA-A7BD-901305902F58}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{13472E2A-2A60-25CA-A7BD-901305902F58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{886DBD96-7E5A-11C7-343A-6BBC5414FB32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{886DBD96-7E5A-11C7-343A-6BBC5414FB32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{886DBD96-7E5A-11C7-343A-6BBC5414FB32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{886DBD96-7E5A-11C7-343A-6BBC5414FB32}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{13472E2A-2A60-25CA-A7BD-901305902F58} = {D1044229-D307-E457-5C98-29C93D6A7EE0}
+		{4E6067A1-5972-2C3D-07D8-7554BAD20BD4} = {5EE45ACC-6F30-F549-7712-6812471CC54E}
+		{886DBD96-7E5A-11C7-343A-6BBC5414FB32} = {4E6067A1-5972-2C3D-07D8-7554BAD20BD4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {D0C422DA-AD43-48F5-878A-11706AE8DD8A}
+		SolutionGuid = {751104DB-13CB-434F-AB2A-970008F598B1}
 	EndGlobalSection
 EndGlobal
