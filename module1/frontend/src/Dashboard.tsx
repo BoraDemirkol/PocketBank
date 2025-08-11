@@ -28,7 +28,7 @@ const Dashboard: React.FC = () => {
     {
       title: t('accountManagement') || 'Account Management',
       icon: <UserOutlined />,
-      onClick: () => console.log('Navigate to Account Management')
+      onClick: () => window.location.href = '/accounts'
     },
     {
       title: t('transactionManagement') || 'Transaction Management',

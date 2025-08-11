@@ -11,6 +11,7 @@ import ThemeToggle from './ThemeToggle.tsx'
 import ForgotPassword from './ForgotPassword.tsx'
 import ResetPassword from './ResetPassword.tsx'
 import LanguageToggle from './LanguageToggle.tsx'
+import AccountListPage from './modules/accounts/pages/AccountListPage.tsx'
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
@@ -67,6 +68,7 @@ function App() {
           <Route path="/signin" element={<Signin />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/accounts" element={<AccountListPage />} />
           <Route path="/profile/edit" element={<EditProfile />} />
           <Route path="/auth/confirm" element={<EmailVerification />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

@@ -1,0 +1,844 @@
+/* Modern Banking App Styles */
+.account-container {
+  padding: 2rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #1a1a2e;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  min-height: 100vh;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow-x: hidden;
+}
+ 
+.account-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.03)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  pointer-events: none;
+}
+ 
+.dark .account-container {
+  color: #f8fafc;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+}
+ 
+.module-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  padding-bottom: 12px;
+  border-bottom: 3px solid rgba(0, 0, 0, 0.1);
+  margin-bottom: 32px;
+  color: #1e293b;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+ 
+.module-title::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 2px;
+}
+ 
+.dark .module-title {
+  color: #f1f5f9;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+ 
+.dark .module-title::after {
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+}
+ 
+.create-card {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  padding: 32px;
+  max-width: 600px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    0 8px 16px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+ 
+.create-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea, #764ba2, #fbbf24);
+}
+ 
+.dark .create-card {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    0 8px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+}
+ 
+.create-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow:
+    0 32px 64px rgba(0, 0, 0, 0.15),
+    0 16px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+ 
+.dark .create-card:hover {
+  box-shadow:
+    0 32px 64px rgba(0, 0, 0, 0.4),
+    0 16px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+ 
+.create-card h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+ 
+.dark .create-card h3 {
+  color: #f1f5f9;
+}
+ 
+.create-card label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #475569;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+ 
+.dark .create-card label {
+  color: #cbd5e1;
+}
+ 
+.create-card input,
+.create-card select {
+  background: rgba(255, 255, 255, 0.9);
+  color: #1e293b;
+  border: 2px solid rgba(203, 213, 225, 0.3);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  width: 100%;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+ 
+.dark .create-card input,
+.dark .create-card select {
+  background: rgba(51, 65, 85, 0.9);
+  color: #f1f5f9;
+  border-color: rgba(148, 163, 184, 0.3);
+}
+ 
+.create-card input:focus,
+.create-card select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  transform: translateY(-1px);
+}
+ 
+.create-card button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+ 
+.create-card button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+ 
+.create-card button:hover::before {
+  left: 100%;
+}
+ 
+.create-card button:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+ 
+.account-filter {
+  margin-top: 60px;
+}
+ 
+.account-filter h3 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #1e293b;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+ 
+.dark .account-filter h3 {
+  color: #f1f5f9;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+ 
+.account-filter-buttons {
+  margin-bottom: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+ 
+.account-filter-buttons button {
+  padding: 10px 20px;
+  border-radius: 50px;
+  border: 2px solid rgba(102, 126, 234, 0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.8);
+  color: #475569;
+  backdrop-filter: blur(10px);
+  font-weight: 500;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+}
+ 
+.account-filter-buttons button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(102, 126, 234, 0.05));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+ 
+.account-filter-buttons button:hover::before {
+  opacity: 1;
+}
+ 
+.dark .account-filter-buttons button {
+  background: rgba(51, 65, 85, 0.3);
+  border-color: rgba(148, 163, 184, 0.2);
+  color: #e2e8f0;
+}
+ 
+.account-filter-buttons button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+  border-color: rgba(102, 126, 234, 0.4);
+  color: #1e293b;
+}
+ 
+.dark .account-filter-buttons button:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #f1f5f9;
+}
+ 
+.account-filter-buttons button.selected {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #1e293b;
+  border-color: #fbbf24;
+  box-shadow: 0 8px 25px rgba(251, 191, 36, 0.4);
+  font-weight: 600;
+}
+ 
+.account-card-container {
+  position: relative;
+}
+ 
+.account-card-scroll {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  gap: 20px;
+  padding: 20px 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+ 
+.account-card-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+ 
+.account-card-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+ 
+.account-card-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2));
+  border-radius: 3px;
+  backdrop-filter: blur(10px);
+}
+ 
+.dark .account-card-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+ 
+.dark .account-card-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, rgba(148, 163, 184, 0.4), rgba(148, 163, 184, 0.2));
+}
+ 
+.account-card {
+  min-width: 280px;
+  height: 240px;
+  border-radius: 20px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    0 8px 16px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  scroll-snap-align: start;
+  opacity: 0;
+  animation: fadeInSlideUp 0.6s ease forwards;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+ 
+.account-card::before {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: none;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+ 
+.account-card::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: none;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+ 
+.account-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow:
+    0 25px 50px rgba(102, 126, 234, 0.15),
+    0 12px 24px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-color: rgba(102, 126, 234, 0.2);
+}
+ 
+.dark .account-card:hover {
+  box-shadow:
+    0 25px 50px rgba(0, 0, 0, 0.4),
+    0 12px 24px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-color: rgba(160, 132, 232, 0.3);
+}
+ 
+/* Kart içeriği z-index: 10 ile üstte kalsın */
+.account-card > * {
+  position: relative;
+  z-index: 10;
+}
+ 
+.account-card:hover {
+  transform: translateY(-12px) scale(1.03);
+  box-shadow:
+    0 32px 64px rgba(102, 126, 234, 0.2),
+    0 16px 32px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(102, 126, 234, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-color: rgba(102, 126, 234, 0.3);
+}
+ 
+.account-card:hover h4 {
+  transform: translateY(-2px);
+  color: #4f46e5;
+}
+ 
+.account-card:hover .balance {
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.15);
+}
+ 
+.account-card:hover .account-card-buttons button {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+}
+ 
+.dark .account-card {
+  background: rgba(30, 41, 59, 0.95);
+  color: #f1f5f9;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    0 8px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+ 
+.dark .account-card::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+}
+ 
+.dark .account-card::after {
+  background: linear-gradient(135deg, #a5b4fc, #c7d2fe, #fbbf24, #10b981, #a5b4fc);
+}
+ 
+.dark .account-card:hover {
+  box-shadow:
+    0 32px 64px rgba(0, 0, 0, 0.5),
+    0 16px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(160, 132, 232, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-color: rgba(160, 132, 232, 0.4);
+}
+ 
+.dark .account-card:hover h4 {
+  color: #a5b4fc;
+}
+ 
+.dark .account-card:hover .balance {
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.2);
+}
+ 
+.dark .account-card:hover .account-card-buttons button {
+  box-shadow: 0 4px 15px rgba(160, 132, 232, 0.25);
+}
+ 
+.account-card h4 {
+  color: #1e293b;
+  margin-bottom: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+  line-height: 1.3;
+  min-height: 2.6em;
+  word-wrap: break-word;
+}
+ 
+.account-card h4.long-name {
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+ 
+.account-card h4::before {
+  content: '💳';
+  font-size: 1.1rem;
+}
+ 
+.dark .account-card h4 {
+  color: #f1f5f9;
+}
+ 
+.account-card p {
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  color: #64748b;
+  transition: color 0.3s ease;
+  flex-shrink: 0;
+}
+ 
+.dark .account-card p {
+  color: #cbd5e1;
+}
+ 
+.account-card p strong {
+  color: #475569;
+  font-weight: 600;
+}
+ 
+.dark .account-card p strong {
+  color: #94a3b8;
+}
+ 
+/* Balance styling with color coding */
+.account-card .balance {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 16px 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1));
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  color: #059669;
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+ 
+.account-card .balance.negative {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #dc2626;
+}
+ 
+.dark .account-card .balance {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2));
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #10b981;
+}
+ 
+.dark .account-card .balance.negative {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2));
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+ 
+.account-card-buttons {
+  margin-top: auto;
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+  padding-bottom: 4px;
+}
+ 
+.account-card-buttons button {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 2px solid rgba(102, 126, 234, 0.2);
+  cursor: pointer;
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+}
+ 
+.account-card-buttons button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+ 
+.account-card-buttons button:hover::before {
+  left: 100%;
+}
+ 
+.dark .account-card-buttons button {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: rgba(102, 126, 234, 0.3);
+  color: #a5b4fc;
+}
+ 
+.account-card-buttons button:hover {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  color: #4f46e5;
+}
+ 
+.dark .account-card-buttons button:hover {
+  background: rgba(102, 126, 234, 0.3);
+  border-color: #a5b4fc;
+  color: #c7d2fe;
+}
+ 
+.account-scroll-button {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: absolute;
+  top: 50%;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid rgba(102, 126, 234, 0.3);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  transform: translateY(-50%) scale(0.8);
+  font-size: 1.4rem;
+  backdrop-filter: blur(15px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #667eea;
+  font-weight: bold;
+}
+ 
+.dark .account-scroll-button {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: rgba(148, 163, 184, 0.3);
+  color: #a5b4fc;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 4px 16px rgba(0, 0, 0, 0.2);
+}
+ 
+.account-scroll-button:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  color: #ffffff;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow:
+    0 12px 40px rgba(102, 126, 234, 0.4),
+    0 6px 20px rgba(0, 0, 0, 0.1);
+}
+ 
+.dark .account-scroll-button:hover {
+  background: linear-gradient(135deg, #a5b4fc 0%, #c7d2fe 100%);
+  border-color: #a5b4fc;
+  color: #1e293b;
+}
+ 
+.account-scroll-button[style*="left"] {
+  left: -24px;
+}
+ 
+.account-scroll-button[style*="right"] {
+  right: -24px;
+}
+ 
+.account-scroll-button.visible {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+ 
+/* Enhanced Loading Animation */
+.loading-skeleton {
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0.1) 25%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.1) 75%);
+  background-size: 200% 100%;
+  animation: loading 2s infinite;
+  border-radius: 12px;
+  height: 20px;
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+}
+ 
+.loading-skeleton::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shimmer 1.5s infinite;
+}
+ 
+.dark .loading-skeleton {
+  background: linear-gradient(90deg,
+    rgba(51, 65, 85, 0.3) 25%,
+    rgba(71, 85, 105, 0.4) 50%,
+    rgba(51, 65, 85, 0.3) 75%);
+}
+ 
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+ 
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+ 
+@keyframes fadeInSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+ 
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+ 
+/* Responsive Design */
+@media (max-width: 900px) {
+  .account-card {
+    min-width: 240px;
+    height: 220px;
+    padding: 20px;
+  }
+  .account-card h4 {
+    font-size: 1rem;
+  }
+  .account-card h4.long-name {
+    font-size: 0.9rem;
+  }
+  .account-card-scroll {
+    gap: 16px;
+  }
+  .module-title {
+    font-size: 1.8rem;
+  }
+}
+ 
+@media (max-width: 600px) {
+  .account-container {
+    padding: 1.5rem;
+  }
+  .account-card {
+    min-width: 200px;
+    height: 200px;
+    font-size: 0.9rem;
+    padding: 16px;
+  }
+  .account-card h4 {
+    font-size: 0.95rem;
+  }
+  .account-card h4.long-name {
+    font-size: 0.85rem;
+  }
+  .account-card-scroll {
+    gap: 12px;
+  }
+  .account-scroll-button {
+    width: 44px;
+    height: 44px;
+    font-size: 1.2rem;
+  }
+  .account-scroll-button[style*="left"] {
+    left: -20px;
+  }
+  .account-scroll-button[style*="right"] {
+    right: -20px;
+  }
+  .module-title {
+    font-size: 1.5rem;
+  }
+  .create-card {
+    padding: 24px;
+  }
+}
+ 
+.currency-switch-btn {
+  background: linear-gradient(135deg, #fbbf24 0%, #667eea 100%);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  z-index: 20;
+}
+ 
+.currency-switch-btn:hover, .currency-switch-btn:focus {
+  background: linear-gradient(135deg, #667eea 0%, #fbbf24 100%);
+  color: #fbbf24;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.18);
+  transform: scale(1.08) rotate(-8deg);
+}
+ 
+.dark .currency-switch-btn {
+  background: linear-gradient(135deg, #a5b4fc 0%, #fbbf24 100%);
+  color: #1e293b;
+}
+ 
+.dark .currency-switch-btn:hover, .dark .currency-switch-btn:focus {
+  background: linear-gradient(135deg, #fbbf24 0%, #a5b4fc 100%);
+  color: #a5b4fc;
+}
