@@ -3,11 +3,14 @@ import { Card, List } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../ThemeContext';
 import { PrimaryButton } from '../ui';
+import { Link } from 'react-router-dom'; // <-- DEĞİŞİKLİK 1: Link aracını buraya da import ettik.
 
+// <-- DEĞİŞİKLİK 2: Kuralı güncelledik. Artık 'to' özelliğini de tanıyor.
 interface QuickAccessItem {
   title: string;
   icon: React.ReactNode;
-  onClick: () => void;
+  onClick?: () => void; // onClick'i opsiyonel (?) yaptık
+  to?: string;          // 'to' özelliğini opsiyonel olarak ekledik
 }
 
 interface QuickAccessCardProps {
@@ -55,12 +58,13 @@ const QuickAccessCard: React.FC<QuickAccessCardProps> = ({ items }) => {
       <List
         dataSource={items}
         split={false}
-        renderItem={(item) => (
-          <List.Item style={{ padding: '4px 0', border: 'none' }}>
+        // <-- DEĞİŞİKLİK 3: Butonları akıllı hale getirdik.
+        renderItem={(item) => {
+          const button = (
             <PrimaryButton
               type="text"
               icon={item.icon}
-              onClick={item.onClick}
+              onClick={item.onClick} // onClick varsa çalışır, yoksa çalışmaz
               style={{
                 width: '100%',
                 textAlign: 'left',
@@ -85,8 +89,14 @@ const QuickAccessCard: React.FC<QuickAccessCardProps> = ({ items }) => {
                 {item.title}
               </span>
             </PrimaryButton>
-          </List.Item>
-        )}
+          );
+          
+          return (
+            <List.Item style={{ padding: '4px 0', border: 'none' }}>
+              {item.to ? <Link to={item.to} style={{ width: '100%' }}>{button}</Link> : button}
+            </List.Item>
+          );
+        }}
       />
     </Card>
   );

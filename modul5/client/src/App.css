@@ -4,7 +4,7 @@
   --color-primary: #176402ff;
   --color-secondary: #66bb6a;
   --color-accent: #e8f5e9; /* Açık yeşil (Desen ve kenarlıklar için) */
-  --color-background: #f1f8e9; /* Ana arka planın temel rengi */
+  --color-background: #f7fdf9; /* Ana arka planın temel rengi */
   --color-surface: #ffffff; /* Kartların arka planı (Beyaz) */
   --color-text-primary: #1b5e20;
   --color-text-on-primary: #ffffff;
@@ -12,19 +12,6 @@
   --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* --- DEĞİŞİKLİK BURADA --- */
-/* Sadece en dıştaki body'e damalı deseni uyguluyoruz */
-body {
-  margin: 0;
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  color: var(--color-text-primary);
-  background-color: var(--color-background);
-  background-image:
-    linear-gradient(45deg, var(--color-accent) 25%, transparent 25%, transparent 75%, var(--color-accent) 75%, var(--color-accent)),
-    linear-gradient(45deg, var(--color-accent) 25%, transparent 25%, transparent 75%, var(--color-accent) 75%, var(--color-accent));
-  background-size: 40px 40px;
-  background-position: 0 0, 20px 20px;
-}
 
 h1, h2, h3 { color: var(--color-primary); }
 

@@ -12,6 +12,10 @@ import ForgotPassword from './ForgotPassword.tsx'
 import ResetPassword from './ResetPassword.tsx'
 import LanguageToggle from './LanguageToggle.tsx'
 
+// <-- 1. EKLENECEK SATIR: Senin modul5'in ana sayfasını projeye dahil ediyoruz.
+// Lütfen bu dosya yolunun doğru olduğunu kontrol et. Senin ana dosyanın adı farklıysa onu yaz.
+import Modul5AnalyticsPage from '../../../modul5/client/src/App.tsx'; 
+
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
 
@@ -71,6 +75,10 @@ function App() {
           <Route path="/auth/confirm" element={<EmailVerification />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          
+          {/* <-- 2. EKLENECEK SATIR: /analytics adresine gidildiğinde senin sayfanın gösterilmesini sağlıyoruz. */}
+          <Route path="/analytics" element={<Modul5AnalyticsPage />} />
+
         </Routes>
       </Content>
       <Footer style={{ 

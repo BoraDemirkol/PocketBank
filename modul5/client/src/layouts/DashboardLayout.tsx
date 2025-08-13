@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import Header from '../components/Header';
 import CategoryPieChart from '../components/CategoryPieChart';
 import IncomeExpenseChart from '../components/IncomeExpenseChart';
 import TopSpendingBarChart from '../components/TopSpendingBarChart';
@@ -32,12 +31,12 @@ const DashboardLayout = () => {
     maxWidth: '1400px',
     margin: '0 auto',
     padding: '20px',
-    backgroundColor: 'var(--color-background, #f1f8e9)' // Bu satır, alttaki damalı deseni örter.
+    backgroundColor: 'var(--color-background, #ffffffff)' // Bu satır, alttaki damalı deseni örter.
   };
   
   return (
     <div>
-      <Header />
+      
 
       <div style={contentContainerStyle}>
         <nav style={{ display: 'flex', justifyContent: 'center', borderBottom: '1px solid #ddd', marginBottom: '30px' }}>

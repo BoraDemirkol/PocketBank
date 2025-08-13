@@ -7,6 +7,7 @@ import { LoadingSpinner } from './components/ui';
 import { QuickAccessCard, ProfileCard, BalanceCard, DashboardHeader } from './components/dashboard';
 import { UI_CONSTANTS } from './utils/constants';
 import LogoutConfirmDialog from './LogoutConfirmDialog';
+import { Link } from 'react-router-dom'; // <-- DEĞİŞİKLİK 1: Link aracını import ettik.
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -41,9 +42,10 @@ const Dashboard: React.FC = () => {
       onClick: () => console.log('Navigate to Budget Planning')
     },
     {
+      // <-- DEĞİŞİKLİK 2: onClick'i silip yerine 'to' özelliğini ekledik.
       title: t('analyticsReporting') || 'Analytics & Reporting',
       icon: <BarChartOutlined />,
-      onClick: () => console.log('Navigate to Analytics and Reporting')
+      to: '/analytics' 
     },
     {
       title: t('profile') || 'Profile Settings',

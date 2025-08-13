@@ -14,64 +14,100 @@ const FinancialHealthScorePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Hesaplama mantığı aynı kalıyor...
   useEffect(() => {
     const calculateScore = async () => {
+      // Son 90 günün tarihini hesapla
       const ninetyDaysAgo = new Date();
       ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+      // 1. Son 90 günlük işlemleri çek
       const { data: transactions, error: fetchError } = await supabase
         .from('transactions')
         .select('amount')
         .gte('transaction_date', ninetyDaysAgo.toISOString());
+
       if (fetchError) {
         setError('Veriler yüklenirken bir hata oluştu.');
         setLoading(false);
         return;
       }
+
       if (!transactions || transactions.length === 0) {
         setError('Skor hesaplamak için son 90 günde yeterli veri bulunamadı.');
         setLoading(false);
         return;
       }
+
+      // 2. Gelir ve giderleri hesapla
       let totalGelir = 0;
       let totalGider = 0;
+
       transactions.forEach(t => {
-        if (t.amount > 0) { totalGelir += t.amount; } 
-        else { totalGider += Math.abs(t.amount); }
+        if (t.amount > 0) {
+          totalGelir += t.amount;
+        } else {
+          totalGider += Math.abs(t.amount);
+        }
       });
+
       if (totalGelir === 0) {
         setError('Skor hesaplamak için gelir verisi bulunamadı.');
         setLoading(false);
         return;
       }
+      
+      // --- YENİ, DAHA SERT VE GERÇEKÇİ PUANLAMA ALGORİTMASI ---
       const birikimOrani = ((totalGelir - totalGider) / totalGelir);
       let score = 0;
+
+      if (birikimOrani >= 0.80) { // %80 ve üzeri birikim
+        score = 100;
+      } else if (birikimOrani >= 0.65) { // %65 - %79 arası
+        score = 80 + ((birikimOrani - 0.65) / 0.15) * 10; // 80-90 arası
+      } else if (birikimOrani >= 0.45) { // %45 - %64 arası
+        score = 60 + ((birikimOrani - 0.45) / 0.20) * 20; // 60-80 arası
+      } else if (birikimOrani >= 0.30) { // %30 - %44 arası
+        score = 40 + ((birikimOrani - 0.30) / 0.15) * 20; // 40-60 arası
+      } else if (birikimOrani >= 0.15) { // %15 - %29 arası
+        score = 20 + ((birikimOrani - 0.15) / 0.15) * 20; // 20-40 arası
+      } else { // %15'ten az (negatif dahil)
+        score = Math.max(0, (birikimOrani / 0.15) * 20); // 0-20 arası
+      }
+      
+      // Puanı 0 ile 100 arasında sınırla ve en yakın tam sayıya yuvarla
+      score = Math.round(Math.max(0, Math.min(100, score)));
+
       let feedback = '';
       let tavsiye = '';
-      if (birikimOrani > 0.2) {
-        score = 90;
-        feedback = 'Mükemmel!';
-        tavsiye = 'Finansal durumunuz harika! Bu şekilde devam ederek birikim hedeflerinize hızla ulaşabilirsiniz.';
-      } else if (birikimOrani > 0.1) {
-        score = 70;
-        feedback = 'Çok İyi';
-        tavsiye = 'İyi bir birikim oranınız var. Harcamalarınızı biraz daha optimize ederek daha da iyi bir seviyeye gelebilirsiniz.';
-      } else if (birikimOrani >= 0) {
-        score = 50;
-        feedback = 'Geliştirilebilir';
-        tavsiye = 'Gelirinizin bir kısmını biriktirmeyi başarıyorsunuz. Bütçenizi gözden geçirerek gereksiz harcamaları tespit edebilirsiniz.';
+
+      if (score >= 90) {
+        feedback = 'Harika!';
+        tavsiye = 'Mükemmel bir birikim oranınız var! Finansal disiplininiz sayesinde hedeflerinize hızla yaklaşıyorsunuz.';
+      } else if (score >= 80) {
+        feedback = 'Çok Başarılı';
+        tavsiye = 'Finansal durumunuz harika! Önerilen birikim oranının üzerindesiniz, bu şekilde devam ederek finansal geleceğinizi güvence altına alıyorsunuz.';
+      } else if (score >= 60) {
+        feedback = 'İyi Yoldasınız';
+        tavsiye = 'İyi bir birikim oranınız var. Bu harika bir başarı! Bütçenizi gözden geçirerek bu oranı daha da artırmayı hedefleyebilirsiniz.';
+      } else if (score >= 40) {
+        feedback = 'Dengeli';
+        tavsiye = 'Birikim ve harcamalarınız arasında bir denge kurmaya çalışıyorsunuz. Bu oranı artırmak için küçük adımlar atabilirsiniz.';
+      } else if (score > 0) {
+        feedback = 'Pozitif Adım';
+        tavsiye = 'Birikim yapmaya başlamanız harika bir ilk adım. Bütçenizi gözden geçirerek gereksiz harcamaları tespit edebilir ve birikiminizi artırabilirsiniz.';
       } else {
-        score = 25;
-        feedback = 'Dikkat Edilmeli';
-        tavsiye = 'Harcamalarınız gelirinizden fazla. Harcama alışkanlıklarınızı acilen gözden geçirip bir bütçe planı oluşturmalısınız.';
+        feedback = 'Gözden Geçirilmeli';
+        tavsiye = 'Harcamalarınız gelirinizden fazla görünüyor. Harcama alışkanlıklarınızı ve bütçenizi gözden geçirerek finansal dengenizi yeniden kurabilirsiniz.';
       }
+
       setScoreData({ score, birikimOrani, feedback, tavsiye });
       setLoading(false);
     };
+
     calculateScore();
   }, []);
 
-  // --- YENİ YEŞİL TEMA STİLLERİ ---
+  // Stil tanımlamaları aynı kalıyor...
   const scoreCardStyle: React.CSSProperties = {
     backgroundColor: 'var(--color-surface, white)',
     borderRadius: 'var(--border-radius, 8px)',
@@ -102,14 +138,13 @@ const FinancialHealthScorePage = () => {
   };
 
   const recommendationBoxStyle: React.CSSProperties = {
-    backgroundColor: '#e8f5e9', // Very light green
+    backgroundColor: '#e8f5e9',
     padding: '20px',
     borderRadius: 'var(--border-radius, 8px)',
     textAlign: 'left',
     marginTop: '30px',
     borderLeft: '5px solid var(--color-secondary, #66bb6a)'
   };
-
 
   return (
     <div>
