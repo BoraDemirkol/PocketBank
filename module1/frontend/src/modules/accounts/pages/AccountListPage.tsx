@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { fetchAccounts, createAccount as apiCreate } from "../api/account.api.ts";
+import { useAuth } from "../../../AuthContext";
+import { apiService } from "../../../api";
 import type { Account } from "../types/account";
 import TransactionModal from "../components/TransactionModal.tsx";
 import StatementModal from "../components/StatementModal.tsx";
@@ -10,6 +11,7 @@ import { fetchExchangeRates } from "../api/currencyRates.ts";
 type AccountType = "Vadesiz" | "Vadeli" | "Kredi Kartı";
 
 const AccountListPage = () => {
+  const { user } = useAuth();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [name, setName] = useState("");
   const [type, setType] = useState<AccountType>("Vadesiz");
@@ -26,10 +28,23 @@ const AccountListPage = () => {
   const cardWidth = "250px";
 
   useEffect(() => {
-    fetchAccounts()
-      .then(setAccounts)
-      .catch(() => setError("Hesaplar yüklenemedi"));
-  }, []);
+    const loadAccounts = async () => {
+      if (!user) {
+        setError("Giriş yapmanız gerekiyor");
+        return;
+      }
+      
+      try {
+        const accountsData = await apiService.get('/account');
+        setAccounts(accountsData);
+      } catch (error) {
+        console.error('Failed to load accounts:', error);
+        setError("Hesaplar yüklenemedi");
+      }
+    };
+    
+    loadAccounts();
+  }, [user]);
 
   useEffect(() => {
     const getRates = async () => {
@@ -61,24 +76,29 @@ const AccountListPage = () => {
   };
 
   const createAccount = async () => {
+    if (!user) {
+      setError("Giriş yapmanız gerekiyor");
+      return;
+    }
+    
     if (!name.trim()) return setError("Hesap adı boş olamaz");
 
-    const newAccount: Omit<Account, "id"> = {
-      accountName: name,
-      accountType: type,
-      currency: "TRY",
-      balance: 0,
-      userId: "52a9688d-98ef-4541-a748-a60da44a6ba4",
-    };
-
     try {
-      await apiCreate(newAccount);
-      const refreshed = await fetchAccounts();
+      await apiService.post('/account', {
+        accountName: name,
+        accountType: type,
+        currency: "TRY",
+        balance: 0
+      });
+      
+      // Refresh accounts list
+      const refreshed = await apiService.get('/account');
       setAccounts(refreshed);
       setName("");
       setType("Vadesiz");
       setError("");
-    } catch {
+    } catch (error) {
+      console.error('Failed to create account:', error);
       setError("Hesap oluşturulamadı");
     }
   };

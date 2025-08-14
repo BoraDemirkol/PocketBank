@@ -1,9 +1,9 @@
-import api from "../../../Shared/api/axios";
+import { apiService } from "../../../api";
 import type { Transaction } from "../types/transaction";
 
 export const fetchTransactions = async (accountId: string) => {
-  const res = await api.get(`/account/${accountId}/transaction`);
-  return res.data;
+  const res = await apiService.get(`/account/${accountId}/transaction`);
+  return res;
 };
 
 export interface TransactionDto {
@@ -17,11 +17,9 @@ export const fetchExtractTransactions = async (
   startDate?: string,
   endDate?: string
 ): Promise<Transaction[]> => {
-  const res = await api.get<TransactionDto[]>(`/transactions/extract`, {
-    params: { accountId, startDate, endDate },
-  });
+  const res = await apiService.get(`/account/${accountId}/transaction/statement?start=${startDate}&end=${endDate}`);
 
-  return res.data.map((dto) => ({
+  return res.map((dto: TransactionDto) => ({
     id: "", 
     accountId,
     ...dto,
@@ -33,16 +31,31 @@ export const downloadStatementPdf = async (
   start: string,
   end: string
 ) => {
-  const res = await api.get(`/account/${accountId}/transaction/extractPdf`, {
-    params: { start, end },
-    responseType: "blob"
-  });
+  try {
+    const headers = await apiService.getAuthHeaders();
+    const response = await fetch(`/account/${accountId}/transaction/extractPdf?start=${start}&end=${end}`, {
+      method: 'GET',
+      headers: {
+        ...headers,
+        'Accept': 'application/pdf'
+      }
+    });
 
-  const url = window.URL.createObjectURL(new Blob([res.data]));
-  const link = document.createElement("a");
-  link.href = url;
-  link.setAttribute("download", `ekstre-${start}_to_${end}.pdf`);
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
+    if (!response.ok) {
+      throw new Error(`PDF download failed: ${response.statusText}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `ekstre-${start}_to_${end}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Failed to download PDF:', error);
+    throw error;
+  }
 };

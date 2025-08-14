@@ -10,20 +10,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<UserService>();
-
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 // Add Entity Framework
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Add CORS
+// Add CORS - Debug için tamamen açık
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // Vite default port
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowAnyMethod();
     });
 });
 
@@ -48,7 +48,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidAudience = "authenticated",
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.Zero,
+            NameClaimType = "sub", // Map 'sub' claim to NameIdentifier
+            RoleClaimType = "role"
         };
         
     });
@@ -60,9 +62,26 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "PocketBank API V1");
+        c.RoutePrefix = "swagger";
+    });
+    
+    // Detailed error pages for development
+    app.UseDeveloperExceptionPage();
 }
 
+// CORS enabled for Vite proxy
 app.UseCors("AllowFrontend");
+
+// Enable preflight requests
+app.UseRouting();
+
+// Global exception handling
+app.UseExceptionHandler("/error");
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

@@ -1,9 +1,9 @@
 import { supabase } from './supabase'
 
-const API_BASE_URL = 'http://localhost:5271/api' // Update this to your backend URL
+const API_BASE_URL = '/api' // Using Vite proxy
 
 class ApiService {
-  private async getAuthHeaders() {
+  async getAuthHeaders() {
     const { data: { session } } = await supabase.auth.getSession()
     
     if (!session?.access_token) {
@@ -25,7 +25,22 @@ class ApiService {
     })
     
     if (!response.ok) {
-      throw new Error(`API request failed: ${response.statusText}`)
+      let errorMessage = `API request failed: ${response.statusText}`
+      
+      try {
+        const errorData = await response.json()
+        errorMessage += ` - ${JSON.stringify(errorData)}`
+      } catch {
+        // If error response is not JSON, try to get text
+        try {
+          const errorText = await response.text()
+          errorMessage += ` - ${errorText}`
+        } catch {
+          // Ignore if we can't read error response
+        }
+      }
+      
+      throw new Error(errorMessage)
     }
     
     return response.json()
@@ -61,6 +76,28 @@ class ApiService {
     }
     
     return response.json()
+  }
+
+  // Test method for CORS
+  async testCors() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/account/test`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`CORS test failed: ${response.statusText} - ${errorText}`)
+      }
+      
+      return response.json()
+    } catch (error) {
+      console.error('CORS test error:', error)
+      throw error
+    }
   }
 }
 
