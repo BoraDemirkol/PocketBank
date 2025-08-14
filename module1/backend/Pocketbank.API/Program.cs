@@ -1,13 +1,19 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
 using System.Text;
 using Pocketbank.API.Services;
+using Pocketbank.API.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<UserService>();
+
+// Add Entity Framework
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -21,12 +27,12 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add JWT Authentication
+// Add JWT Authentication (Supabase)
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        var supabaseUrl = builder.Configuration["Supabase:Url"];
         var supabaseJwtSecret = builder.Configuration["Supabase:JwtSecret"];
+        var supabaseUrl = builder.Configuration["Supabase:Url"];
         
         if (string.IsNullOrEmpty(supabaseJwtSecret))
         {
@@ -44,7 +50,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero
         };
-        
     });
 
 builder.Services.AddAuthorization();

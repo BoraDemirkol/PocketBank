@@ -29,7 +29,8 @@ public class WebhookController : ControllerBase
             using var reader = new StreamReader(Request.Body);
             var body = await reader.ReadToEndAsync();
             
-            _logger.LogInformation("Received Supabase webhook: {Body}", body);
+        
+            _logger.LogInformation("Received test user creation payload: {Body}", body);
 
             var webhookData = JsonSerializer.Deserialize<SupabaseWebhookPayload>(body);
             
@@ -61,6 +62,43 @@ public class WebhookController : ControllerBase
             return StatusCode(500, new { error = "Internal server error" });
         }
     }
+
+    [HttpPost("test-user-creation")]
+    public async Task<IActionResult> TestUserCreation([FromBody] TestUserRequest request)
+    {
+        try
+        {
+            _logger.LogInformation("Testing user creation for email: {Email}", request.Email);
+
+            var testUser = new SupabaseUserRecord
+            {
+                Id = request.Id ?? Guid.NewGuid().ToString(),
+                Email = request.Email,
+                EmailConfirmedAt = DateTime.UtcNow, // Mark as confirmed
+                RawUserMetaData = JsonSerializer.SerializeToElement(new 
+                { 
+                    name = request.Name ?? "Test",
+                    surname = request.Surname ?? "User"
+                })
+            };
+
+            var result = await _userService.CreateOrUpdateUserFromAuthAsync(testUser);
+            
+            if (result)
+            {
+                return Ok(new { success = true, message = "User created successfully in local database" });
+            }
+            else
+            {
+                return BadRequest(new { success = false, message = "Failed to create user" });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in test user creation");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
 }
 
 public class SupabaseWebhookPayload
@@ -88,4 +126,12 @@ public class SupabaseUserRecord
     
     [JsonPropertyName("raw_user_meta_data")]
     public JsonElement? RawUserMetaData { get; set; }
+}
+
+public class TestUserRequest
+{
+    public string? Id { get; set; }
+    public string Email { get; set; } = string.Empty;
+    public string? Name { get; set; }
+    public string? Surname { get; set; }
 }

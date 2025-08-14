@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Pocketbank.API.Data;
 using Pocketbank.API.Models;
 using Pocketbank.API.Controllers;
 using System.Text.Json;
@@ -8,11 +10,13 @@ namespace Pocketbank.API.Services;
 public class UserService
 {
     private readonly string _connectionString;
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<UserService> _logger;
 
-    public UserService(IConfiguration configuration, ILogger<UserService> logger)
+    public UserService(IConfiguration configuration, ApplicationDbContext context, ILogger<UserService> logger)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string not found");
+        _context = context;
         _logger = logger;
     }
 
@@ -34,7 +38,7 @@ public class UserService
         {
             return new User
             {
-                Id = reader["id"].ToString() ?? string.Empty,
+                Id = Guid.Parse(reader["id"].ToString() ?? string.Empty),
                 Email = reader["email"].ToString() ?? string.Empty,
                 Name = reader["name"].ToString() ?? string.Empty,
                 Surname = reader["surname"].ToString() ?? string.Empty,
@@ -69,6 +73,8 @@ public class UserService
 
     public async Task<bool> CreateOrUpdateUserFromAuthAsync(SupabaseUserRecord authUser)
     {
+        _logger.LogInformation("CreateOrUpdateUserFromAuthAsync called with user ID: {UserId}, Email: {Email}", authUser.Id, authUser.Email);
+        
         if (string.IsNullOrEmpty(authUser.Id) || string.IsNullOrEmpty(authUser.Email))
         {
             _logger.LogWarning("Invalid user data received from Supabase webhook");
@@ -84,8 +90,13 @@ public class UserService
 
         try
         {
-            using var connection = new NpgsqlConnection(_connectionString);
-            await connection.OpenAsync();
+            _logger.LogInformation("Starting user creation/update process for user {UserId}", authUser.Id);
+            // Parse the user ID to GUID
+            if (!Guid.TryParse(authUser.Id, out var userId))
+            {
+                _logger.LogWarning("Invalid user ID format from Supabase: {UserId}", authUser.Id);
+                return false;
+            }
 
             // Extract name and surname from metadata
             string name = "";
@@ -100,46 +111,46 @@ public class UserService
                     surname = surnameElement.GetString() ?? "";
             }
 
-            // Check if user exists
-            const string checkQuery = "SELECT COUNT(*) FROM users WHERE id = @userId::uuid";
-            using var checkCommand = new NpgsqlCommand(checkQuery, connection);
-            checkCommand.Parameters.AddWithValue("@userId", authUser.Id);
-            var userExists = Convert.ToInt32(await checkCommand.ExecuteScalarAsync()) > 0;
+            // Check if user exists in local database
+            _logger.LogInformation("Checking if user {UserId} exists in database", userId);
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
-            if (!userExists)
+            if (existingUser == null)
             {
-                // Insert new user
-                const string insertQuery = @"
-                    INSERT INTO users (id, email, name, surname)
-                    VALUES (@userId::uuid, @email, @name, @surname)";
+                _logger.LogInformation("User {UserId} not found, creating new user", userId);
+                // Create new user in local database
+                var newUser = new User
+                {
+                    Id = userId,
+                    Email = authUser.Email,
+                    Name = name,
+                    Surname = surname,
+                    CreatedAt = DateTime.UtcNow,
+                    PasswordHash = "SUPABASE_AUTH" // Password handled by Supabase
+                };
 
-                using var insertCommand = new NpgsqlCommand(insertQuery, connection);
-                insertCommand.Parameters.AddWithValue("@userId", authUser.Id);
-                insertCommand.Parameters.AddWithValue("@email", authUser.Email);
-                insertCommand.Parameters.AddWithValue("@name", name);
-                insertCommand.Parameters.AddWithValue("@surname", surname);
-
-                await insertCommand.ExecuteNonQueryAsync();
+                _logger.LogInformation("Adding user to context: {UserId}, Email: {Email}, Name: {Name}, Surname: {Surname}", 
+                    userId, authUser.Email, name, surname);
+                _context.Users.Add(newUser);
+                
+                _logger.LogInformation("Saving changes to database for user {UserId}", userId);
+                await _context.SaveChangesAsync();
                 _logger.LogInformation("Created new user {UserId} in local database", authUser.Id);
 
                 // Create default account for new user
-                await CreateDefaultAccountAsync(connection, authUser.Id);
+                _logger.LogInformation("Creating default account for user {UserId}", userId);
+                await CreateDefaultAccountWithEFAsync(userId);
             }
             else
             {
+                _logger.LogInformation("User {UserId} found, updating existing user", userId);
                 // Update existing user
-                const string updateQuery = @"
-                    UPDATE users 
-                    SET email = @email, name = @name, surname = @surname
-                    WHERE id = @userId::uuid";
+                existingUser.Email = authUser.Email;
+                existingUser.Name = name;
+                existingUser.Surname = surname;
 
-                using var updateCommand = new NpgsqlCommand(updateQuery, connection);
-                updateCommand.Parameters.AddWithValue("@userId", authUser.Id);
-                updateCommand.Parameters.AddWithValue("@email", authUser.Email);
-                updateCommand.Parameters.AddWithValue("@name", name);
-                updateCommand.Parameters.AddWithValue("@surname", surname);
-
-                await updateCommand.ExecuteNonQueryAsync();
+                _logger.LogInformation("Saving updated user {UserId} to database", userId);
+                await _context.SaveChangesAsync();
                 _logger.LogInformation("Updated user {UserId} in local database", authUser.Id);
             }
 
@@ -173,6 +184,32 @@ public class UserService
         command.Parameters.AddWithValue("@balance", randomBalance);
 
         await command.ExecuteNonQueryAsync();
+        _logger.LogInformation("Created default account for user {UserId} with balance {Balance}", userId, randomBalance);
+    }
+
+    private async Task CreateDefaultAccountWithEFAsync(Guid userId)
+    {
+        var accountTypes = new[] { "Vadeli", "Vadesiz", "Kredi Kartı" };
+        var accountNames = new[] { "Döviz Hesabı", "Harçlik Hesabı", "Biriken Hesap" };
+        var random = new Random();
+        
+        var randomAccountType = accountTypes[random.Next(accountTypes.Length)];
+        var randomAccountName = accountNames[random.Next(accountNames.Length)];
+        var randomBalance = random.Next(0, 25000);
+
+        var account = new Account
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            AccountName = randomAccountName,
+            AccountType = randomAccountType,
+            Balance = randomBalance,
+            Currency = "TRY",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.Accounts.Add(account);
+        await _context.SaveChangesAsync();
         _logger.LogInformation("Created default account for user {UserId} with balance {Balance}", userId, randomBalance);
     }
 }
