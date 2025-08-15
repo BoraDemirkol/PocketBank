@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import { useAuth } from '../AuthContext';
-import { apiService } from '../api';
+import { supabase } from '../supabase';
 import { ROUTES } from '../utils/constants';
 
 interface UserProfile {
@@ -41,20 +41,80 @@ export const useDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchFromSupabase = async (): Promise<{ profile: UserProfile | null; balance: UserBalance | null }> => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No authenticated user');
+
+      const [profileResponse, balanceResponse] = await Promise.all([
+        supabase.from('users').select('*').eq('id', user.id).single(),
+        supabase.from('accounts').select('*').eq('user_id', user.id).single()
+      ]);
+
+      if (profileResponse.error && balanceResponse.error) {
+        throw new Error('Failed to fetch from Supabase');
+      }
+
+      return {
+        profile: profileResponse.data ? {
+          userId: profileResponse.data.id,
+          email: profileResponse.data.email || user.email || '',
+          name: profileResponse.data.name || '',
+          surname: profileResponse.data.surname || '',
+          profilePictureUrl: profileResponse.data.profile_picture_url,
+          message: 'Welcome to PocketBank!'
+        } : null,
+        balance: balanceResponse.data ? {
+          userId: balanceResponse.data.user_id,
+          balance: balanceResponse.data.balance || 0,
+          currency: balanceResponse.data.currency || 'TRY'
+        } : null
+      };
+    };
+
+    const fetchFromLocalStorage = (): { profile: UserProfile | null; balance: UserBalance | null } => {
+      const storedProfile = localStorage.getItem('dashboardProfile');
+      const storedBalance = localStorage.getItem('dashboardBalance');
+      
+      return {
+        profile: storedProfile ? JSON.parse(storedProfile) : null,
+        balance: storedBalance ? JSON.parse(storedBalance) : null
+      };
+    };
+
+    const saveToLocalStorage = (profile: UserProfile | null, balance: UserBalance | null) => {
+      if (profile) localStorage.setItem('dashboardProfile', JSON.stringify(profile));
+      if (balance) localStorage.setItem('dashboardBalance', JSON.stringify(balance));
+    };
+
     const fetchDashboardData = async () => {
       try {
         setState(prev => ({ ...prev, loading: true }));
         
-        const [profileData, balanceData] = await Promise.all([
-          apiService.get('/account/profile'),
-          apiService.get('/account/balance')
-        ]);
-        
-        setState(prev => ({
-          ...prev,
-          profile: profileData,
-          balance: balanceData
-        }));
+        try {
+          const supabaseData = await fetchFromSupabase();
+          saveToLocalStorage(supabaseData.profile, supabaseData.balance);
+          
+          setState(prev => ({
+            ...prev,
+            profile: supabaseData.profile,
+            balance: supabaseData.balance
+          }));
+        } catch (supabaseError) {
+          console.warn('Supabase fetch failed, trying local storage:', supabaseError);
+          
+          const localData = fetchFromLocalStorage();
+          
+          if (localData.profile || localData.balance) {
+            setState(prev => ({
+              ...prev,
+              profile: localData.profile,
+              balance: localData.balance
+            }));
+            message.warning('Loaded data from local storage');
+          } else {
+            throw new Error('No data available from Supabase or local storage');
+          }
+        }
       } catch {
         message.error('Failed to load dashboard data');
       } finally {
