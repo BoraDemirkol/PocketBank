@@ -1,0 +1,17 @@
+.signup-container {
+  max-width: 300px;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.signup-title {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 24px;
+  color: #4a7c59;
+  font-weight: bold;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}

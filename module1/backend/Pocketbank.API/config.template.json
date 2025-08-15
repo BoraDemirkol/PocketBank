@@ -1,0 +1,35 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "Supabase": {
+    "Url": "https://xfrgkzlugacowzcfthwk.supabase.co"
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=aws-0-eu-central-1.pooler.supabase.com;Port=6543;Database=postgres;Username=postgres.xfrgkzlugacowzcfthwk;Password=YOUR_DATABASE_PASSWORD_HERE;SSL Mode=Require;Trust Server Certificate=true;Command Timeout=15;Maximum Pool Size=50;Minimum Pool Size=10;Timeout=10;Pooling=true;Connection Idle Lifetime=600;Connection Pruning Interval=30;Internal Command Timeout=15;Read Buffer Size=8192;Write Buffer Size=8192;No Reset On Close=true;Application Name=PocketBank-API;Max Auto Prepare=20;Auto Prepare Min Usages=3"
+  },
+  "Database": {
+    "MaxConcurrentConnections": 100,
+    "MaxRetries": 3,
+    "RetryDelayMs": 1000,
+    "ConnectionTimeoutMs": 10000,
+    "CommandTimeoutMs": 15000,
+    "ReadTimeoutMs": 15000,
+    "WriteTimeoutMs": 15000,
+    "EnableQueryCache": true,
+    "QueryCacheTimeoutMs": 300000,
+    "EnableConnectionPooling": true,
+    "ConnectionPoolSize": 50,
+    "IdleConnectionTimeoutMs": 300000
+  },
+  "Caching": {
+    "DefaultExpirationMinutes": 30,
+    "CategoriesExpirationMinutes": 60,
+    "MaxCacheSize": 1000,
+    "EnableCompression": true
+  }
+}

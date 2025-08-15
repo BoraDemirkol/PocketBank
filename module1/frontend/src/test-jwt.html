@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWT Token Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .result { margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 3px; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>JWT Token Test for PocketBank</h1>
+    
+    <div class="test-section">
+        <h3>Test 1: Get Supabase Session</h3>
+        <button onclick="getSupabaseSession()">Get Session</button>
+        <div id="session-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 2: Decode JWT Token</h3>
+        <button onclick="decodeJWT()">Decode Current Token</button>
+        <div id="decode-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 3: Test Backend JWT Endpoint</h3>
+        <button onclick="testBackendJWT()">Test Backend</button>
+        <div id="backend-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 4: Test JWKS Connectivity</h3>
+        <button onclick="testJWKS()">Test JWKS</button>
+        <div id="jwks-result" class="result"></div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
+        
+        const supabaseUrl = 'https://xfrgkzlugacowzcfthwk.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhmcmdremx1Z2Fjb3d6Y2Z0aHdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNzQwMTQsImV4cCI6MjA2ODg1MDAxNH0.uPOphVgjq2TwOEvVzs3yGNrJ02XDTIyiRT5me7158vg';
+        
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        
+        function displayResult(elementId, success, message, data = null) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${success ? 'success' : 'error'}`;
+            element.innerHTML = `
+                <strong>${success ? '✓ SUCCESS' : '✗ ERROR'}:</strong> ${message}
+                ${data ? `<br><pre>${JSON.stringify(data, null, 2)}</pre>` : ''}
+            `;
+        }
+        
+        window.getSupabaseSession = async function() {
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                
+                if (error) {
+                    displayResult('session-result', false, `Session error: ${error.message}`);
+                    return;
+                }
+                
+                if (!session) {
+                    displayResult('session-result', false, 'No active session found');
+                    return;
+                }
+                
+                const sessionInfo = {
+                    userId: session.user?.id,
+                    email: session.user?.email,
+                    accessToken: session.access_token ? `${session.access_token.substring(0, 50)}...` : 'None',
+                    refreshToken: session.refresh_token ? `${session.refresh_token.substring(0, 50)}...` : 'None',
+                    expiresAt: session.expires_at,
+                    tokenType: session.token_type
+                };
+                
+                displayResult('session-result', true, 'Session retrieved successfully', sessionInfo);
+            } catch (error) {
+                displayResult('session-result', false, `Error: ${error.message}`);
+            }
+        };
+        
+        window.decodeJWT = async function() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (!session?.access_token) {
+                    displayResult('decode-result', false, 'No access token available');
+                    return;
+                }
+                
+                const token = session.access_token;
+                const parts = token.split('.');
+                
+                if (parts.length !== 3) {
+                    displayResult('decode-result', false, 'Invalid JWT format');
+                    return;
+                }
+                
+                const header = JSON.parse(atob(parts[0]));
+                const payload = JSON.parse(atob(parts[1]));
+                
+                const tokenInfo = {
+                    algorithm: header.alg,
+                    type: header.typ,
+                    issuer: payload.iss,
+                    subject: payload.sub,
+                    audience: payload.aud,
+                    issuedAt: new Date(payload.iat * 1000).toISOString(),
+                    expiresAt: new Date(payload.exp * 1000).toISOString(),
+                    tokenLength: token.length
+                };
+                
+                displayResult('decode-result', true, 'JWT decoded successfully', tokenInfo);
+            } catch (error) {
+                displayResult('decode-result', false, `Error decoding JWT: ${error.message}`);
+            }
+        };
+        
+        window.testBackendJWT = async function() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (!session?.access_token) {
+                    displayResult('backend-result', false, 'No access token available');
+                    return;
+                }
+                
+                const response = await fetch('http://localhost:5271/jwt-test-token', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session.access_token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayResult('backend-result', true, 'Backend JWT test successful', data);
+                } else {
+                    const errorText = await response.text();
+                    displayResult('backend-result', false, `Backend error: ${response.status} - ${errorText}`);
+                }
+            } catch (error) {
+                displayResult('backend-result', false, `Error: ${error.message}`);
+            }
+        };
+        
+        window.testJWKS = async function() {
+            try {
+                const response = await fetch('http://localhost:5271/jwt-jwks-test');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayResult('jwks-result', true, 'JWKS test successful', data);
+                } else {
+                    const errorText = await response.text();
+                    displayResult('jwks-result', false, `JWKS test error: ${response.status} - ${errorText}`);
+                }
+            } catch (error) {
+                displayResult('jwks-result', false, `Error: ${error.message}`);
+            }
+        };
+    </script>
+</body>
+</html>

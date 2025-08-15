@@ -1,0 +1,6 @@
+@Pocketbank.API_HostAddress = http://localhost:5271
+
+GET {{Pocketbank.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
