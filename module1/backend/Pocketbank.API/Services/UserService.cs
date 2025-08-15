@@ -50,6 +50,36 @@ public class UserService
         return null;
     }
 
+    public async Task<User?> GetUserByEmailAsync(string email)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        const string query = @"
+            SELECT id, email, name, surname, profile_picture_url, created_at
+            FROM users
+            WHERE email = @email";
+
+        using var command = new NpgsqlCommand(query, connection);
+        command.Parameters.AddWithValue("@email", email);
+
+        using var reader = await command.ExecuteReaderAsync();
+        if (await reader.ReadAsync())
+        {
+            return new User
+            {
+                Id = Guid.Parse(reader["id"].ToString() ?? string.Empty),
+                Email = reader["email"].ToString() ?? string.Empty,
+                Name = reader["name"].ToString() ?? string.Empty,
+                Surname = reader["surname"].ToString() ?? string.Empty,
+                ProfilePictureUrl = reader["profile_picture_url"] == DBNull.Value ? null : reader["profile_picture_url"].ToString(),
+                CreatedAt = reader["created_at"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(reader["created_at"])
+            };
+        }
+
+        return null;
+    }
+
 
     public async Task<bool> UpdateUserProfileAsync(string userId, UpdateProfileRequest request)
     {
@@ -111,11 +141,36 @@ public class UserService
                     surname = surnameElement.GetString() ?? "";
             }
 
-            // Check if user exists in local database
+            // Check if user exists in local database by ID or email (safe approach)
             _logger.LogInformation("Checking if user {UserId} exists in database", userId);
             var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var existingUserByEmail = await _context.Users.FirstOrDefaultAsync(u => u.Email == authUser.Email);
+            
+            if (existingUser != null)
+            {
+                _logger.LogInformation("User {UserId} found by ID, updating existing user", userId);
+                // Update existing user found by ID (normal case)
+                existingUser.Email = authUser.Email;
+                existingUser.Name = name;
+                existingUser.Surname = surname;
 
-            if (existingUser == null)
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Updated user {UserId} in local database", authUser.Id);
+            }
+            else if (existingUserByEmail != null)
+            {
+                _logger.LogWarning("User with email {Email} exists but with different ID. Current DB ID: {DbUserId}, Supabase ID: {SupabaseUserId}", 
+                    authUser.Email, existingUserByEmail.Id, userId);
+                
+                // SAFE APPROACH: Just update the existing user's information but keep the original ID
+                // This preserves all relationships and data
+                existingUserByEmail.Name = name;
+                existingUserByEmail.Surname = surname;
+
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Updated existing user by email {Email} (ID mismatch handled safely)", authUser.Email);
+            }
+            else
             {
                 _logger.LogInformation("User {UserId} not found, creating new user", userId);
                 // Create new user in local database
@@ -129,29 +184,13 @@ public class UserService
                     PasswordHash = "SUPABASE_AUTH" // Password handled by Supabase
                 };
 
-                _logger.LogInformation("Adding user to context: {UserId}, Email: {Email}, Name: {Name}, Surname: {Surname}", 
-                    userId, authUser.Email, name, surname);
                 _context.Users.Add(newUser);
-                
-                _logger.LogInformation("Saving changes to database for user {UserId}", userId);
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Created new user {UserId} in local database", authUser.Id);
 
                 // Create default account for new user
                 _logger.LogInformation("Creating default account for user {UserId}", userId);
                 await CreateDefaultAccountWithEFAsync(userId);
-            }
-            else
-            {
-                _logger.LogInformation("User {UserId} found, updating existing user", userId);
-                // Update existing user
-                existingUser.Email = authUser.Email;
-                existingUser.Name = name;
-                existingUser.Surname = surname;
-
-                _logger.LogInformation("Saving updated user {UserId} to database", userId);
-                await _context.SaveChangesAsync();
-                _logger.LogInformation("Updated user {UserId} in local database", authUser.Id);
             }
 
             return true;

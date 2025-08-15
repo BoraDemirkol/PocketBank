@@ -12,29 +12,58 @@ namespace Pocketbank.API.Controllers;
 public class AccountController : ControllerBase
 {
     private readonly UserService _userService;
+    private readonly ILogger<AccountController> _logger;
 
-    public AccountController(UserService userService)
+    public AccountController(UserService userService, ILogger<AccountController> logger)
     {
         _userService = userService;
+        _logger = logger;
     }
 
     [HttpGet("profile")]
     public async Task<IActionResult> GetProfile()
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _logger.LogInformation("GetProfile endpoint called");
         
-        if (string.IsNullOrEmpty(userId))
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var email = User.FindFirst(ClaimTypes.Email)?.Value;
+        
+        _logger.LogInformation("Extracted from token - UserId: {UserId}, Email: {Email}", userId ?? "NULL", email ?? "NULL");
+        
+        if (string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(email))
         {
-            return Unauthorized("User ID not found in token");
+            _logger.LogWarning("Neither user ID nor email found in token");
+            return Unauthorized("User identification not found in token");
         }
 
-        var user = await _userService.GetUserByIdAsync(userId);
+        User? user = null;
+        
+        // Safe approach: Try ID first, fallback to email
+        if (!string.IsNullOrEmpty(userId))
+        {
+            _logger.LogInformation("Searching for user with ID: {UserId}", userId);
+            user = await _userService.GetUserByIdAsync(userId);
+        }
+        
+        if (user == null && !string.IsNullOrEmpty(email))
+        {
+            _logger.LogInformation("User not found by ID, trying email: {Email}", email);
+            user = await _userService.GetUserByEmailAsync(email);
+            
+            if (user != null)
+            {
+                _logger.LogWarning("User found by email but not by ID. This indicates an ID mismatch. Email: {Email}, DB ID: {DbId}, Token ID: {TokenId}", 
+                    email, user.Id, userId);
+            }
+        }
         
         if (user == null)
         {
+            _logger.LogWarning("User profile not found for ID: {UserId} or Email: {Email}", userId, email);
             return NotFound("User profile not found");
         }
 
+        _logger.LogInformation("User profile found: {Email}", user.Email);
         return Ok(new
         {
             UserId = user.Id,
