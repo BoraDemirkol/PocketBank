@@ -7,10 +7,18 @@ import { LoadingSpinner } from './components/ui';
 import { QuickAccessCard, ProfileCard, BalanceCard, DashboardHeader } from './components/dashboard';
 import { UI_CONSTANTS } from './utils/constants';
 import LogoutConfirmDialog from './LogoutConfirmDialog';
+<<<<<<< HEAD
+=======
+import { useNavigate } from 'react-router-dom';
+>>>>>>> 9100c27ce5793f4af8ad037a2cd89bdf89599a38
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
+<<<<<<< HEAD
+=======
+  const navigate = useNavigate();
+>>>>>>> 9100c27ce5793f4af8ad037a2cd89bdf89599a38
   const {
     profile,
     balance,
@@ -23,7 +31,10 @@ const Dashboard: React.FC = () => {
     navigateToProfile
   } = useDashboard();
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 9100c27ce5793f4af8ad037a2cd89bdf89599a38
   const navigationItems = [
     {
       title: t('accountManagement') || 'Account Management',
@@ -33,7 +44,11 @@ const Dashboard: React.FC = () => {
     {
       title: t('transactionManagement') || 'Transaction Management',
       icon: <TransactionOutlined />,
+<<<<<<< HEAD
       onClick: () => console.log('Navigate to Transaction Management')
+=======
+      onClick: () => navigate('/transactions')
+>>>>>>> 9100c27ce5793f4af8ad037a2cd89bdf89599a38
     },
     {
       title: t('budgetPlanning') || 'Budget Planning',

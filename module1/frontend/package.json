@@ -12,6 +12,11 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.52.1",
     "antd": "^5.26.7",
+<<<<<<< HEAD
+=======
+    "axios": "^1.11.0",
+    "dayjs": "^1.11.10",
+>>>>>>> 9100c27ce5793f4af8ad037a2cd89bdf89599a38
     "i18next": "^25.3.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

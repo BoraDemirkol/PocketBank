@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import { useAuth } from '../AuthContext';
+<<<<<<< HEAD
 import { supabase } from '../supabase';
+=======
+import { apiService } from '../api';
+>>>>>>> 9100c27ce5793f4af8ad037a2cd89bdf89599a38
 import { ROUTES } from '../utils/constants';
 
 interface UserProfile {
@@ -41,6 +45,7 @@ export const useDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+<<<<<<< HEAD
     const fetchFromSupabase = async (): Promise<{ profile: UserProfile | null; balance: UserBalance | null }> => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No authenticated user');
@@ -86,10 +91,13 @@ export const useDashboard = () => {
       if (balance) localStorage.setItem('dashboardBalance', JSON.stringify(balance));
     };
 
+=======
+>>>>>>> 9100c27ce5793f4af8ad037a2cd89bdf89599a38
     const fetchDashboardData = async () => {
       try {
         setState(prev => ({ ...prev, loading: true }));
         
+<<<<<<< HEAD
         try {
           const supabaseData = await fetchFromSupabase();
           saveToLocalStorage(supabaseData.profile, supabaseData.balance);
@@ -115,6 +123,18 @@ export const useDashboard = () => {
             throw new Error('No data available from Supabase or local storage');
           }
         }
+=======
+        const [profileData, balanceData] = await Promise.all([
+          apiService.get('/account/profile'),
+          apiService.get('/account/balance')
+        ]);
+        
+        setState(prev => ({
+          ...prev,
+          profile: profileData,
+          balance: balanceData
+        }));
+>>>>>>> 9100c27ce5793f4af8ad037a2cd89bdf89599a38
       } catch {
         message.error('Failed to load dashboard data');
       } finally {

@@ -1,15 +1,21 @@
+<<<<<<< HEAD
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Pocketbank.API.Data;
 using Pocketbank.API.Models;
 using Pocketbank.API.Controllers;
 using System.Text.Json;
+=======
+using Npgsql;
+using Pocketbank.API.Models;
+>>>>>>> 9100c27ce5793f4af8ad037a2cd89bdf89599a38
 
 namespace Pocketbank.API.Services;
 
 public class UserService
 {
     private readonly string _connectionString;
+<<<<<<< HEAD
     private readonly ApplicationDbContext _context;
     private readonly ILogger<UserService> _logger;
 
@@ -18,6 +24,12 @@ public class UserService
         _connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string not found");
         _context = context;
         _logger = logger;
+=======
+
+    public UserService(IConfiguration configuration)
+    {
+        _connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string not found");
+>>>>>>> 9100c27ce5793f4af8ad037a2cd89bdf89599a38
     }
 
     public async Task<User?> GetUserByIdAsync(string userId)
@@ -42,14 +54,20 @@ public class UserService
                 Email = reader["email"].ToString() ?? string.Empty,
                 Name = reader["name"].ToString() ?? string.Empty,
                 Surname = reader["surname"].ToString() ?? string.Empty,
+<<<<<<< HEAD
                 ProfilePictureUrl = reader["profile_picture_url"] == DBNull.Value ? null : reader["profile_picture_url"].ToString(),
                 CreatedAt = reader["created_at"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(reader["created_at"])
+=======
+                ProfilePictureUrl = reader["profile_picture_url"] == DBNull.Value ? string.Empty : reader["profile_picture_url"].ToString() ?? string.Empty,
+                CreatedAt = reader["created_at"] == DBNull.Value ? null : Convert.ToDateTime(reader["created_at"])
+>>>>>>> 9100c27ce5793f4af8ad037a2cd89bdf89599a38
             };
         }
 
         return null;
     }
 
+<<<<<<< HEAD
     public async Task<User?> GetUserByEmailAsync(string email)
     {
         using var connection = new NpgsqlConnection(_connectionString);
@@ -81,6 +99,8 @@ public class UserService
     }
 
 
+=======
+>>>>>>> 9100c27ce5793f4af8ad037a2cd89bdf89599a38
     public async Task<bool> UpdateUserProfileAsync(string userId, UpdateProfileRequest request)
     {
         using var connection = new NpgsqlConnection(_connectionString);
@@ -100,6 +120,7 @@ public class UserService
         var rowsAffected = await command.ExecuteNonQueryAsync();
         return rowsAffected > 0;
     }
+<<<<<<< HEAD
 
     public async Task<bool> CreateOrUpdateUserFromAuthAsync(SupabaseUserRecord authUser)
     {
@@ -251,4 +272,6 @@ public class UserService
         await _context.SaveChangesAsync();
         _logger.LogInformation("Created default account for user {UserId} with balance {Balance}", userId, randomBalance);
     }
+=======
+>>>>>>> 9100c27ce5793f4af8ad037a2cd89bdf89599a38
 }

@@ -1,5 +1,9 @@
 import { Routes, Route, Link } from 'react-router-dom'
+<<<<<<< HEAD
 import { Layout, Typography } from '../node_modules/antd'
+=======
+import { Layout, Typography } from 'antd'
+>>>>>>> 9100c27ce5793f4af8ad037a2cd89bdf89599a38
 import { useTranslation } from 'react-i18next'
 import Mainpage from './Mainpage.tsx'
 import Signin from './Signin.tsx'
@@ -11,6 +15,10 @@ import ThemeToggle from './ThemeToggle.tsx'
 import ForgotPassword from './ForgotPassword.tsx'
 import ResetPassword from './ResetPassword.tsx'
 import LanguageToggle from './LanguageToggle.tsx'
+<<<<<<< HEAD
+=======
+import TransactionManagement from './components/transaction/TransactionManagement.tsx'
+>>>>>>> 9100c27ce5793f4af8ad037a2cd89bdf89599a38
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
@@ -67,6 +75,10 @@ function App() {
           <Route path="/signin" element={<Signin />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
+<<<<<<< HEAD
+=======
+          <Route path="/transactions" element={<TransactionManagement />} />
+>>>>>>> 9100c27ce5793f4af8ad037a2cd89bdf89599a38
           <Route path="/profile/edit" element={<EditProfile />} />
           <Route path="/auth/confirm" element={<EmailVerification />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

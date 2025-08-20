@@ -3,7 +3,11 @@ import { supabase } from './supabase'
 const API_BASE_URL = 'http://localhost:5271/api' // Update this to your backend URL
 
 class ApiService {
+<<<<<<< HEAD
   private async getAuthHeaders() {
+=======
+  public async getAuthHeaders() {
+>>>>>>> 9100c27ce5793f4af8ad037a2cd89bdf89599a38
     const { data: { session } } = await supabase.auth.getSession()
     
     if (!session?.access_token) {
